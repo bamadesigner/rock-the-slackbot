@@ -39,7 +39,11 @@ Because it can help you manage your websites, and stay on top of changes, by sen
 * When plugins or themes are uploaded
 * When plugins or themes are activated
 
+**Each event can be customized to allow you to send different event notifications to different Slack channels**, e.g. you can send core, theme and plugin updates to your "wp-development" channel while all of your post changes go to your "wp-content" channel.
+
 *I'm also working to make this plugin multisite-friendly.*
+
+Please use [the Issues section of this repo](https://github.com/bamadesigner/rock-the-slackbot/issues) to suggest features, like other notification events.
 
 **A Slack account is required to use this plugin** and is free to use for as long as you want and with an unlimited number of people. [Visit the Slack website](https://slack.com/) to learn more and sign up.
 
