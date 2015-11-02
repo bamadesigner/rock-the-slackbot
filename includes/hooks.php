@@ -1,0 +1,1634 @@
+<?php
+
+class Rock_The_Slackbot_Hooks {
+
+	/**
+	 * This class sets up the notifications
+	 * for all of the various hooks.
+	 *
+	 * @access  public
+	 * @since   1.0
+	 */
+	public function __construct() {
+
+		// @TODO Setup notifications for:
+		//		When menu item is added
+		//		When a plugin, theme, or core update is available
+		//      When an option is added or edited?
+		//      When a new comment is added or is awaiting moderation?
+		//      When a user's role is changed?
+		//		When certain folks log in?
+		//      When there are PHP errors
+		//		When plugins are activated
+		//		when plugins and themes are installed/uploaded
+		// 		When themes are selected
+
+		// Fires when the bulk upgrader process is complete
+		add_action( 'upgrader_process_complete', array( $this, 'upgrade_notification' ), 100, 2 );
+
+		// Fires once an existing post has been updated
+		add_action( 'post_updated', array( $this, 'updated_post_notification' ), 100, 3 );
+
+		// Fires when a post is transitioned from one status to another
+		add_action( 'transition_post_status', array( $this, 'transition_post_status_notification' ), 100, 3 );
+
+		// Fires before a post is sent to the trash
+		add_action( 'wp_trash_post', array( $this, 'wp_trash_post_notification' ), 100 );
+
+		// Fires before a post is deleted, at the start of wp_delete_post()
+		add_action( 'before_delete_post', array( $this, 'delete_post_notification' ), 100, 1 );
+
+		// Fires once an attachment has been added
+		add_action( 'add_attachment', array( $this, 'add_attachment_notification' ), 100 );
+
+		// Fires once an existing attachment has been updated
+		add_action( 'edit_attachment', array( $this, 'edit_attachment_notification' ), 100 );
+
+		// Fires before an attachment is deleted, at the start of wp_delete_attachment()
+		add_action( 'delete_attachment', array( $this, 'delete_attachment_notification' ), 100 );
+
+		// Fires once the WordPress environment has been set up
+		add_action( 'wp', array( $this, 'is_404_notification' ), 100 );
+
+		// Fires immediately after a new user is registered
+		add_action( 'user_register', array( $this, 'user_added_notification' ), 100 );
+
+		// Fires immediately before a user is deleted from the database
+		add_action( 'delete_user', array( $this, 'user_deleted_notification' ), 100, 2 );
+
+	}
+
+	/**
+	 * Retrieves saved outgoing webhooks.
+	 *
+	 * If event names are passed, then only
+	 * retrieves webhooks tied to the event(s).
+	 *
+	 * @access  private
+	 * @since   1.0
+	 * @param   string|array - $events - when you want webhooks tied to specific events
+	 * @param   array - $event_data - allows hooks to pass event specific data to test with webhooks
+	 * @return  array|false - the webhooks or false if none
+	 */
+	private function get_outgoing_webhooks( $events = null, $event_data = array() ) {
+		return rock_the_slackbot()->get_outgoing_webhooks( $events, $event_data );
+	}
+
+	/**
+	 * Makes sure the payload is setup properly.
+	 *
+	 * @access  private
+	 * @since   1.0
+	 * @param   array - $payload - the payload itself
+	 * @param   array - $attachments - the attachments info
+	 * @param   array - $webhook - the Slack webhook info
+	 * @param   string - $event - the ID of the event that's being processed
+	 * @return  array - the setup payload
+	 */
+	private function prepare_payload( $payload = array(), $attachments = array(), $webhook = array(), $event = null ) {
+
+		// If a particular event was passed, see if it has info to overwrite the default payload
+		$event_settings = false;
+		if ( $event && isset( $webhook[ 'events' ] ) && isset( $webhook[ 'events' ][ $event ] ) ) {
+
+			// Set the event settings
+			$event_settings = $webhook[ 'events' ][ $event ];
+
+		}
+
+		// Add to the payload
+		foreach( array( 'channel', 'username', 'icon_emoji', 'icon_url' ) as $var ) {
+
+			// Get the default setting
+			if ( isset( $webhook[ $var ] ) && ! empty( $webhook[ $var ] ) ) {
+				$payload[ $var ] = $webhook[ $var ];
+			}
+
+			// See if the event is overwriting the default
+			if ( $event_settings && isset( $event_settings[ $var ] ) && ! empty( $event_settings[ $var ] ) ) {
+				$payload[ $var ] = $event_settings[ $var ];
+			}
+
+		}
+
+		// Add the attachments
+		$payload[ 'attachments' ] = $attachments;
+
+		return $payload;
+	}
+
+	/**
+	 * Sends a batch of outgoing webhooks.
+	 *
+	 * @access  private
+	 * @since   1.0
+	 * @param   string - $notification_event - name of the notification event
+	 * @param   array - $outgoing_webhooks - array of webhooks being sent
+	 * @param   array - $payload - payload info for notification
+	 * @param   array - $attachments - attachments info for notification
+	 * @return  true|array - true if all notifications were sent, array of error(s) otherwise
+	 */
+	private function send_outgoing_webhooks( $notification_event, $outgoing_webhooks, $payload = array(), $attachments = array() ) {
+
+		// Will hold notification errors if any
+		$notification_errors = array();
+
+		// Loop through each webhook and send the notification
+		foreach( $outgoing_webhooks as $hook ) {
+
+			// We must have a webhook URL
+			if ( ! ( isset( $hook[ 'webhook_url' ] ) && ! empty( $hook[ 'webhook_url' ] ) ) ) {
+				continue;
+			}
+
+			// Prepare the payload
+			$payload = $this->prepare_payload( $payload, $attachments, $hook, $notification_event );
+
+			// Filter by event
+			$notification_pieces = (array) apply_filters_ref_array( "rock_the_slackbot_notification_{$notification_event}", array( compact( array( 'webhook_url', 'payload' ) ) ) );
+
+			// Filter by hook ID
+			$notification_pieces = (array) apply_filters_ref_array( 'rock_the_slackbot_notification_' . $hook[ 'ID' ], array( compact( array( 'webhook_url', 'payload' ) ) ) );
+
+			// Extract the filtered notification pieces
+			extract( $notification_pieces );
+
+			// Send the notification
+			$sent_notification = rock_the_slackbot_notifications()->send_notification( $hook[ 'webhook_url' ], $payload );
+
+			// Was there an error?
+			if ( is_wp_error( $sent_notification ) ) {
+				$notification_errors[] = $sent_notification;
+			}
+
+		}
+
+		// Return errors, if any, otherwise true for no errors
+		return ! empty( $notification_errors ) ? $notification_errors : true;
+
+	}
+
+	/**
+	 * Sends a notification to Slack when
+	 * core, plugins, or themes are updated.
+	 *
+	 * Fires when the bulk upgrader process is complete.
+	 *
+	 * In $upgrade_info:
+	 * 'action' is always 'update'
+	 * 'type': 'plugin', 'theme' or 'core'
+	 * 'bulk': will be boolean true if true, might not always exist
+	 * 'plugins': will hold array of plugins being updated
+	 * 'themes': will hold array of themes being updated
+	 *
+	 * @access  public
+	 * @since   1.0
+	 * @param	Plugin_Upgrader - $upgrader
+	 * 		upgrader instance: Plugin_Upgrader, Theme_Upgrader or Core_Upgrade
+	 * @param	array - $upgrade_info - Array of bulk item update data
+	 *     @type string $action   Type of action. Default 'update'.
+	 *     @type string $type     Type of update process. Accepts 'plugin', 'theme', or 'core'.
+	 *     @type bool   $bulk     Whether the update process is a bulk update. Default true.
+	 *     @type array  $packages Array of plugin, theme, or core packages to update.
+	 * @return	bool - returns false if nothing happened
+	 */
+	public function upgrade_notification( $upgrader, $upgrade_info ) {
+		global $wp_version;
+
+		// Make sure the action is update
+		if ( ! ( isset( $upgrade_info[ 'action' ] ) && 'update' == strtolower( $upgrade_info[ 'action' ] ) ) ) {
+			return false;
+		}
+
+		// Make sure we have a valid type
+		$upgrade_type = isset( $upgrade_info[ 'type' ] ) ? strtolower( $upgrade_info[ 'type' ] ) : false;
+		if ( ! in_array( $upgrade_type, array( 'core', 'plugin', 'theme' ) ) ) {
+			return false;
+		}
+
+		// Which event are we processing?
+		$notification_event = "{$upgrade_type}_updated";
+
+		// Get the outgoing webhooks
+		$outgoing_webhooks = $this->get_outgoing_webhooks( $notification_event );
+
+		// If we have no webhooks, then there's no point
+		if ( ! $outgoing_webhooks ) {
+			return false;
+		}
+
+		// Is this a bulk upgrade?
+		$is_bulk = isset( $upgrade_info[ 'bulk' ] ) && $upgrade_info[ 'bulk' ] > 0 ? true : false;
+
+		// Get upgrade items (if applicable)
+		$upgrade_item_index = $is_bulk ? "{$upgrade_type}s" : $upgrade_type;
+		$upgrade_items = ( 'core' == $upgrade_type ) ? false : ( isset( $upgrade_info[ $upgrade_item_index ] ) ? $upgrade_info[ $upgrade_item_index ] : false );
+
+		// Convert to array
+		if ( ! is_array( $upgrade_items ) ) {
+			$upgrade_items = explode( ',', $upgrade_items );
+		}
+
+		// Get the pre upgrade info
+		$pre_upgrade_info = get_transient( 'rock_the_slackbot_pre_upgrade_information' );
+		delete_transient( 'rock_the_slackbot_pre_upgrade_information' );
+
+		// Get current user
+		$current_user = wp_get_current_user();
+
+		// Get site URL and name
+		$site_url = get_bloginfo( 'url' );
+		$site_name = get_bloginfo( 'name' );
+
+		// Create general message for the notification
+		$general_message = null;
+
+		// Set the message for core updates
+		if ( 'core' == $upgrade_type ) {
+			$general_message = "WordPress {$upgrade_type} has";
+		}
+
+		// Set the message for plugin and theme updates
+		else {
+
+			// Start the message
+			$general_message = "The following WordPress {$upgrade_type}";
+
+			// If only one is being updated
+			if ( count( $upgrade_items ) == 1 ) {
+				$general_message .= ' has';
+			}
+
+			// If plural, make type plural
+			else {
+				$general_message .= 's have';
+			}
+
+		}
+
+		// Add on to the message
+		$general_message .= ' been updated';
+
+		// Include the core version
+		if ( 'core' == $upgrade_type ) {
+			if ( isset( $pre_upgrade_info[ 'core' ][ 'version' ] ) ) {
+				$general_message .= ' from version ' . $pre_upgrade_info[ 'core' ][ 'version' ];
+			}
+			$general_message .= ' to ' . $wp_version;
+		}
+
+		// Add the use who updated
+		if ( $current_user !== false && isset( $current_user->display_name ) ) {
+			$general_message .= ' by ' . $current_user->display_name;
+		}
+
+		// Finish the message
+		$general_message .= ' on the ' . $site_name . ' website at <' . $site_url . '>.';
+
+		// Loop through each webhook and send the notification
+		foreach( $outgoing_webhooks as $hook ) {
+
+			// We must have a webhook URL
+			if ( ! ( isset( $hook[ 'webhook_url' ] ) && ! empty( $hook[ 'webhook_url' ] ) ) ) {
+				continue;
+			}
+
+			// Start creating the payload
+			$payload = array(
+				'text' => $general_message,
+			);
+
+			// Create attachments
+			$attachments = array();
+
+			// Add some more info for plugins and themes
+			if ( 'core' != $upgrade_type ) {
+
+				// Add upgrade items to the fields
+				if ( $upgrade_items ) {
+					foreach( $upgrade_items as $item ) {
+
+						// Get pre upgrade info
+						$item_pre_upgrade_info = isset( $pre_upgrade_info ) && isset( $pre_upgrade_info[ $item ] ) ? $pre_upgrade_info[ $item ] : false;
+
+						// Get item data
+						// @TODO for some reason wp_get_theme() is picking up the old version instead of new one
+						$item_data = ( 'plugin' == $upgrade_type ) ? get_plugin_data( WP_CONTENT_DIR . '/plugins/' . $item ) : wp_get_theme( $item );
+
+						// Set item title
+						$item_title = ( 'plugin' == $upgrade_type ) ? ( isset( $item_data[ 'Name' ] ) ? $item_data[ 'Name' ] : false ) : $item_data->get( 'Name' );
+
+						// Set item URI
+						$item_uri = ( 'plugin' == $upgrade_type ) ? ( isset( $item_data[ 'PluginURI' ] ) ? html_entity_decode( $item_data[ 'PluginURI' ] ) : false ) : $item_data->get( 'ThemeURI' );
+
+						// Set item description
+						$item_desc = ( 'plugin' == $upgrade_type ) ? ( isset( $item_data[ 'Description' ] ) ? html_entity_decode( $item_data[ 'Description' ] ) : false ) : $item_data->get( 'Description' );
+
+						// Set item author name
+						$author_name = ( 'plugin' == $upgrade_type ) ? ( isset( $item_data[ 'AuthorName' ] ) ? $item_data[ 'AuthorName' ] : false ) : $item_data->get( 'Author' );
+
+						// Set item author URI
+						$author_uri = ( 'plugin' == $upgrade_type ) ? ( isset( $item_data[ 'AuthorURI' ] ) ? $item_data[ 'AuthorURI' ] : false ) : $item_data->get( 'AuthorURI' );
+
+						// Set item version
+						$item_version = ( 'plugin' == $upgrade_type ) ? ( isset( $item_data[ 'Version' ] ) ? $item_data[ 'Version' ] : false ) : $item_data->get( 'Version' );
+
+						// Get previous version
+						$previous_version = ( 'plugin' == $upgrade_type ) ? ( isset( $item_pre_upgrade_info[ 'Version' ] ) ? $item_pre_upgrade_info[ 'Version' ] : false ) : $item_pre_upgrade_info->get( 'Version' );
+
+						// Start creating the fields
+						$fields = array();
+
+						// Add version
+						$fields[] = array(
+							'title' => __( 'Current Version', 'rock-the-slackbot' ),
+							'value' => $item_version,
+							'short' => true,
+						);
+
+						// Add previous version
+						if ( $previous_version ) {
+							$fields[] = array(
+								'title' => __( 'Previous Version', 'rock-the-slackbot' ),
+								'value' => $previous_version,
+								'short' => true,
+							);
+						}
+
+						// Add plugin URI
+						$fields[] = array(
+							'title' => sprintf( __( 'Manage %s', 'rock-the-slackbot' ), ucwords( $upgrade_type ) . 's' ),
+							'value' => is_multisite() ? network_admin_url( "{$upgrade_type}s.php" ) : admin_url( "{$upgrade_type}s.php" ),
+							'short' => true,
+						);
+
+						// Add to attachments
+						$attachments[] = array(
+                            'fallback'      => $general_message,
+                            'text'          => wp_trim_words( strip_tags( $item_desc ), 30, '...' ),
+                            'title'         => $item_title,
+                            'title_link'    => $item_uri,
+                            'author_name'   => $author_name,
+                            'author_link'   => $author_uri,
+                            'fields'        => $fields,
+                        );
+
+					}
+
+				}
+
+			}
+
+			// Send each webhook
+			$this->send_outgoing_webhooks( $notification_event, $outgoing_webhooks, $payload, $attachments );
+
+		}
+
+	}
+
+	/**
+	 * Sends a notification to Slack when an attachment is added.
+	 *
+	 * Fires once an attachment has been added.
+	 *
+	 * @access  public
+	 * @since   1.0
+	 * @param   int - $post_id - The attachment post ID
+	 * @return  bool - returns false if nothing happened
+	 */
+	public function add_attachment_notification( $post_id ) {
+
+		// Which event are we processing?
+		$notification_event = 'add_attachment';
+
+		// Get the outgoing webhooks
+		$outgoing_webhooks = $this->get_outgoing_webhooks( $notification_event );
+
+		// If we have no webhooks, then there's no point
+		if ( ! $outgoing_webhooks ) {
+			return false;
+		}
+
+		// Get attachment post data
+		$attachment_post = get_post( $post_id );
+
+		// Get mime type
+		$attachment_mime_type = get_post_mime_type( $post_id );
+
+		// Get current user
+		$current_user = wp_get_current_user();
+
+		// Get site URL and name
+		$site_url = get_bloginfo( 'url' );
+		$site_name = get_bloginfo( 'name' );
+
+		// Create general message for the notification
+		$general_message = $current_user->display_name . ' added an attachment to the ' . $site_name . ' website at <' . $site_url . '>.';
+
+		// Start creating the payload
+		$payload = array(
+			'text' => $general_message,
+		);
+
+		// Do we have an image URL?
+		$attachment_image_url = false;
+		if ( ( $attachment_image = wp_get_attachment_image_src( $post_id, 'medium' ) ) && isset( $attachment_image[0] ) ) {
+			$attachment_image_url = $attachment_image[0];
+		}
+
+		// Start creating the fields
+		$fields = array(
+			array(
+				'title' => 'Attachment Type',
+				'value' => $attachment_mime_type,
+				'short' => true,
+			),
+			array(
+				'title' => 'Edit the Attachment',
+				'value' => get_edit_post_link( $post_id ),
+				'short' => true,
+			),
+			array(
+				'title' => 'View the Attachment',
+				'value' => get_permalink( $post_id ),
+				'short' => true,
+			)
+		);
+
+		// If has parent, it means it was added to a specific post
+		if ( $attachment_post->post_parent > 0 ) {
+			$fields[] = array(
+				'title' => 'Added To',
+				'value' => get_permalink( $attachment_post->post_parent ),
+				'short' => true,
+			);
+		}
+
+		// Add caption
+		if ( ! empty( $attachment_post->post_excerpt ) ) {
+			$fields[] = array(
+				'title' => 'Caption',
+				'value' => wp_trim_words( strip_tags( $attachment_post->post_excerpt ), 30, '...' ),
+				'short' => true,
+			);
+		}
+
+		// Add alt text
+		if ( $alt_text = get_post_meta( $post_id, '_wp_attachment_image_alt', true ) ) {
+			$fields[] = array(
+				'title' => 'Alt Text',
+				'value' => wp_trim_words( strip_tags( $alt_text ), 30, '...' ),
+				'short' => true,
+			);
+		}
+
+		// Create attachment
+		$attachments = array(
+			array(
+				'fallback'      => $general_message,
+				'text'          => wp_trim_words( strip_tags( $attachment_post->post_content ), 30, '...' ),
+				'title'         => get_the_title( $post_id ),
+				'title_link'    => get_permalink( $post_id ),
+				'author_name'   => $current_user->display_name,
+				'author_link'   => get_author_posts_url( $current_user->ID ),
+				'author_icon'   => get_avatar_url( $current_user->ID, 32 ),
+				'fields'        => $fields,
+				'image_url'     => $attachment_image_url,
+			)
+		);
+
+		// Send each webhook
+		$this->send_outgoing_webhooks( $notification_event, $outgoing_webhooks, $payload, $attachments );
+
+	}
+
+	/**
+	 * Sends a notification to Slack when an attachment is updated.
+	 *
+	 * Fires once an existing attachment has been updated.
+	 *
+	 * @TODO set it up so it shares what exactly was edited.
+	 *
+	 * @access  public
+	 * @since   1.0
+	 * @param   int - $post_id - The attachment post ID
+	 * @return  bool - returns false if nothing happened
+	 */
+	public function edit_attachment_notification( $post_id ) {
+
+		// Which event are we processing?
+		$notification_event = 'edit_attachment';
+
+		// Get the outgoing webhooks
+		$outgoing_webhooks = $this->get_outgoing_webhooks( $notification_event );
+
+		// If we have no webhooks, then there's no point
+		if ( ! $outgoing_webhooks ) {
+			return false;
+		}
+
+		// Get attachment post data
+		$attachment_post = get_post( $post_id );
+
+		// Get mime type
+		$attachment_mime_type = get_post_mime_type( $post_id );
+
+		// Get current user
+		$current_user = wp_get_current_user();
+
+		// Get site URL and name
+		$site_url = get_bloginfo( 'url' );
+		$site_name = get_bloginfo( 'name' );
+
+		// Create general message for the notification
+		$general_message = $current_user->display_name . ' edited an attachment on the ' . $site_name . ' website at <' . $site_url . '>.';
+
+		// Start creating the payload
+		$payload = array(
+			'text' => $general_message,
+		);
+
+		// Do we have an image URL?
+		$attachment_image_url = false;
+		if ( ( $attachment_image = wp_get_attachment_image_src( $post_id, 'medium' ) ) && isset( $attachment_image[0] ) ) {
+			$attachment_image_url = $attachment_image[0];
+		}
+
+		// Start creating the fields
+		$fields = array(
+			array(
+				'title' => 'Attachment Type',
+				'value' => $attachment_mime_type,
+				'short' => true,
+			),
+			array(
+				'title' => 'Edit the Attachment',
+				'value' => get_edit_post_link( $post_id ),
+				'short' => true,
+			),
+			array(
+				'title' => 'View the Attachment',
+				'value' => get_permalink( $post_id ),
+				'short' => true,
+			)
+		);
+
+		// If has parent, it means it was added to a specific post
+		if ( $attachment_post->post_parent > 0 ) {
+			$fields[] = array(
+				'title' => 'Added To',
+				'value' => get_permalink( $attachment_post->post_parent ),
+				'short' => true,
+			);
+		}
+
+		// Add caption
+		if ( ! empty( $attachment_post->post_excerpt ) ) {
+			$fields[] = array(
+				'title' => 'Caption',
+				'value' => wp_trim_words( strip_tags( $attachment_post->post_excerpt ), 30, '...' ),
+				'short' => true,
+			);
+		}
+
+		// Add alt text
+		if ( $alt_text = get_post_meta( $post_id, '_wp_attachment_image_alt', true ) ) {
+			$fields[] = array(
+				'title' => 'Alt Text',
+				'value' => wp_trim_words( strip_tags( $alt_text ), 30, '...' ),
+				'short' => true,
+			);
+		}
+
+		// Create attachment
+		$attachments = array(
+			array(
+				'fallback'      => $general_message,
+				'text'          => wp_trim_words( strip_tags( $attachment_post->post_content ), 30, '...' ),
+				'title'         => get_the_title( $post_id ),
+				'title_link'    => get_permalink( $post_id ),
+				'author_name'   => $current_user->display_name,
+				'author_link'   => get_author_posts_url( $current_user->ID ),
+				'author_icon'   => get_avatar_url( $current_user->ID, 32 ),
+				'fields'        => $fields,
+				'image_url'     => $attachment_image_url,
+			)
+		);
+
+		// Send each webhook
+		$this->send_outgoing_webhooks( $notification_event, $outgoing_webhooks, $payload, $attachments );
+
+	}
+
+	/**
+	 * Sends a notification to Slack when an attachment is deleted.
+	 *
+	 * Fires before an attachment is deleted, at the start of wp_delete_attachment()
+	 *
+	 * @access  public
+	 * @since   1.0
+	 * @param   int - $post_id - The attachment post ID
+	 * @return  bool - returns false if nothing happened
+	 */
+	public function delete_attachment_notification( $post_id ) {
+
+		// Which event are we processing?
+		$notification_event = 'delete_attachment';
+
+		// Get the outgoing webhooks
+		$outgoing_webhooks = $this->get_outgoing_webhooks( $notification_event );
+
+		// If we have no webhooks, then there's no point
+		if ( ! $outgoing_webhooks ) {
+			return false;
+		}
+
+		// Get attachment post data
+		$attachment_post = get_post( $post_id );
+
+		// Get mime type
+		$attachment_mime_type = get_post_mime_type( $post_id );
+
+		// Get current user
+		$current_user = wp_get_current_user();
+
+		// Get site URL and name
+		$site_url = get_bloginfo( 'url' );
+		$site_name = get_bloginfo( 'name' );
+
+		// Create general message for the notification
+		$general_message = $current_user->display_name . ' deleted an attachment on the ' . $site_name . ' website at <' . $site_url . '>.';
+
+		// Start creating the payload
+		$payload = array(
+			'text' => $general_message,
+		);
+
+		// Start creating the fields
+		$fields = array(
+			array(
+				'title' => 'Attachment Type',
+				'value' => $attachment_mime_type,
+				'short' => true,
+			)
+		);
+
+		// If has parent, it means it was added to a specific post
+		if ( $attachment_post->post_parent > 0 ) {
+			$fields[] = array(
+				'title' => 'Added To',
+				'value' => get_permalink( $attachment_post->post_parent ),
+				'short' => true,
+			);
+		}
+
+		// Add caption
+		if ( ! empty( $attachment_post->post_excerpt ) ) {
+			$fields[] = array(
+				'title' => 'Caption',
+				'value' => wp_trim_words( strip_tags( $attachment_post->post_excerpt ), 30, '...' ),
+				'short' => true,
+			);
+		}
+
+		// Add alt text
+		if ( $alt_text = get_post_meta( $post_id, '_wp_attachment_image_alt', true ) ) {
+			$fields[] = array(
+				'title' => 'Alt Text',
+				'value' => wp_trim_words( strip_tags( $alt_text ), 30, '...' ),
+				'short' => true,
+			);
+		}
+
+		// Create attachment
+		$attachments = array(
+			array(
+				'fallback'      => $general_message,
+				'text'          => wp_trim_words( strip_tags( $attachment_post->post_content ), 30, '...' ),
+				'title'         => get_the_title( $post_id ),
+				'title_link'    => get_permalink( $post_id ),
+				'author_name'   => $current_user->display_name,
+				'author_link'   => get_author_posts_url( $current_user->ID ),
+				'author_icon'   => get_avatar_url( $current_user->ID, 32 ),
+				'fields'        => $fields,
+			)
+		);
+
+		// Send each webhook
+		$this->send_outgoing_webhooks( $notification_event, $outgoing_webhooks, $payload, $attachments );
+
+	}
+
+	/**
+	 * Sends a notification to Slack when a post has been updated.
+	 *
+	 * Fires once an existing post has been updated.
+	 *
+	 * Does not handle menu items. They have their own hook.
+	 *
+	 * @access  public
+	 * @since   1.0
+	 * @param   int - $post_id - The post ID
+	 * @param   WP_Post - $post_after - Post object following the update
+	 * @param   WP_Post - $post_before - Post object before the update
+	 * @return  bool - returns false if nothing happened
+	 */
+	public function updated_post_notification( $post_id, $post_after, $post_before ) {
+
+		// Only send updates for published content
+		if ( 'publish' != $post_after->post_status ) {
+			return false;
+		}
+
+		// Don't send content updates for the following post types
+		if ( in_array( $post_after->post_type, array( 'nav_menu_item' ) ) ) {
+			return false;
+		}
+
+		// See if our current post's status was transitioned
+		$trans_post_id = wp_cache_get( 'transition_post_status_notification', 'rock_the_slackbot' );
+
+		// Clear out the cache
+		if ( $trans_post_id ) {
+
+			// Delete the cache
+			wp_cache_delete( 'transition_post_status_notification', 'rock_the_slackbot' );
+
+			// If already sent notification, then get out of here
+			if ( $trans_post_id == $post_id ) {
+				return false;
+			}
+
+		}
+
+		// Which event are we processing?
+		$notification_event = 'post_updated';
+
+		// Get the outgoing webhooks
+		$outgoing_webhooks = $this->get_outgoing_webhooks( $notification_event, array( 'post_type' => $post_after->post_type ) );
+
+		// If we have no webhooks, then there's no point
+		if ( ! $outgoing_webhooks ) {
+			return false;
+		}
+
+		// Get current user
+		$current_user = wp_get_current_user();
+
+		// Get site URL and name
+		$site_url = get_bloginfo( 'url' );
+		$site_name = get_bloginfo( 'name' );
+
+		// Get this post's latest revision
+		$post_revisions = ( $actual_post_revisions = wp_get_post_revisions( $post_after->ID, array( 'posts_per_page' => 1 ) ) ) && ! empty( $actual_post_revisions ) && is_array( $actual_post_revisions ) ? array_shift( $actual_post_revisions ) : false;
+
+		// Get post type info
+		$post_type_object = get_post_type_object( $post_after->post_type );
+
+		// Create general message for the notification
+		$general_message = sprintf( __( '%1$s updated the following content on the %2$s website at <%3$s>.', 'rock-the-slackbot' ),
+			$current_user->display_name,
+			$site_name,
+			$site_url );
+
+		// Start creating the payload
+		$payload = array(
+			'text' => $general_message,
+		);
+
+		// Start creating the fields
+		$fields = array(
+			array(
+				'title' => __( 'Content Author', 'rock-the-slackbot' ),
+				'value' => get_the_author_meta( 'display_name', $post_after->post_author ),
+				'short' => true,
+			),
+			array(
+				'title' => __( 'Edit the Content', 'rock-the-slackbot' ),
+				'value' => get_edit_post_link( $post_after->ID ),
+				'short' => true,
+			)
+		);
+
+		// If the post was updated, add the latest revision link
+		if ( isset( $post_revisions ) && isset( $post_revisions->ID ) ) {
+
+			// Add "View Revision" URL
+			$fields[] = array(
+				'title' => __( 'View Revision', 'rock-the-slackbot' ),
+				'value' => isset( $post_revisions ) && isset( $post_revisions->ID ) ? add_query_arg( 'revision', $post_revisions->ID, admin_url( 'revision.php' ) ) : null,
+				'short' => true,
+			);
+
+		}
+
+		// Add current content status
+		$fields[] = array(
+			'title' => __( 'Content Status', 'rock-the-slackbot' ),
+			'value' => ucfirst( $post_after->post_status ),
+			'short' => true,
+		);
+
+		// Add the content type
+		$fields[] = array(
+			'title' => __( 'Content Type', 'rock-the-slackbot' ),
+			'value' => $post_type_object && isset( $post_type_object->labels ) && isset( $post_type_object->labels->singular_name ) ? $post_type_object->labels->singular_name : $post_after->post_type,
+			'short' => true,
+		);
+
+		// Create attachment
+		$attachments = array(
+			array(
+				'fallback'      => $general_message,
+				'text'          => wp_trim_words( strip_tags( $post_after->post_content ), 30, '...' ),
+				'title'         => get_the_title( $post_after->ID ),
+				'title_link'    => get_permalink( $post_after->ID ),
+				'author_name'   => $current_user->display_name,
+				'author_link'   => get_author_posts_url( $current_user->ID ),
+				'author_icon'   => get_avatar_url( $current_user->ID, 32 ),
+				'fields'        => $fields,
+			)
+		);
+
+		// Send each webhook
+		$this->send_outgoing_webhooks( $notification_event, $outgoing_webhooks, $payload, $attachments );
+
+	}
+
+	/**
+	 * Sends a notification to Slack when a
+	 * post is published or unpublished.
+	 *
+	 * Fires when a post is transitioned from one status to another.
+	 *
+	 * @access  public
+	 * @since   1.0
+	 * @param	string - $new_status - the new post status
+	 * @param	string - $old_status - the old post status
+	 * @param	WP_Post - $post - the post object
+	 * @return	bool - returns false if nothing happened
+	 */
+	public function transition_post_status_notification( $new_status, $old_status, $post ) {
+
+		// Don't worry about if the status is the same
+		if ( $new_status == $old_status ) {
+			return false;
+		}
+
+		// Only run code if new status is "publish" - 'post_published'
+		// or when old status is "publish" - 'post_unpublished'
+		if ( ! ( 'publish' == $new_status || 'publish' == $old_status ) ) {
+			return false;
+		}
+
+		// Don't run if sent to trash. It's handled elsewhere.
+		if ( 'trash' == $new_status ) {
+			return false;
+		}
+
+		// Which event are we processing?
+		$notification_event = ( 'publish' == $new_status ) ? 'post_published' : 'post_unpublished';
+
+		// Get the outgoing webhooks
+		$outgoing_webhooks = $this->get_outgoing_webhooks( $notification_event, array( 'post_type' => $post->post_type ) );
+
+		// If we have no webhooks, then there's no point
+		if ( ! $outgoing_webhooks ) {
+			return false;
+		}
+
+		// Get current user
+		$current_user = wp_get_current_user();
+
+		// Get site URL and name
+		$site_url = get_bloginfo( 'url' );
+		$site_name = get_bloginfo( 'name' );
+
+		// Get this post's latest revision
+		$post_revisions = ( $actual_post_revisions = wp_get_post_revisions( $post->ID , array( 'posts_per_page' => 1 ) ) ) && ! empty( $actual_post_revisions ) && is_array( $actual_post_revisions ) ? array_shift( $actual_post_revisions ) : false;
+
+		// Get post type info
+		$post_type_object = get_post_type_object( $post->post_type );
+
+		// Create general message for the notification
+		if ( 'pending' == $new_status ) {
+			$general_message = sprintf( __( '%1$s marked the following content for review on the %2$s website at <%3$s>.', 'rock-the-slackbot' ), $current_user->display_name, $site_name, $site_url );
+		} else {
+			$general_message = sprintf( __( '%1$s %2$s the following content on the %3$s website at <%4$s>.', 'rock-the-slackbot' ), $current_user->display_name, ( 'post_published' == $notification_event ? 'published' : 'unpublished' ), $site_name, $site_url );
+		}
+
+		// Start creating the payload
+		$payload = array(
+			'text' => $general_message,
+		);
+
+		// Start creating the fields
+		$fields = array(
+			array(
+				'title' => __( 'Content Author', 'rock-the-slackbot' ),
+				'value' => get_the_author_meta( 'display_name', $post->post_author ),
+				'short' => true,
+			),
+			array(
+				'title' => __( 'Edit the Content', 'rock-the-slackbot' ),
+				'value' => get_edit_post_link( $post->ID ),
+				'short' => true,
+			)
+		);
+
+		// If the post was updated, add the latest revision link
+		if ( isset( $post_revisions ) && isset( $post_revisions->ID ) ) {
+
+			// Add "View Revision" URL
+			$fields[] = array(
+				'title' => __( 'View Revision', 'rock-the-slackbot' ),
+				'value' => isset( $post_revisions ) && isset( $post_revisions->ID ) ? add_query_arg( 'revision', $post_revisions->ID, admin_url( 'revision.php' ) ) : null,
+				'short' => true,
+			);
+
+		}
+
+		// Show old status
+		$fields[] = array(
+			'title' => __( 'Old Status', 'rock-the-slackbot' ),
+			'value' => ucfirst( $old_status ),
+			'short' => true,
+		);
+
+		// Add current content status
+		$fields[] = array(
+			'title' => __( 'Current Status', 'rock-the-slackbot' ),
+			'value' => ucfirst( $new_status ),
+			'short' => true,
+		);
+
+		// Add the content type
+		$fields[] = array(
+			'title' => __( 'Content Type', 'rock-the-slackbot' ),
+			'value' => $post_type_object && isset( $post_type_object->labels ) && isset( $post_type_object->labels->singular_name ) ? $post_type_object->labels->singular_name : $post->post_type,
+			'short' => true,
+		);
+
+		// Create attachment
+		$attachments = array(
+			array(
+				'fallback'      => $general_message,
+				'text'          => wp_trim_words( strip_tags( $post->post_content ), 30, '...' ),
+				'title'         => get_the_title( $post->ID ),
+				'title_link'    => get_permalink( $post->ID ),
+				'author_name'   => $current_user->display_name,
+				'author_link'   => get_author_posts_url( $current_user->ID ),
+				'author_icon'   => get_avatar_url( $current_user->ID, 32 ),
+				'fields'        => $fields,
+			)
+		);
+
+		// Send each webhook
+		$send_webhooks = $this->send_outgoing_webhooks( $notification_event, $outgoing_webhooks, $payload, $attachments );
+
+		// Store cache info if notification was sent
+		if ( $send_webhooks === true ) {
+
+			// Store that this post's status is being transitioned
+			// Will be referenced in updated_post_notification()
+			wp_cache_set( 'transition_post_status_notification', $post->ID, 'rock_the_slackbot' );
+
+		}
+
+	}
+
+
+	/**
+	 * Sends a notification to Slack when a post
+	 * is moved to the trash, which is the step taken
+	 * before the post is deleted from the database.
+	 *
+	 * Fires before a post is sent to the trash.
+	 *
+	 * @access  public
+	 * @since   1.0
+	 * @param   int - $post_id - The post ID
+	 * @return  bool - returns false if nothing happened
+	 */
+	public function wp_trash_post_notification( $post_id ) {
+
+		// Get the post
+		$post = get_post( $post_id );
+
+		// Which event are we processing?
+		$notification_event = 'post_trashed';
+
+		// Get the outgoing webhooks
+		$outgoing_webhooks = $this->get_outgoing_webhooks( $notification_event, array( 'post_type' => $post->post_type ) );
+
+		// If we have no webhooks, then there's no point
+		if ( ! $outgoing_webhooks ) {
+			return false;
+		}
+
+		// Get current user
+		$current_user = wp_get_current_user();
+
+		// Get site URL and name
+		$site_url = get_bloginfo( 'url' );
+		$site_name = get_bloginfo( 'name' );
+
+		// Get post type info
+		$post_type_object = get_post_type_object( $post->post_type );
+
+		// Create general message for the notification
+		$general_message = $current_user->display_name . ' moved content to the trash bin on the ' . $site_name . ' website at <' . $site_url . '>.';
+
+		// Start creating the payload
+		$payload = array(
+			'text' => $general_message,
+		);
+
+		// Start creating the fields
+		$fields = array(
+			array(
+				'title' => 'Content Author',
+				'value' => get_the_author_meta( 'display_name', $post->post_author ),
+				'short' => true,
+			),
+			array(
+				'title' => 'Content Type',
+				'value' => $post_type_object && isset( $post_type_object->labels ) && isset( $post_type_object->labels->singular_name ) ? $post_type_object->labels->singular_name : $post->post_type,
+				'short' => true,
+			),
+			array(
+				'title' => 'View the Trash',
+				'value' => add_query_arg( array( 'post_status' => 'trash', 'post_type' => $post->post_type ), admin_url( 'edit.php' ) ),
+				'short' => true,
+			)
+		);
+
+		// Create attachment
+		$attachments = array(
+			array(
+				'fallback'      => $general_message,
+				'text'          => wp_trim_words( strip_tags( $post->post_content ), 30, '...' ),
+				'title'         => get_the_title( $post->ID ),
+				'title_link'    => get_permalink( $post_id ),
+				'author_name'   => $current_user->display_name,
+				'author_link'   => get_author_posts_url( $current_user->ID ),
+				'author_icon'   => get_avatar_url( $current_user->ID, 32 ),
+				'fields'        => $fields,
+			)
+		);
+
+		// Send each webhook
+		$this->send_outgoing_webhooks( $notification_event, $outgoing_webhooks, $payload, $attachments );
+
+	}
+
+	/**
+	 * Sends a notification to Slack when a menu item or
+	 * post is deleted from the database (not the same as
+	 * being sent to the trash).
+	 *
+	 * Fires immediately before a post is deleted from the database.
+	 *
+	 * @access  public
+	 * @since   1.0
+	 * @param   int - $post_id - The post ID
+	 * @return  bool - returns false if nothing happened
+	 */
+	public function delete_post_notification( $post_id ) {
+		global $wpdb;
+
+		// Get the post
+		$post = get_post( $post_id );
+
+		// Don't run if the following statuses are being deleted
+		if ( in_array( $post->post_status, array( 'auto-draft' ) ) ) {
+			return false;
+		}
+
+		// Don't run if the following post types are being deleted
+		if ( in_array( $post->post_type, array( 'revision' ) ) ) {
+			return false;
+		}
+
+		// Is this a menu item?
+		$is_menu_item = strcasecmp( 'nav_menu_item', $post->post_type ) == 0;
+
+		// Which event are we processing?
+		$notification_event = $is_menu_item ? 'menu_item_deleted' : 'post_deleted';
+
+		// Get the outgoing webhooks
+		$outgoing_webhooks = $this->get_outgoing_webhooks( $notification_event, array( 'post_type' => $post->post_type ) );
+
+		// If we have no webhooks, then there's no point
+		if ( ! $outgoing_webhooks ) {
+			return false;
+		}
+
+		// Get current user
+		$current_user = wp_get_current_user();
+
+		// Get site URL and name
+		$site_url = get_bloginfo( 'url' );
+		$site_name = get_bloginfo( 'name' );
+
+		// Get post type info
+		$post_type_object = get_post_type_object( $post->post_type );
+
+		// Create general message for the notification
+		$general_message = null;
+
+		// If we have a user...
+		if ( ! empty( $current_user->display_name ) ) {
+			$general_message .= $current_user->display_name . ' deleted' . ( $is_menu_item ? ' a menu item' : ' content' );
+		} else {
+			$general_message .= ( $is_menu_item ? 'A menu item' : 'Content' ) . ' has been deleted';
+		}
+
+		// Finish the message
+		$general_message .= ' on the ' . $site_name . ' website at <' . $site_url . '>.';
+
+		// Start creating the payload
+		$payload = array(
+			'text' => $general_message,
+		);
+
+		// Start creating the fields
+		$fields = array();
+
+		// Add menu information
+		if ( $is_menu_item ) {
+
+			// Get menu
+			$menu = ( $menus = wp_get_object_terms( $post_id, 'nav_menu' ) ) && is_array( $menus ) ? array_shift( $menus ) : false;
+
+			// Get menu item info
+			$menu_item_type = get_post_meta( $post_id, '_menu_item_type', true );
+
+			// Get menu item label AND URL
+			$menu_item_label = null;
+			$menu_item_url = null;
+			$menu_item_post_type = null;
+
+			if ( strcasecmp( 'custom', $menu_item_type ) == 0 ) {
+
+				// Get custom label
+				$menu_item_label = $post->post_title;
+
+				// Get custom URL
+				$menu_item_url = get_post_meta( $post_id, '_menu_item_url', true );
+
+			} else if ( strcasecmp( 'taxonomy', $menu_item_type ) == 0 ) {
+
+				// Get object ID and post title
+				if ( $menu_item_object_id = get_post_meta( $post_id, '_menu_item_object_id', true ) ) {
+
+					// Get term name and taxonomy
+					$menu_item_term_data = $wpdb->get_row( "SELECT terms.name, terms.slug, term_tax.taxonomy FROM {$wpdb->terms} terms INNER JOIN {$wpdb->term_taxonomy} term_tax on term_tax.term_id = terms.term_id WHERE terms.term_id = {$menu_item_object_id}" );
+
+					// Set label as name
+					$menu_item_label = $menu_item_term_data->name;
+
+					// Get URL
+					if ( ( $menu_item_term_link = get_term_link( $menu_item_term_data->slug, $menu_item_term_data->taxonomy ) )
+						&& ! is_wp_error( $menu_item_term_link ) ) {
+						$menu_item_url = $menu_item_term_link;
+					}
+
+				}
+
+			} else if ( strcasecmp( 'post_type', $menu_item_type ) == 0 ) {
+
+				// Get object ID and post title
+				if ( $menu_item_object_id = get_post_meta( $post_id, '_menu_item_object_id', true ) ) {
+
+					// Get title as label
+					$menu_item_label = get_the_title( $menu_item_object_id );
+
+					// Get permalink as URL
+					$menu_item_url = get_permalink( $menu_item_object_id );
+
+					// Get post type
+					if ( $menu_item_post_type = get_post_type( $menu_item_object_id ) ) {
+
+						// Get post type info
+						if ( ( $menu_item_post_type_object = get_post_type_object( $menu_item_post_type ) )
+							&& isset( $menu_item_post_type_object->labels ) && isset( $menu_item_post_type_object->labels->singular_name ) ) {
+
+							// Get singular name label
+							$menu_item_post_type = $menu_item_post_type_object->labels->singular_name;
+
+						}
+
+					}
+
+				}
+
+			}
+
+			// Create the fields
+			$fields = array(
+				array(
+					'title' => 'Menu',
+					'value' => isset( $menu->name ) ? $menu->name : null,
+					'short' => true,
+				),
+				array(
+					'title' => 'Edit the Menu',
+					'value' => isset( $menu->term_id ) ? add_query_arg( array( 'action' => 'edit', 'menu' => $menu->term_id ), admin_url( 'nav-menus.php' ) ) : null,
+					'short' => true,
+				),
+				array(
+					'title' => 'Menu Item Label',
+					'value' => $menu_item_label,
+					'short' => true,
+				),
+				array(
+					'title' => 'Menu Item URL',
+					'value' => $menu_item_url,
+					'short' => true,
+				),
+				array(
+					'title' => 'Menu Item Type',
+					'value' => ( 'post_type' == $menu_item_type ) ? $menu_item_post_type : ucwords( str_replace( '_', ' ', $menu_item_type ) ),
+					'short' => true,
+				)
+			);
+
+		} else {
+
+			// Add the content author and type
+			$fields = array_merge( array(
+				array(
+					'title' => 'Content Author',
+					'value' => get_the_author_meta( 'display_name', $post->post_author ),
+					'short' => true,
+				),
+				array(
+					'title' => 'Content Type',
+					'value' => $post_type_object && isset( $post_type_object->labels ) && isset( $post_type_object->labels->singular_name ) ? $post_type_object->labels->singular_name : $post->post_type,
+					'short' => true,
+				)
+			));
+
+		}
+
+		// Create attachment
+		$attachments = array(
+			array(
+				'fallback'      => $general_message,
+				'text'          => wp_trim_words( strip_tags( $post->post_content ), 30, '...' ),
+				'title'         => get_the_title( $post->ID ),
+				'title_link'    => get_permalink( $post_id ),
+				'author_name'   => $current_user->display_name,
+				'author_link'   => get_author_posts_url( $current_user->ID ),
+				'author_icon'   => get_avatar_url( $current_user->ID, 32 ),
+				'fields'        => $fields,
+			)
+		);
+
+		// Send each webhook
+		$this->send_outgoing_webhooks( $notification_event, $outgoing_webhooks, $payload, $attachments );
+
+	}
+
+	/**
+	 * Sends a notification to Slack when
+	 * there is a 404 error.
+	 *
+	 * Fires once the WordPress environment has been set up.
+	 *
+	 * @access	public
+	 * @since	1.0
+	 * @param	WP - $wp - Current WordPress environment instance (passed by reference)
+	 * @return	bool - returns false if nothing happened
+	 */
+	public function is_404_notification( $wp ) {
+		global $wp_query;
+
+		// Only need to run if there is a 404 error
+		if ( ! is_404() ) {
+			return false;
+		}
+
+		// Build the current URL
+		$current_url  = ( @( $_SERVER[ 'HTTPS' ] != 'on' ) ? 'http://' :  'https://' ) . $_SERVER[ 'SERVER_NAME' ] . $_SERVER[ 'REQUEST_URI' ];
+
+		// See if it has already been sent
+		$sent_notification = wp_cache_get( 'sent_404_notification', 'rock_the_slackbot' );
+		if ( $sent_notification ) {
+
+			// Delete the cache
+			wp_cache_delete( 'sent_404_notification', 'rock_the_slackbot' );
+
+			// If already sent notification, then get out of here
+			if ( $sent_notification == $current_url ) {
+				return false;
+			}
+
+		}
+
+		// Which event are we processing?
+		$notification_event = 'is_404';
+
+		// Get the outgoing webhooks
+		$outgoing_webhooks = $this->get_outgoing_webhooks( $notification_event );
+
+		// If we have no webhooks, then there's no point
+		if ( ! $outgoing_webhooks ) {
+			return false;
+		}
+
+		// Get current user
+		$current_user = wp_get_current_user();
+
+		// Get site URL and name
+		$site_url = get_bloginfo( 'url' );
+		$site_name = get_bloginfo( 'name' );
+
+		// Create general message for the notification
+		$general_message = 'The following URL threw a 404 error on the ' . $site_name . ' website at <' . $site_url . '>.';
+
+		// Start creating the payload
+		$payload = array(
+			'text' => $general_message,
+		);
+
+		// Create the fields
+		$fields = array(
+			array(
+				'title' => 'URL',
+				'value' => $current_url,
+				'short' => true,
+			),
+		);
+
+		// If there's a user
+		if ( isset( $current_user->display_name ) ) {
+			$fields[] = array(
+				'title' => 'Current User',
+				'value' => $current_user->display_name,
+				'short' => true,
+			);
+		}
+
+		// Add WordPress query
+		$wp_query_vars = array_filter( $wp_query->query );
+		if ( ! empty( $wp_query_vars ) ) {
+			$fields[] = array(
+				'title' => 'WordPress Query',
+				'value' => build_query( preg_replace( '/[\s]{2,}/i', ' ', $wp_query_vars ) ),
+				'short' => false,
+			);
+		}
+
+		// Add the MySQL request
+		$fields[] = array(
+			'title' => 'MySQL Request',
+			'value' => preg_replace( '/[\s]{2,}/i', ' ', $wp_query->request ),
+			'short' => false,
+		);
+
+		// Create attachment
+		$attachments = array(
+			array(
+				'fallback'      => $general_message,
+				'text'          => null,
+				'title'         => null,
+				'title_link'    => null,
+				'author_name'   => $current_user ? $current_user->display_name : null,
+				'author_link'   => $current_user ? get_author_posts_url( $current_user->ID ) : null,
+				'author_icon'   => $current_user ? get_avatar_url( $current_user->ID, 32 ) : null,
+				'fields'        => $fields,
+			)
+		);
+
+		// Send each webhook
+		$send_webhooks = $this->send_outgoing_webhooks( $notification_event, $outgoing_webhooks, $payload, $attachments );
+
+		// Store cache info if notification was sent
+		if ( $send_webhooks === true ) {
+
+			// Store that a 404 notification has been sent so we don't send twice
+			wp_cache_set( 'sent_404_notification', $current_url, 'rock_the_slackbot' );
+
+		}
+
+	}
+
+	/**
+	 * Sends a notification to Slack when a
+	 * new user has been added.
+	 *
+	 * Fires immediately after a new user is registered.
+	 *
+	 * @access	public
+	 * @since	1.0
+	 * @param	int - $user_id - the User ID
+	 * @return	bool - returns false if nothing happened
+	 */
+	public function user_added_notification( $user_id ) {
+
+		// Which event are we processing?
+		$notification_event = 'user_added';
+
+		// Get the outgoing webhooks
+		$outgoing_webhooks = $this->get_outgoing_webhooks( $notification_event );
+
+		// If we have no webhooks, then there's no point
+		if ( ! $outgoing_webhooks ) {
+			return false;
+		}
+
+		// Get current user
+		$current_user = wp_get_current_user();
+
+		// Get site URL and name
+		$site_url = get_bloginfo( 'url' );
+		$site_name = get_bloginfo( 'name' );
+
+		// Get user data
+		$new_user_data = get_userdata( $user_id );
+		$new_user_display_name = get_the_author_meta( 'display_name', $user_id );
+
+		// Create general message for the notification
+		$general_message = sprintf( __( '%1$s added the following user to the %2$s website at <%3$s>.', 'rock-the-slackbot' ),
+			$current_user->display_name,
+			$site_name,
+			$site_url );
+
+		// Start creating the payload
+		$payload = array(
+			'text' => $general_message,
+		);
+
+		// Start creating the fields
+		$fields = array(
+			array(
+				'title' => __( 'User Login', 'rock-the-slackbot' ),
+				'value' => get_the_author_meta( 'user_login', $user_id ),
+				'short' => true,
+			),
+			array(
+				'title' => __( 'User Email', 'rock-the-slackbot' ),
+				'value' => get_the_author_meta( 'user_email', $user_id ),
+				'short' => true,
+			),
+		);
+
+		// Add user roles
+		if ( ! empty( $new_user_data->roles ) ) {
+
+			// Get role info
+			$all_roles = wp_roles()->roles;
+
+			// Build new array of roles
+			$roles = array();
+			foreach( $new_user_data->roles as $role ) {
+				if ( array_key_exists( $role, $all_roles ) ) {
+					$roles[] = $all_roles[ $role ][ 'name' ];
+				} else {
+					$roles[] = $role;
+				}
+			}
+
+			// Add to fields
+			$fields[] = array(
+				'title' => __( 'User Role(s)', 'rock-the-slackbot' ),
+				'value' => implode( ', ', $roles ),
+				'short' => true,
+			);
+
+		}
+
+		// Create attachment
+		$attachments = array(
+			array(
+				'fallback'      => $general_message,
+				'text'          => wp_trim_words( strip_tags( get_the_author_meta( 'description', $user_id ) ), 30, '...' ),
+				'author_name'   => $new_user_display_name,
+				'author_link'   => get_author_posts_url( $user_id ),
+				'author_icon'   => get_avatar_url( $user_id, 32 ),
+				'fields'        => $fields,
+			)
+		);
+
+		// Send each webhook
+		$this->send_outgoing_webhooks( $notification_event, $outgoing_webhooks, $payload, $attachments );
+
+	}
+
+	/**
+	 * Sends a notification to Slack when
+	 * a user has been deleted.
+	 *
+	 * Fires immediately before a user is deleted from the database.
+	 *
+	 * @access	public
+	 * @since	1.0
+	 * @param	int - $user_id - the User ID
+	 * @param	int|null $reassign ID of the user to reassign posts and links to.
+	 *          	Default null, for no reassignment.
+	 * @return	bool - returns false if nothing happened
+	 */
+	public function user_deleted_notification( $user_id, $reassign ) {
+
+		// Which event are we processing?
+		$notification_event = 'user_deleted';
+
+		// Get the outgoing webhooks
+		$outgoing_webhooks = $this->get_outgoing_webhooks( $notification_event );
+
+		// If we have no webhooks, then there's no point
+		if ( ! $outgoing_webhooks ) {
+			return false;
+		}
+
+		// Get current user
+		$current_user = wp_get_current_user();
+
+		// Get site URL and name
+		$site_url = get_bloginfo( 'url' );
+		$site_name = get_bloginfo( 'name' );
+
+		// Get user data
+		$new_user_data = get_userdata( $user_id );
+		$new_user_display_name = get_the_author_meta( 'display_name', $user_id );
+
+		// Create general message for the notification
+		$general_message = sprintf( __( '%1$s deleted the following user from the %2$s website at <%3$s>.', 'rock-the-slackbot' ),
+			$current_user->display_name,
+			$site_name,
+			$site_url );
+
+		// Start creating the payload
+		$payload = array(
+			'text' => $general_message,
+		);
+
+		// Start creating the fields
+		$fields = array(
+			array(
+				'title' => __( 'User Login', 'rock-the-slackbot' ),
+				'value' => get_the_author_meta( 'user_login', $user_id ),
+				'short' => true,
+			),
+			array(
+				'title' => __( 'User Email', 'rock-the-slackbot' ),
+				'value' => get_the_author_meta( 'user_email', $user_id ),
+				'short' => true,
+			),
+		);
+
+		// Add user roles
+		if ( ! empty( $new_user_data->roles ) ) {
+
+			// Get role info
+			$all_roles = wp_roles()->roles;
+
+			// Build new array of roles
+			$roles = array();
+			foreach( $new_user_data->roles as $role ) {
+				if ( array_key_exists( $role, $all_roles ) ) {
+					$roles[] = $all_roles[ $role ][ 'name' ];
+				} else {
+					$roles[] = $role;
+				}
+			}
+
+			// Add to fields
+			$fields[] = array(
+				'title' => __( 'User Role(s)', 'rock-the-slackbot' ),
+				'value' => implode( ', ', $roles ),
+				'short' => true,
+			);
+
+		}
+
+		// If we're reassigning...
+		if ( $reassign > 0 ) {
+			$fields[] = array(
+				'title' => __( 'Reassign Posts To', 'rock-the-slackbot' ),
+				'value' => get_the_author_meta( 'display_name', $reassign ),
+				'short' => true,
+			);
+		}
+
+		// Create attachment
+		$attachments = array(
+			array(
+				'fallback'      => $general_message,
+				'text'          => wp_trim_words( strip_tags( get_the_author_meta( 'description', $user_id ) ), 30, '...' ),
+				'author_name'   => $new_user_display_name,
+				'author_link'   => get_author_posts_url( $user_id ),
+				'author_icon'   => get_avatar_url( $user_id, 32 ),
+				'fields'        => $fields,
+			)
+		);
+
+		// Send each webhook
+		$this->send_outgoing_webhooks( $notification_event, $outgoing_webhooks, $payload, $attachments );
+
+	}
+
+}
+new Rock_The_Slackbot_Hooks;

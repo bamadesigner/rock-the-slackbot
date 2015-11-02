@@ -1,0 +1,424 @@
+<?php
+
+/**
+ * Plugin Name:       Rock The Slackbot
+ * Plugin URI:        @TODO Add plugin URL
+ * Description:       Slack is a team collaboration tool that offers chat rooms organized by topic, as well as private groups and direct messaging. This plugin allows you to send notifications straight from your WordPress admin to you and your team inside your Slack account.
+ * Version:           0.5
+ * Author:            Rachel Carden
+ * Author URI:        http://bamadesigner.com
+ * License:           GPL-2.0+
+ * License URI:       http://www.gnu.org/licenses/gpl-2.0.txt
+ * Text Domain:       rock-the-slackbot
+ * Domain Path:       /languages
+ */
+
+// If this file is called directly, abort.
+if ( ! defined( 'WPINC' ) ) {
+	die;
+}
+
+// If you define them, will they be used?
+define( 'ROCK_THE_SLACKBOT_VERSION', '1.0' );
+define( 'ROCK_THE_SLACKBOT_PLUGIN_URL', '' ); //@TODO Add plugin URL
+
+// Load the files
+require_once plugin_dir_path( __FILE__ ) . 'includes/hooks.php';
+require_once plugin_dir_path( __FILE__ ) . 'includes/notifications.php';
+
+// We only need you in the admin
+if ( is_admin() ) {
+	require_once plugin_dir_path( __FILE__ ) . 'includes/admin.php';
+}
+
+class Rock_The_Slackbot {
+
+	/**
+	 * Holds the class instance.
+	 *
+	 * @since	1.0
+	 * @access	private
+	 * @var		Rock_The_Slackbot
+	 */
+	private static $instance;
+
+	/**
+	 * Returns the instance of this class.
+	 *
+	 * @access  public
+	 * @since   1.0
+	 * @return	Rock_The_Slackbot
+	 */
+	public static function instance() {
+		if ( ! isset( static::$instance ) ) {
+			$className = __CLASS__;
+			static::$instance = new $className;
+		}
+		return static::$instance;
+	}
+
+	/**
+	 * Warming up the Slack mobile.
+	 *
+	 * @access  public
+	 * @since   1.0
+	 */
+	protected function __construct() {
+
+		// Load our textdomain
+		add_action( 'init', array( $this, 'textdomain' ) );
+
+		// Runs on install
+		register_activation_hook( __FILE__, array( $this, 'install' ) );
+
+		// Runs when the plugin is upgraded
+		add_action( 'upgrader_process_complete', array( $this, 'upgrader_process_complete' ), 1, 2 );
+
+	}
+
+	/**
+	 * Method to keep our instance from being cloned.
+	 *
+	 * @since	1.0
+	 * @access	private
+	 * @return	void
+	 */
+	private function __clone() {}
+
+	/**
+	 * Method to keep our instance from being unserialized.
+	 *
+	 * @since	1.0
+	 * @access	private
+	 * @return	void
+	 */
+	private function __wakeup() {}
+
+	/**
+	 * Runs when the plugin is installed.
+	 *
+	 * @TODO Set it up so it will store what post types are registered
+	 * when the settings are first saved and so then it can recognize
+	 * when new post types are added and ask you in the admin if you
+	 * want to exclude them to your notifications?
+	 *
+	 * @access  public
+	 * @since   1.0
+	 */
+	public function install() {}
+
+	/**
+	 * Runs when the plugin is upgraded.
+	 *
+	 * @access  public
+	 * @since   1.0
+	 */
+	public function upgrader_process_complete() {}
+
+	/**
+	 * Internationalization FTW.
+	 * Load our textdomain.
+	 *
+	 * @TODO Add language files
+	 *
+	 * @access  public
+	 * @since   1.0
+	 */
+	public function textdomain() {
+		load_plugin_textdomain( 'rock-the-slackbot', false, dirname( plugin_basename( __FILE__ ) ) . '/languages' );
+	}
+
+	/**
+	 * In order to send links in messages to Slack,
+	 * you have to wrap them with <>, e.g. <http://wordpress.org>.
+	 *
+	 * This function will remove the <> around links.
+	 *
+	 * @access  public
+	 * @since   1.0
+	 * @param   string - $text - the text that has links
+	 * @return  string - the formatted text
+	 */
+	public function unformat_slack_links( $text ) {
+		return preg_replace( '/\<(http([^\>])+)\>/i', '${1}', $text );
+	}
+
+	/**
+	 * Returns all of our webhook events.
+	 *
+	 * @access  public
+	 * @since   1.0
+	 * @return  array - array of names of notification events
+	 */
+	public function get_webhook_events() {
+		return array(
+			'content' => array(
+				'label' => __( 'Content', 'rock-the-slackbot' ),
+				'events' => array(
+					'post_published' => array(
+						'label' => __( 'When a post is published', 'rock-the-slackbot' ),
+						'default' => 1,
+					),
+					'post_unpublished' => array(
+						'label' => __( 'When a post is unpublished', 'rock-the-slackbot' ),
+						'default' => 1,
+					),
+					'post_updated' => array(
+						'label' => __( 'When a post is updated', 'rock-the-slackbot' ),
+						'default' => 1,
+					),
+					'post_deleted' => array(
+						'label' => __( 'When a post is deleted', 'rock-the-slackbot' ),
+					),
+					'post_trashed' => array(
+						'label' => __( 'When a post is trashed', 'rock-the-slackbot' ),
+					),
+					'is_404' => array(
+						'label' => __( 'When a 404 error is thrown', 'rock-the-slackbot' ),
+					),
+				),
+			),
+			'menus' => array(
+				'label' => __( 'Menus', 'rock-the-slackbot' ),
+				'events' => array(
+					'menu_item_deleted' => array(
+						'label' => __( 'When a menu item is deleted', 'rock-the-slackbot' ),
+					),
+				),
+			),
+			'media' => array(
+				'label' => __( 'Media', 'rock-the-slackbot' ),
+				'events' => array(
+					'add_attachment' => array(
+						'label' => __( 'When media is added', 'rock-the-slackbot' ),
+					),
+					'edit_attachment' => array(
+						'label' => __( 'When media is edited', 'rock-the-slackbot' ),
+					),
+					'delete_attachment' => array(
+						'label' => __( 'When media is deleted', 'rock-the-slackbot' ),
+					),
+				),
+			),
+			'users' => array(
+				'label' => __( 'Users', 'rock-the-slackbot' ),
+				'events' => array(
+					'user_added' => array(
+						'label' => __( 'When a user is added', 'rock-the-slackbot' ),
+					),
+					'user_deleted' => array(
+						'label' => __( 'When a user is deleted', 'rock-the-slackbot' ),
+					),
+				)
+			),
+			'updates' => array(
+				'label' => __( 'Updates', 'rock-the-slackbot' ),
+				'events' => array(
+					'core_updated' => array(
+						'label' => __( 'When WordPress core is updated', 'rock-the-slackbot' ),
+						'default' => 1,
+					),
+					'plugin_updated' => array(
+						'label' => __( 'When a plugin is updated', 'rock-the-slackbot' ),
+					),
+					'theme_updated' => array(
+						'label' => __( 'When a theme is updated', 'rock-the-slackbot' ),
+					),
+				),
+			),
+		);
+	}
+
+	/**
+	 * Returns all of our outgoing webhooks, no matter their status.
+	 *
+	 * @access  public
+	 * @since   1.0
+	 * @return  array|false - array of webhook or false if none exist
+	 */
+	public function get_all_outgoing_webhooks() {
+		return get_option( 'rock_the_slackbot_outgoing_webhooks', array() );
+	}
+
+	/**
+	 * Returns all of our active outgoing webhooks.
+	 *
+	 * @access  public
+	 * @since   1.0
+	 * @return  array|false - array of webhooks or false if none exist
+	 */
+	public function get_active_outgoing_webhooks() {
+
+		// Get all outgoing webhooks
+		if ( ! ( $outgoing_webhooks = $this->get_all_outgoing_webhooks() ) ) {
+			return false;
+		}
+
+		// Go through and pick out active outgoing webhooks
+		$active_outgoing_webhooks = array();
+
+		// Check for not deactivated hooks
+		foreach( $outgoing_webhooks as $hook ) {
+			if ( ! ( isset( $hook[ 'deactivate' ] ) && $hook[ 'deactivate' ] > 0 ) ) {
+				$active_outgoing_webhooks[] = $hook;
+			}
+		}
+
+		return ! empty( $active_outgoing_webhooks ) ? $active_outgoing_webhooks : false;
+
+	}
+
+	/**
+	 * Returns active outgoing webhooks, allows you to filter by event.
+	 *
+	 * @access  public
+	 * @since   1.0
+	 * @param   string|array - $events - if provided, only return webhooks with these events
+	 * @param   array - $event_data - allows hooks to pass event specific data to test with webhooks
+	 * @return  array|false - array of webhooks or false if none exist
+	 */
+	public function get_outgoing_webhooks( $events = null, $event_data = array() ) {
+
+		// Get active outgoing webhooks
+		if ( ! ( $outgoing_webhooks = $this->get_active_outgoing_webhooks() ) ) {
+			return false;
+		}
+
+		// If we're not filtering by event, then get out of here
+		if ( empty( $events ) ) {
+			return $outgoing_webhooks;
+		} else {
+			
+			// Make sure events is an array
+			if ( ! is_array( $events ) ) {
+				$events = explode( ',', str_replace( ' ', '', $events ) );
+			}
+
+			// Filter by event
+			$filtered_webhooks = array();
+
+			// Did we pass data? Make sure its ready to go
+			if ( ! empty( $event_data ) ) {
+
+				// Did we pass a post type?
+				if ( isset( $event_data[ 'post_type' ] ) ) {
+
+					// Make sure its an array
+					if ( ! is_array( $event_data[ 'post_type' ] ) ) {
+						$event_data[ 'post_type' ] = explode( ',', $event_data[ 'post_type' ] );
+					}
+
+				}
+
+			}
+
+			// Go through and check for the event
+			foreach( $outgoing_webhooks as $hook ) {
+
+				// If we have excluded post types and a post type was sent, then skip this webhook
+				if ( isset( $event_data[ 'post_type' ] ) && isset( $hook[ 'exclude_post_types' ] ) ) {
+
+					// Make sure its an array
+					if ( ! is_array( $hook[ 'exclude_post_types' ] ) ) {
+						$hook[ 'exclude_post_types' ] = explode( ',', $hook[ 'exclude_post_types' ] );
+					}
+
+					// Check to see if the post type sent is supposed to be excluded
+					if ( array_intersect( $event_data[ 'post_type' ], $hook[ 'exclude_post_types' ] ) ) {
+						continue;
+					}
+
+				}
+
+				// Check the events
+				if ( ! empty( $hook[ 'events' ] ) && is_array( $hook[ 'events' ] ) ) {
+					foreach( $events as $event ) {
+
+						// This webhook has the event we're looking for
+						if ( array_key_exists( $event, $hook[ 'events' ] ) ) {
+
+							// Get the event settings
+							$event_settings = $hook[ 'events' ][ $event ];
+
+							// Don't include if not active
+							if ( ! ( isset( $event_settings[ 'active' ] ) && $event_settings[ 'active' ] == 1 ) ) {
+								continue;
+							}
+
+							// If this event has excluded post types and a post type was sent, then skip this webhook
+							if ( isset( $event_data[ 'post_type' ] ) && isset( $event_settings[ 'exclude_post_types' ] ) ) {
+
+								// Make sure its an array
+								if ( ! is_array( $event_settings[ 'exclude_post_types' ] ) ) {
+									$event_settings[ 'exclude_post_types' ] = explode( ',', $event_settings[ 'exclude_post_types' ] );
+								}
+
+								// Check to see if the post type sent is supposed to be excluded
+								if ( array_intersect( $event_data[ 'post_type' ], $event_settings[ 'exclude_post_types' ] ) ) {
+									continue;
+								}
+
+							}
+
+							// Add the webhook
+							$filtered_webhooks[] = $hook;
+
+							break;
+
+						}
+
+					}
+				}
+
+			}
+
+			return ! empty( $filtered_webhooks ) ? $filtered_webhooks : false;
+
+		}
+
+	}
+
+	/**
+	 * Returns a specific outgoing webhook.
+	 *
+	 * @access  public
+	 * @since   1.0
+	 * @param	string - $hook_id - the hook ID
+	 * @return  array|false - the webhook or false if it doesn't exist
+	 */
+	public function get_outgoing_webhook( $hook_id ) {
+
+		// Get all outgoing webhooks
+		if ( ! ( $outgoing_webhooks = $this->get_all_outgoing_webhooks() ) ) {
+			return false;
+		}
+
+		// Go through and find one with ID
+		foreach( $outgoing_webhooks as $hook ) {
+			if ( isset( $hook[ 'ID' ] ) && $hook[ 'ID' ] == $hook_id ) {
+				return $hook;
+			}
+		}
+
+		return false;
+
+	}
+
+}
+
+/**
+ * Returns the instance of our main Rock_The_Slackbot class.
+ *
+ * Will come in handy when we need to access the
+ * class to retrieve data throughout the plugin.
+ *
+ * @since	1.0
+ * @access	public
+ * @return	Rock_The_Slackbot
+ */
+function rock_the_slackbot() {
+	return Rock_The_Slackbot::instance();
+}
+
+// Let's get this show on the road
+rock_the_slackbot();
