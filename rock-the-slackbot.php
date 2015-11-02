@@ -3,7 +3,7 @@
 /**
  * Plugin Name:       Rock The Slackbot
  * Plugin URI:        @TODO Add plugin URL
- * Description:       Slack is a team collaboration tool that offers chat rooms organized by topic, as well as private groups and direct messaging. This plugin allows you to send notifications straight from your WordPress admin to you and your team inside your Slack account.
+ * Description:       Rock The Slackbot helps you stay on top of changes by sending notifications straight to you and your team inside your Slack account.
  * Version:           0.5
  * Author:            Rachel Carden
  * Author URI:        http://bamadesigner.com

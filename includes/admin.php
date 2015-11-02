@@ -241,7 +241,7 @@ class Rock_The_Slackbot_Admin {
 
 		} else {
 
-			?><div class="rock-slackbot-outgoing-webhooks-message"><?php printf( __( '%1$sSlack uses incoming webhooks%2$s as a simple way to pull in messages from external sources. Use the settings below to create outgoing webhooks which will send notification messages following various WordPress events straight to a channel or direct message in your Slack account.', 'rock-the-slackbot' ), '<a href="https://api.slack.com/incoming-webhooks" target="_blank">', '</a>' ); ?></div>
+			?><div class="rock-slackbot-outgoing-webhooks-message"><?php printf( __( '%1$sSlack uses incoming webhooks%2$s as a simple way to pull in messages from external sources. Use the settings below to create outgoing webhooks which will send notifications following numerous WordPress events straight to a channel or direct message in your Slack account.', 'rock-the-slackbot' ), '<a href="https://api.slack.com/incoming-webhooks" target="_blank">', '</a>' ); ?></div>
 			<table class="rock-slackbot rock-slackbot-outgoing-webhooks" cellpadding="0" cellspacing="0" border="0">
 				<thead>
 					<tr>
@@ -368,7 +368,7 @@ class Rock_The_Slackbot_Admin {
 					<input type="hidden" name="rock_the_slackbot_outgoing_webhooks[date_modified]" value="<?php echo esc_attr($webhook[ 'date_modified' ]); ?>"/><?php
 				}
 
-				?><div class="rock-slackbot-outgoing-webhooks-message"><?php printf( __( '%1$sSlack uses incoming webhooks%2$s as a simple way to pull in messages from external sources. Use the settings below to customize an outgoing webhook which will send notification messages following selected WordPress events straight to the provided channel(s) or direct message(s) in your Slack account.', 'rock-the-slackbot' ), '<a href="https://api.slack.com/incoming-webhooks" target="_blank">', '</a>' ); ?></div>
+				?><div class="rock-slackbot-outgoing-webhooks-message"><?php printf( __( '%1$sSlack uses incoming webhooks%2$s as a simple way to pull in messages from external sources. Use the settings below to customize an outgoing webhook which will send notifications following selected WordPress events straight to the provided channel(s) or direct message(s) in your Slack account.', 'rock-the-slackbot' ), '<a href="https://api.slack.com/incoming-webhooks" target="_blank">', '</a>' ); ?></div>
 				<table class="rock-slackbot rock-slackbot-edit-outgoing-webhook" cellpadding="0" cellspacing="0" border="0"><?php
 
 					// Get/format date created and modified
@@ -608,7 +608,7 @@ class Rock_The_Slackbot_Admin {
 
 			?><div id="rock-slackbot-intro-message">
 				<span class="slack-logo"></span>
-				<p class="slack-message"><?php printf( __( '%1$sSlack%2$s is a team collaboration tool that offers chat rooms organized by topic, as well as private groups and direct messaging. This plugin allows you to send notifications straight from your WordPress admin to you and your team inside your Slack account. A Slack account is required to use this plugin and is free to use for as long as you want and with an unlimited number of people. %3$sVisit the Slack website%4$s to learn more and sign up.', 'rock-the-slackbot' ), '<a href="https://slack.com/is" target="_blank">', '</a>', '<a href="https://slack.com/" target="_blank">', '</a>' ); ?></p>
+				<p class="slack-message"><?php printf( __( ' Rock The Slackbot helps you manage your websites, and stay on top of changes, by sending notifications (following numerous WordPress events) straight to you and your team inside your %1$sSlack%2$s account. Slack is a team collaboration tool that offers chat rooms organized by topic, as well as private groups and direct messaging. A Slack account is required to use this plugin and is free to use for as long as you want and with an unlimited number of people. %3$sVisit the Slack website%4$s to learn more and sign up.', 'rock-the-slackbot' ), '<a href="https://slack.com/is" target="_blank">', '</a>', '<a href="https://slack.com/" target="_blank">', '</a>' ); ?></p>
 			</div>
 
 			<div id="poststuff">

@@ -1,7 +1,7 @@
 {
   "name": "rock-the-slackbot",
   "version": "1.0.0",
-  "description": "Slack is a team collaboration tool that offers chat rooms organized by topic, as well as private groups and direct messaging. This plugin allows you to send notifications straight from your WordPress admin to you and your team inside your Slack account.",
+  "description": "Rock The Slackbot helps you stay on top of changes by sending notifications straight to you and your team inside your Slack account.",
   "license": "GPL",
   "repository": {
     "type": "git",
