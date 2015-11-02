@@ -1,13 +1,15 @@
 # Rock The Slackbot
 Rock The Slackbot is a WordPress plugin that helps you stay on top of changes by sending notifications straight to you and your team inside your Slack account.
 
+*I'm currently working to submit this plugin to [the WordPress.org plugin repo](https://wordpress.org/plugins/).*
+
 ##What is Slack?
 [Slack](https://slack.com/is) is a team collaboration tool that offers chat rooms organized by topic, as well as private groups and direct messaging. It's a great way to be productive with your team without clogging up your inbox.
 
 ##What is A Slackbot?
 [Slackbot](https://slack.zendesk.com/hc/en-us/articles/202026038-Slackbot-your-assistant-notepad-programmable-bot) is Slack's built-in robot, which helps us send messages to you and your team inside your Slack account.
 
-##Why Rock The Slackbot? =
+##Why Rock The Slackbot?
 Because it can help you manage your websites, and stay on top of changes, by sending notifications (following numerous WordPress events) to your Slackbot who will pass them along to a channel or direct message in your Slack account.
 
 **Rock the Slackbot sends customizable notifications** for the following events:
