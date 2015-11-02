@@ -788,8 +788,17 @@ class Rock_The_Slackbot_Admin {
 			foreach ($saved_outgoing_webhooks as &$hook) {
 				if ($edit_hook && $edit_hook == $hook[ 'ID' ]) {
 
-					// If actually updated, update the date modified
-					if ( ! empty( array_diff_assoc( $hook, $value ) ) ) {
+					// Was hook modified?
+					$hook_was_modified = false;
+					foreach( $hook as $hook_key => $hook_value ) {
+						if ( ! isset( $value[ $hook_key ] ) || $value[ $hook_key ] !== $value ) {
+							$hook_was_modified = true;
+							break;
+						}
+					}
+
+					// If modified, update the date modified
+					if ( $hook_was_modified ) {
 						$value[ 'date_modified' ] = time();
 					}
 
