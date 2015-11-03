@@ -2,12 +2,26 @@ module.exports = function(grunt) {
 
     grunt.initConfig({
         sass: {
-            totheslack: {
+            options: {
+                sourcemap: 'none',
+                noCache: true,
+                update: false
+            },
+            rts: {
                 options: {
-                    sourcemap: 'none',
+                    style: 'expanded',
+                },
+                files: [{
+                    expand: true,
+                    src: '*.scss',
+                    cwd: 'css',
+                    dest: 'css',
+                    ext: '.css'
+                }]
+            },
+            rtsmin: {
+                options: {
                     style: 'compressed',
-                    noCache: true,
-                    update: false
                 },
                 files: [{
                     expand: true,
@@ -23,7 +37,7 @@ module.exports = function(grunt) {
                 mangle: false,
                 compress: false
             },
-            totheslack: {
+            rts: {
                 files: [{
                     expand: true,
                     src: [ '**/*.js', '!*.min.js' ],
@@ -34,13 +48,13 @@ module.exports = function(grunt) {
             }
         },
         watch: {
-            totheslacksass: {
+            rtssass: {
                 files: [ 'css/*.scss' ],
-                tasks: [ 'sass:totheslack' ]
+                tasks: [ 'sass:rts', 'sass:rtsmin' ]
             },
-            totheslackjs: {
+            rtsjs: {
                 files: [ 'js/*.js', 'js/!*.min.js' ],
-                tasks: [ 'uglify:totheslack' ]
+                tasks: [ 'uglify:rts' ]
             }
         }
     });
