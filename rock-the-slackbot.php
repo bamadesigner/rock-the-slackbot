@@ -2,9 +2,9 @@
 
 /**
  * Plugin Name:       Rock The Slackbot
- * Plugin URI:        @TODO Add plugin URL
+ * Plugin URI:        https://wordpress.org/plugins/rock-the-slackbot/
  * Description:       Rock The Slackbot helps you stay on top of changes by sending notifications straight to you and your team inside your Slack account.
- * Version:           0.5
+ * Version:           1.0
  * Author:            Rachel Carden
  * Author URI:        http://bamadesigner.com
  * License:           GPL-2.0+
@@ -20,7 +20,7 @@ if ( ! defined( 'WPINC' ) ) {
 
 // If you define them, will they be used?
 define( 'ROCK_THE_SLACKBOT_VERSION', '1.0' );
-define( 'ROCK_THE_SLACKBOT_PLUGIN_URL', '' ); //@TODO Add plugin URL
+define( 'ROCK_THE_SLACKBOT_PLUGIN_URL', 'https://wordpress.org/plugins/rock-the-slackbot/' );
 
 // Load the files
 require_once plugin_dir_path( __FILE__ ) . 'includes/hooks.php';
