@@ -4,7 +4,7 @@ Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=ZCAN2
 Tags: slack, slackbot, chat, collaboration, notifications
 Requires at least: 3.0
 Tested up to: 4.3.1
-Stable tag: 1.0
+Stable tag: 1.0.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -64,5 +64,5 @@ Please use [the Issues section of this plugin's GitHub repo](https://github.com/
 
 == Changelog ==
 
-= 1.0 =
+= 1.0.0 =
 Plugin launch

@@ -5,7 +5,7 @@ class Rock_The_Slackbot_Notifications {
 	/**
 	 * Holds the class instance.
 	 *
-	 * @since	1.0
+	 * @since	1.0.0
 	 * @access	private
 	 * @var		Rock_The_Slackbot_Notifications
 	 */
@@ -15,7 +15,7 @@ class Rock_The_Slackbot_Notifications {
 	 * Returns the instance of this class.
 	 *
 	 * @access  public
-	 * @since   1.0
+	 * @since   1.0.0
 	 * @return	Rock_The_Slackbot_Notifications
 	 */
 	public static function instance() {
@@ -30,14 +30,14 @@ class Rock_The_Slackbot_Notifications {
 	 * This class sends notifications to Slack.
 	 *
 	 * @access  public
-	 * @since   1.0
+	 * @since   1.0.0
 	 */
 	public function __construct() {}
 
 	/**
 	 * Method to keep our instance from being cloned.
 	 *
-	 * @since	1.0
+	 * @since	1.0.0
 	 * @access	private
 	 * @return	void
 	 */
@@ -46,7 +46,7 @@ class Rock_The_Slackbot_Notifications {
 	/**
 	 * Method to keep our instance from being unserialized.
 	 *
-	 * @since	1.0
+	 * @since	1.0.0
 	 * @access	private
 	 * @return	void
 	 */
@@ -56,7 +56,7 @@ class Rock_The_Slackbot_Notifications {
 	 * Sends a payload notification to Slack.
 	 *
 	 * @access  public
-	 * @since   1.0
+	 * @since   1.0.0
 	 * @param   string - $webhook_url - send the payload to this URL
 	 * @param   array - $payload - the notification information
 	 * @return  boolean - whether or not it was sent without error
@@ -206,7 +206,7 @@ class Rock_The_Slackbot_Notifications {
 	 * Set our error emails to be HTML.
 	 *
 	 * @access  public
-	 * @since   1.0
+	 * @since   1.0.0
 	 * @return  string - email content type
 	 */
 	public function set_html_content_type() {
@@ -222,7 +222,7 @@ class Rock_The_Slackbot_Notifications {
  * manually send a notification outside of the
  * plugin's control.
  *
- * @since	1.0
+ * @since	1.0.0
  * @access	public
  * @return	Rock_The_Slackbot_Notifications
  */

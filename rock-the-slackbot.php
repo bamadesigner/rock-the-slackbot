@@ -4,7 +4,7 @@
  * Plugin Name:       Rock The Slackbot
  * Plugin URI:        https://wordpress.org/plugins/rock-the-slackbot/
  * Description:       Rock The Slackbot helps you stay on top of changes by sending notifications straight to you and your team inside your Slack account.
- * Version:           1.0
+ * Version:           1.0.0
  * Author:            Rachel Carden
  * Author URI:        http://bamadesigner.com
  * License:           GPL-2.0+
@@ -19,7 +19,7 @@ if ( ! defined( 'WPINC' ) ) {
 }
 
 // If you define them, will they be used?
-define( 'ROCK_THE_SLACKBOT_VERSION', '1.0' );
+define( 'ROCK_THE_SLACKBOT_VERSION', '1.0.0' );
 define( 'ROCK_THE_SLACKBOT_PLUGIN_URL', 'https://wordpress.org/plugins/rock-the-slackbot/' );
 
 // Load the files
@@ -36,7 +36,7 @@ class Rock_The_Slackbot {
 	/**
 	 * Holds the class instance.
 	 *
-	 * @since	1.0
+	 * @since	1.0.0
 	 * @access	private
 	 * @var		Rock_The_Slackbot
 	 */
@@ -46,7 +46,7 @@ class Rock_The_Slackbot {
 	 * Returns the instance of this class.
 	 *
 	 * @access  public
-	 * @since   1.0
+	 * @since   1.0.0
 	 * @return	Rock_The_Slackbot
 	 */
 	public static function instance() {
@@ -61,7 +61,7 @@ class Rock_The_Slackbot {
 	 * Warming up the Slack mobile.
 	 *
 	 * @access  public
-	 * @since   1.0
+	 * @since   1.0.0
 	 */
 	protected function __construct() {
 
@@ -79,7 +79,7 @@ class Rock_The_Slackbot {
 	/**
 	 * Method to keep our instance from being cloned.
 	 *
-	 * @since	1.0
+	 * @since	1.0.0
 	 * @access	private
 	 * @return	void
 	 */
@@ -88,7 +88,7 @@ class Rock_The_Slackbot {
 	/**
 	 * Method to keep our instance from being unserialized.
 	 *
-	 * @since	1.0
+	 * @since	1.0.0
 	 * @access	private
 	 * @return	void
 	 */
@@ -103,7 +103,7 @@ class Rock_The_Slackbot {
 	 * want to exclude them to your notifications?
 	 *
 	 * @access  public
-	 * @since   1.0
+	 * @since   1.0.0
 	 */
 	public function install() {}
 
@@ -111,7 +111,7 @@ class Rock_The_Slackbot {
 	 * Runs when the plugin is upgraded.
 	 *
 	 * @access  public
-	 * @since   1.0
+	 * @since   1.0.0
 	 */
 	public function upgrader_process_complete() {}
 
@@ -122,7 +122,7 @@ class Rock_The_Slackbot {
 	 * @TODO Add language files
 	 *
 	 * @access  public
-	 * @since   1.0
+	 * @since   1.0.0
 	 */
 	public function textdomain() {
 		load_plugin_textdomain( 'rock-the-slackbot', false, dirname( plugin_basename( __FILE__ ) ) . '/languages' );
@@ -135,7 +135,7 @@ class Rock_The_Slackbot {
 	 * This function will remove the <> around links.
 	 *
 	 * @access  public
-	 * @since   1.0
+	 * @since   1.0.0
 	 * @param   string - $text - the text that has links
 	 * @return  string - the formatted text
 	 */
@@ -147,7 +147,7 @@ class Rock_The_Slackbot {
 	 * Returns all of our webhook events.
 	 *
 	 * @access  public
-	 * @since   1.0
+	 * @since   1.0.0
 	 * @return  array - array of names of notification events
 	 */
 	public function get_webhook_events() {
@@ -233,7 +233,7 @@ class Rock_The_Slackbot {
 	 * Returns all of our outgoing webhooks, no matter their status.
 	 *
 	 * @access  public
-	 * @since   1.0
+	 * @since   1.0.0
 	 * @return  array|false - array of webhook or false if none exist
 	 */
 	public function get_all_outgoing_webhooks() {
@@ -244,7 +244,7 @@ class Rock_The_Slackbot {
 	 * Returns all of our active outgoing webhooks.
 	 *
 	 * @access  public
-	 * @since   1.0
+	 * @since   1.0.0
 	 * @return  array|false - array of webhooks or false if none exist
 	 */
 	public function get_active_outgoing_webhooks() {
@@ -272,7 +272,7 @@ class Rock_The_Slackbot {
 	 * Returns active outgoing webhooks, allows you to filter by event.
 	 *
 	 * @access  public
-	 * @since   1.0
+	 * @since   1.0.0
 	 * @param   string|array - $events - if provided, only return webhooks with these events
 	 * @param   array - $event_data - allows hooks to pass event specific data to test with webhooks
 	 * @return  array|false - array of webhooks or false if none exist
@@ -382,7 +382,7 @@ class Rock_The_Slackbot {
 	 * Returns a specific outgoing webhook.
 	 *
 	 * @access  public
-	 * @since   1.0
+	 * @since   1.0.0
 	 * @param	string - $hook_id - the hook ID
 	 * @return  array|false - the webhook or false if it doesn't exist
 	 */
@@ -412,7 +412,7 @@ class Rock_The_Slackbot {
  * Will come in handy when we need to access the
  * class to retrieve data throughout the plugin.
  *
- * @since	1.0
+ * @since	1.0.0
  * @access	public
  * @return	Rock_The_Slackbot
  */

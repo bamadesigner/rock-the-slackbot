@@ -7,7 +7,7 @@ class Rock_The_Slackbot_Hooks {
 	 * for all of the various hooks.
 	 *
 	 * @access  public
-	 * @since   1.0
+	 * @since   1.0.0
 	 */
 	public function __construct() {
 
@@ -65,7 +65,7 @@ class Rock_The_Slackbot_Hooks {
 	 * retrieves webhooks tied to the event(s).
 	 *
 	 * @access  private
-	 * @since   1.0
+	 * @since   1.0.0
 	 * @param   string|array - $events - when you want webhooks tied to specific events
 	 * @param   array - $event_data - allows hooks to pass event specific data to test with webhooks
 	 * @return  array|false - the webhooks or false if none
@@ -78,7 +78,7 @@ class Rock_The_Slackbot_Hooks {
 	 * Makes sure the payload is setup properly.
 	 *
 	 * @access  private
-	 * @since   1.0
+	 * @since   1.0.0
 	 * @param   array - $payload - the payload itself
 	 * @param   array - $attachments - the attachments info
 	 * @param   array - $webhook - the Slack webhook info
@@ -121,7 +121,7 @@ class Rock_The_Slackbot_Hooks {
 	 * Sends a batch of outgoing webhooks.
 	 *
 	 * @access  private
-	 * @since   1.0
+	 * @since   1.0.0
 	 * @param   string - $notification_event - name of the notification event
 	 * @param   array - $outgoing_webhooks - array of webhooks being sent
 	 * @param   array - $payload - payload info for notification
@@ -182,7 +182,7 @@ class Rock_The_Slackbot_Hooks {
 	 * 'themes': will hold array of themes being updated
 	 *
 	 * @access  public
-	 * @since   1.0
+	 * @since   1.0.0
 	 * @param	Plugin_Upgrader - $upgrader
 	 * 		upgrader instance: Plugin_Upgrader, Theme_Upgrader or Core_Upgrade
 	 * @param	array - $upgrade_info - Array of bulk item update data
@@ -392,7 +392,7 @@ class Rock_The_Slackbot_Hooks {
 	 * Fires once an attachment has been added.
 	 *
 	 * @access  public
-	 * @since   1.0
+	 * @since   1.0.0
 	 * @param   int - $post_id - The attachment post ID
 	 * @return  bool - returns false if nothing happened
 	 */
@@ -510,7 +510,7 @@ class Rock_The_Slackbot_Hooks {
 	 * @TODO set it up so it shares what exactly was edited.
 	 *
 	 * @access  public
-	 * @since   1.0
+	 * @since   1.0.0
 	 * @param   int - $post_id - The attachment post ID
 	 * @return  bool - returns false if nothing happened
 	 */
@@ -626,7 +626,7 @@ class Rock_The_Slackbot_Hooks {
 	 * Fires before an attachment is deleted, at the start of wp_delete_attachment()
 	 *
 	 * @access  public
-	 * @since   1.0
+	 * @since   1.0.0
 	 * @param   int - $post_id - The attachment post ID
 	 * @return  bool - returns false if nothing happened
 	 */
@@ -727,7 +727,7 @@ class Rock_The_Slackbot_Hooks {
 	 * Does not handle menu items. They have their own hook.
 	 *
 	 * @access  public
-	 * @since   1.0
+	 * @since   1.0.0
 	 * @param   int - $post_id - The post ID
 	 * @param   WP_Post - $post_after - Post object following the update
 	 * @param   WP_Post - $post_before - Post object before the update
@@ -862,7 +862,7 @@ class Rock_The_Slackbot_Hooks {
 	 * Fires when a post is transitioned from one status to another.
 	 *
 	 * @access  public
-	 * @since   1.0
+	 * @since   1.0.0
 	 * @param	string - $new_status - the new post status
 	 * @param	string - $old_status - the old post status
 	 * @param	WP_Post - $post - the post object
@@ -1006,7 +1006,7 @@ class Rock_The_Slackbot_Hooks {
 	 * Fires before a post is sent to the trash.
 	 *
 	 * @access  public
-	 * @since   1.0
+	 * @since   1.0.0
 	 * @param   int - $post_id - The post ID
 	 * @return  bool - returns false if nothing happened
 	 */
@@ -1090,7 +1090,7 @@ class Rock_The_Slackbot_Hooks {
 	 * Fires immediately before a post is deleted from the database.
 	 *
 	 * @access  public
-	 * @since   1.0
+	 * @since   1.0.0
 	 * @param   int - $post_id - The post ID
 	 * @return  bool - returns false if nothing happened
 	 */
@@ -1298,7 +1298,7 @@ class Rock_The_Slackbot_Hooks {
 	 * Fires once the WordPress environment has been set up.
 	 *
 	 * @access	public
-	 * @since	1.0
+	 * @since	1.0.0
 	 * @param	WP - $wp - Current WordPress environment instance (passed by reference)
 	 * @return	bool - returns false if nothing happened
 	 */
@@ -1422,7 +1422,7 @@ class Rock_The_Slackbot_Hooks {
 	 * Fires immediately after a new user is registered.
 	 *
 	 * @access	public
-	 * @since	1.0
+	 * @since	1.0.0
 	 * @param	int - $user_id - the User ID
 	 * @return	bool - returns false if nothing happened
 	 */
@@ -1524,7 +1524,7 @@ class Rock_The_Slackbot_Hooks {
 	 * Fires immediately before a user is deleted from the database.
 	 *
 	 * @access	public
-	 * @since	1.0
+	 * @since	1.0.0
 	 * @param	int - $user_id - the User ID
 	 * @param	int|null $reassign ID of the user to reassign posts and links to.
 	 *          	Default null, for no reassignment.

@@ -5,7 +5,7 @@ class Rock_The_Slackbot_Admin {
 	/**
 	 * ID of the tools page
 	 *
-	 * @since 1.0
+	 * @since 1.0.0
 	 * @access public
 	 * @var string
 	 */
@@ -16,7 +16,7 @@ class Rock_The_Slackbot_Admin {
 	 * ID if edit page for
 	 * outgoing webhook.
 	 *
-	 * @since 1.0
+	 * @since 1.0.0
 	 * @access private
 	 * @var string|false
 	 */
@@ -26,7 +26,7 @@ class Rock_The_Slackbot_Admin {
 	 * Will be true if add page
 	 * for an outgoing webhook.
 	 *
-	 * @since 1.0
+	 * @since 1.0.0
 	 * @access private
 	 * @var boolean
 	 */
@@ -36,7 +36,7 @@ class Rock_The_Slackbot_Admin {
 	 * Takes care of admin shenanigans.
 	 *
 	 * @access  public
-	 * @since   1.0
+	 * @since   1.0.0
 	 */
 	public function __construct() {
 
@@ -81,7 +81,7 @@ class Rock_The_Slackbot_Admin {
 	 * Add our own plugin action links.
 	 *
 	 * @access  public
-	 * @since   1.0
+	 * @since   1.0.0
 	 * @param   array - $actions - An array of plugin action links
 	 * @param   string - $$plugin_file - Path to the plugin file
 	 * @param   array - $plugin_data - An array of plugin data
@@ -101,7 +101,7 @@ class Rock_The_Slackbot_Admin {
 	 * Add our tools management page.
 	 *
 	 * @access  public
-	 * @since   1.0
+	 * @since   1.0.0
 	 */
 	public function add_management_page() {
 
@@ -120,7 +120,7 @@ class Rock_The_Slackbot_Admin {
 	 * Add styles and scripts for our tools page
 	 *
 	 * @access  public
-	 * @since   1.0
+	 * @since   1.0.0
 	 * @param	string - $hook_suffix - the ID of the current page
 	 */
 	public function enqueue_styles_scripts( $hook_suffix ) {
@@ -156,7 +156,7 @@ class Rock_The_Slackbot_Admin {
 	 * Add our tools meta boxes.
 	 *
 	 * @access  public
-	 * @since   1.0
+	 * @since   1.0.0
 	 */
 	public function add_tools_meta_boxes() {
 
@@ -186,7 +186,7 @@ class Rock_The_Slackbot_Admin {
 	 * Print our tools meta boxes.
 	 *
 	 * @access  public
-	 * @since   1.0
+	 * @since   1.0.0
 	 * @param 	array - $post - information about the current post, which is empty because there is no current post on a tools page
 	 * @param 	array - $metabox - information about the metabox
 	 */
@@ -225,7 +225,7 @@ class Rock_The_Slackbot_Admin {
 	 * Print the Outgoing WebHooks meta box.
 	 *
 	 * @access  private
-	 * @since   1.0
+	 * @since   1.0.0
 	 */
 	private function print_outgoing_webhooks_meta_box() {
 
@@ -305,7 +305,7 @@ class Rock_The_Slackbot_Admin {
 	 * Print the "Add/Edit Outgoing WebHook" meta box.
 	 *
 	 * @access  private
-	 * @since   1.0
+	 * @since   1.0.0
 	 */
 	private function print_edit_outgoing_webhook_meta_box() {
 
@@ -581,7 +581,7 @@ class Rock_The_Slackbot_Admin {
 	 * Print our tools management page.
 	 *
 	 * @access  public
-	 * @since   1.0
+	 * @since   1.0.0
 	 */
 	public function print_management_page() {
 
@@ -658,7 +658,7 @@ class Rock_The_Slackbot_Admin {
 	 * Register our settings.
 	 *
 	 * @access  public
-	 * @since   1.0
+	 * @since   1.0.0
 	 */
 	public function register_settings() {
 
@@ -671,7 +671,7 @@ class Rock_The_Slackbot_Admin {
 	 * Sanitizes the 'rock_the_slackbot_outgoing_webhooks' setting.
 	 *
 	 * @access  public
-	 * @since   1.0
+	 * @since   1.0.0
 	 * @param	array - the webhooks we're sanitizing
 	 * @return	array - the sanitized webhooks
 	 */
@@ -836,7 +836,7 @@ class Rock_The_Slackbot_Admin {
 	 * Handles when someone wants to delete an outgoing webhook.
 	 *
 	 * @access  public
-	 * @since   1.0
+	 * @since   1.0.0
 	 */
 	public function delete_outgoing_webhook() {
 
@@ -914,7 +914,7 @@ class Rock_The_Slackbot_Admin {
 	 * that will be used for notifications.
 	 *
 	 * @access  public
-	 * @since   1.0
+	 * @since   1.0.0
 	 */
 	public function handle_pre_upgrade_information() {
 		global $wp_version;
