@@ -161,22 +161,22 @@ class Rock_The_Slackbot_Admin {
 	public function add_tools_meta_boxes() {
 
 		// About this Plugin
-		add_meta_box( 'rock-slackbot-about-mb', __( 'About this Plugin', 'rock-the-slackbot' ), array( &$this, 'print_tools_meta_boxes' ), $this->tools_page_id, 'side', 'core', 'about-plugin' );
+		add_meta_box( 'rock-slackbot-about-mb', __( 'About this Plugin', 'rock-the-slackbot' ), array( $this, 'print_tools_meta_boxes' ), $this->tools_page_id, 'side', 'core', 'about-plugin' );
 
 		// Spread the Love
-		add_meta_box( 'rock-slackbot-promote-mb', __( 'Spread the Love', 'rock-the-slackbot' ), array( &$this, 'print_tools_meta_boxes' ), $this->tools_page_id, 'side', 'core', 'promote' );
+		add_meta_box( 'rock-slackbot-promote-mb', __( 'Spread the Love', 'rock-the-slackbot' ), array( $this, 'print_tools_meta_boxes' ), $this->tools_page_id, 'side', 'core', 'promote' );
 
 		// If we're viewing an add or edit outgoing webhook page
 		if ( $this->edit_webhook || $this->add_webhook ) {
 
 			// Add/Edit Outgoing WebHook
 			$meta_box_title = $this->edit_webhook ? __( 'Edit Outgoing WebHook', 'rock-the-slackbot' ) : __( 'Add Outgoing WebHook', 'rock-the-slackbot' );
-			add_meta_box( 'rock-slackbot-edit-outgoing-webhook-mb', $meta_box_title, array( &$this, 'print_tools_meta_boxes' ), $this->tools_page_id, 'normal', 'core', 'edit-outgoing-webhook' );
+			add_meta_box( 'rock-slackbot-edit-outgoing-webhook-mb', $meta_box_title, array( $this, 'print_tools_meta_boxes' ), $this->tools_page_id, 'normal', 'core', 'edit-outgoing-webhook' );
 
 		} else {
 
 			// Outgoing WebHooks
-			add_meta_box( 'rock-slackbot-outgoing-webhooks-mb', __( 'Slack Notifications', 'rock-the-slackbot' ), array( &$this, 'print_tools_meta_boxes' ), $this->tools_page_id, 'normal', 'core', 'outgoing-webhooks' );
+			add_meta_box( 'rock-slackbot-outgoing-webhooks-mb', __( 'Slack Notifications', 'rock-the-slackbot' ), array( $this, 'print_tools_meta_boxes' ), $this->tools_page_id, 'normal', 'core', 'outgoing-webhooks' );
 
 		}
 
