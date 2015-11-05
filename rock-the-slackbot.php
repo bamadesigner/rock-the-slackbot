@@ -21,6 +21,7 @@ if ( ! defined( 'WPINC' ) ) {
 // If you define them, will they be used?
 define( 'ROCK_THE_SLACKBOT_VERSION', '1.0.0' );
 define( 'ROCK_THE_SLACKBOT_PLUGIN_URL', 'https://wordpress.org/plugins/rock-the-slackbot/' );
+define( 'ROCK_THE_SLACKBOT_PLUGIN_FILE', 'rock-the-slackbot/rock-the-slackbot.php' );
 
 // Load the files
 require_once plugin_dir_path( __FILE__ ) . 'includes/hooks.php';

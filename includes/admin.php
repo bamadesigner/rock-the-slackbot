@@ -47,7 +47,7 @@ class Rock_The_Slackbot_Admin {
 		$this->add_webhook = ! $this->edit_webhook && isset( $_GET[ 'add' ] ) && $_GET[ 'add' ] == 1 ? true : false;
 
 		// Add plugin action links
-		add_filter( 'plugin_action_links_rock-the-slackbot/rock-the-slackbot.php', array( $this, 'add_plugin_action_links' ), 10, 4 );
+		add_filter( 'plugin_action_links_' . ROCK_THE_SLACKBOT_PLUGIN_FILE, array( $this, 'add_plugin_action_links' ), 10, 4 );
 
 
 		// Add our tools page
