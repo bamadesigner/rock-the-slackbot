@@ -49,13 +49,14 @@ class Rock_The_Slackbot_Admin {
 		// Add plugin action links
 		add_filter( 'plugin_action_links_rock-the-slackbot/rock-the-slackbot.php', array( $this, 'add_plugin_action_links' ), 10, 4 );
 
-		// Add our Tools page
-		add_action( 'admin_menu', array( $this, 'add_management_page' ) );
 
-		// Add our Tools meta boxes
+		// Add our tools page
+		add_action( 'admin_menu', array( $this, 'add_tools_page' ) );
+
+		// Add our tools meta boxes
 		add_action( 'admin_head-tools_page_rock-the-slackbot', array( $this, 'add_tools_meta_boxes' ) );
 
-		// Add styles and scripts for the Tools page
+		// Add styles and scripts for the tools page
 		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_styles_scripts' ) );
 
 		// Register our settings
@@ -98,20 +99,19 @@ class Rock_The_Slackbot_Admin {
 	}
 
 	/**
-	 * Add our tools management page.
 	 *
 	 * @access  public
 	 * @since   1.0.0
 	 */
-	public function add_management_page() {
+	public function add_tools_page() {
 
-		// Add our Tools page
+		// Add our tools page
 		$this->tools_page_id = add_management_page(
 			__( 'Rock The Slackbot', 'rock-the-slackbot' ),
 			__( 'Rock The Slackbot', 'rock-the-slackbot' ),
 			'manage_options',
 			'rock-the-slackbot',
-			array( $this, 'print_management_page' )
+			array( $this, 'print_tools_page' )
 		);
 
 	}
@@ -578,12 +578,11 @@ class Rock_The_Slackbot_Admin {
 	}
 
 	/**
-	 * Print our tools management page.
 	 *
 	 * @access  public
 	 * @since   1.0.0
 	 */
-	public function print_management_page() {
+	public function print_tools_page() {
 
 		?><div class="wrap">
 
