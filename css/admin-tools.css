@@ -25,6 +25,22 @@
   margin: 0;
 }
 
+#rock-slackbot-network-message {
+  background: #e01765;
+  padding: 10px;
+  color: #fff;
+  margin: 0;
+}
+#rock-slackbot-network-message a {
+  color: inherit;
+}
+#rock-slackbot-network-message .slack-message {
+  margin: 0;
+}
+#rock-slackbot-network-message .slack-message .dashicons {
+  margin: 0 3px 0 0;
+}
+
 .rock-slackbot-outgoing-webhooks-message {
   padding: 15px 12px;
 }
