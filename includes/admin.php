@@ -3,6 +3,35 @@
 class Rock_The_Slackbot_Admin {
 
 	/**
+	 * Holds the URL for the
+	 * settings page
+	 *
+	 * @since 1.1.0
+	 * @access public
+	 * @var string
+	 */
+	public $settings_page;
+
+	/**
+	 * Is true when multisite
+	 * and in the network admin
+	 *
+	 * @since 1.1.0
+	 * @access public
+	 * @var boolean
+	 */
+	public $is_network_admin;
+
+	/**
+	 * ID of the network settings page
+	 *
+	 * @since 1.1.0
+	 * @access public
+	 * @var string
+	 */
+	public $network_settings_page_id;
+
+	/**
 	 * ID of the tools page
 	 *
 	 * @since 1.0.0
@@ -40,6 +69,28 @@ class Rock_The_Slackbot_Admin {
 	 */
 	public function __construct() {
 
+		// Lets us know if we're dealing with a multisite and in the network admin
+		if ( is_multisite() && is_network_admin() ) {
+
+			// We're in the network admin
+			$this->is_network_admin = true;
+
+			// Define the settings page
+			$this->settings_page = add_query_arg( array( 'page' => 'rock-the-slackbot' ), network_admin_url( 'settings.php' ) );
+
+		}
+
+		// We're not in the network admin
+		else {
+
+			// We're not in the network admin
+			$this->is_network_admin = false;
+
+			// Define the settings page
+			$this->settings_page = add_query_arg( array( 'page' => 'rock-the-slackbot' ), admin_url( 'tools.php' ) );
+
+		}
+
 		// See if we're editing an outgoing webhook
 		$this->edit_webhook = isset( $_GET[ 'edit' ] ) && ! empty( $_GET[ 'edit' ] ) ? $_GET[ 'edit' ] : false;
 
@@ -47,16 +98,24 @@ class Rock_The_Slackbot_Admin {
 		$this->add_webhook = ! $this->edit_webhook && isset( $_GET[ 'add' ] ) && $_GET[ 'add' ] == 1 ? true : false;
 
 		// Add plugin action links
-		add_filter( 'plugin_action_links_rock-the-slackbot/rock-the-slackbot.php', array( $this, 'add_plugin_action_links' ), 10, 4 );
+		add_filter( 'network_admin_plugin_action_links_' . ROCK_THE_SLACKBOT_PLUGIN_FILE, array( $this, 'add_plugin_action_links' ), 10, 4 );
+		add_filter( 'plugin_action_links_' . ROCK_THE_SLACKBOT_PLUGIN_FILE, array( $this, 'add_plugin_action_links' ), 10, 4 );
 
-		// Add our Tools page
-		add_action( 'admin_menu', array( $this, 'add_management_page' ) );
+		// Add multisite settings page
+		add_action( 'network_admin_menu', array( $this, 'add_network_settings_page' ) );
 
-		// Add our Tools meta boxes
-		add_action( 'admin_head-tools_page_rock-the-slackbot', array( $this, 'add_tools_meta_boxes' ) );
+		// Add our tools page
+		add_action( 'admin_menu', array( $this, 'add_tools_page' ) );
 
-		// Add styles and scripts for the Tools page
+		// Add our settings meta boxes
+		add_action( 'admin_head-settings_page_rock-the-slackbot', array( $this, 'add_settings_meta_boxes' ) );
+		add_action( 'admin_head-tools_page_rock-the-slackbot', array( $this, 'add_settings_meta_boxes' ) );
+
+		// Add styles and scripts for the tools page
 		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_styles_scripts' ) );
+
+		// Update multisite settings
+		add_action( 'update_wpmu_options', array( $this, 'update_network_outgoing_webhooks_setting' ) );
 
 		// Register our settings
 		add_action( 'admin_init', array( $this, 'register_settings' ) );
@@ -91,27 +150,45 @@ class Rock_The_Slackbot_Admin {
 	 * @return  array - the filtered actions
 	 */
 	public function add_plugin_action_links( $actions, $plugin_file, $plugin_data, $context ) {
-		if ( current_user_can( 'manage_options' ) ) {
-			$actions[] = '<a href="' . add_query_arg( array( 'page' => 'rock-the-slackbot' ), admin_url( 'tools.php' ) ) . '">' . __( 'Manage', 'rock-the-slackbot' ) . '</a>';
+		if ( $this->is_network_admin ? current_user_can( 'manage_network_options' ) : current_user_can( 'manage_options' ) ) {
+			$actions[] = '<a href="' . $this->settings_page . '">' . __( 'Manage', 'rock-the-slackbot' ) . '</a>';
 		}
 		return $actions;
 	}
 
 	/**
-	 * Add our tools management page.
+	 * Add our network Settings page.
+	 *
+	 * @access  public
+	 * @since   1.1.0
+	 */
+	public function add_network_settings_page() {
+
+		// Make sure plugin is network activated
+		if ( ! ( function_exists( 'is_plugin_active_for_network' ) && is_plugin_active_for_network( ROCK_THE_SLACKBOT_PLUGIN_FILE ) ) ) {
+			return false;
+		}
+
+		// Add the network settings page
+		$this->network_settings_page_id = add_submenu_page( 'settings.php', __( 'Rock The Slackbot', 'rock-the-slackbot' ), __( 'Rock The Slackbot', 'rock-the-slackbot' ), 'manage_network_options', 'rock-the-slackbot', array( $this, 'print_settings_page' ) );
+
+	}
+
+	/**
+	 * Add our tools page.
 	 *
 	 * @access  public
 	 * @since   1.0.0
 	 */
-	public function add_management_page() {
+	public function add_tools_page() {
 
-		// Add our Tools page
+		// Add our tools page
 		$this->tools_page_id = add_management_page(
 			__( 'Rock The Slackbot', 'rock-the-slackbot' ),
 			__( 'Rock The Slackbot', 'rock-the-slackbot' ),
 			'manage_options',
 			'rock-the-slackbot',
-			array( $this, 'print_management_page' )
+			array( $this, 'print_settings_page' )
 		);
 
 	}
@@ -125,8 +202,8 @@ class Rock_The_Slackbot_Admin {
 	 */
 	public function enqueue_styles_scripts( $hook_suffix ) {
 
-		// Only for our tools page
-		if ( $hook_suffix != $this->tools_page_id ) {
+		// Only for our settings pages
+		if ( ! in_array( $hook_suffix, array( $this->network_settings_page_id, $this->tools_page_id ) ) ) {
 			return;
 		}
 
@@ -137,11 +214,11 @@ class Rock_The_Slackbot_Admin {
 		if ( $this->add_webhook || $this->edit_webhook ) {
 
 			wp_enqueue_style( 'rts-jquery-ui', '//code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css' );
-			wp_enqueue_script( 'rock-the-slackbot-admin-tools', trailingslashit(plugin_dir_url(dirname(__FILE__)) . 'js') . 'admin-tools.min.js', array('jquery', 'jquery-ui-tooltip'), ROCK_THE_SLACKBOT_VERSION, true );
+			wp_enqueue_script( 'rock-the-slackbot-admin-tools', trailingslashit(plugin_dir_url(dirname(__FILE__)) . 'js' ) . 'admin-tools.min.js', array( 'jquery', 'jquery-ui-tooltip' ), ROCK_THE_SLACKBOT_VERSION, true );
 
 			// Need to send some data to our script
 			wp_localize_script( 'rock-the-slackbot-admin-tools', 'rock_the_slackbot', array(
-				'delete_webhook_conf' => __('Are you sure you want to delete this webhook?', 'rock-the-slackbot'),
+				'delete_webhook_conf' => __( 'Are you sure you want to delete this webhook?', 'rock-the-slackbot' ),
 			));
 
 		}
@@ -153,44 +230,44 @@ class Rock_The_Slackbot_Admin {
 	}
 
 	/**
-	 * Add our tools meta boxes.
+	 * Add our network settings and tools meta boxes.
 	 *
 	 * @access  public
 	 * @since   1.0.0
 	 */
-	public function add_tools_meta_boxes() {
+	public function add_settings_meta_boxes() {
 
 		// About this Plugin
-		add_meta_box( 'rock-slackbot-about-mb', __( 'About this Plugin', 'rock-the-slackbot' ), array( &$this, 'print_tools_meta_boxes' ), $this->tools_page_id, 'side', 'core', 'about-plugin' );
+		add_meta_box( 'rock-slackbot-about-mb', __( 'About this Plugin', 'rock-the-slackbot' ), array( $this, 'print_settings_meta_boxes' ), $this->tools_page_id, 'side', 'core', 'about-plugin' );
 
 		// Spread the Love
-		add_meta_box( 'rock-slackbot-promote-mb', __( 'Spread the Love', 'rock-the-slackbot' ), array( &$this, 'print_tools_meta_boxes' ), $this->tools_page_id, 'side', 'core', 'promote' );
+		add_meta_box( 'rock-slackbot-promote-mb', __( 'Spread the Love', 'rock-the-slackbot' ), array( $this, 'print_settings_meta_boxes' ), $this->tools_page_id, 'side', 'core', 'promote' );
 
 		// If we're viewing an add or edit outgoing webhook page
 		if ( $this->edit_webhook || $this->add_webhook ) {
 
 			// Add/Edit Outgoing WebHook
 			$meta_box_title = $this->edit_webhook ? __( 'Edit Outgoing WebHook', 'rock-the-slackbot' ) : __( 'Add Outgoing WebHook', 'rock-the-slackbot' );
-			add_meta_box( 'rock-slackbot-edit-outgoing-webhook-mb', $meta_box_title, array( &$this, 'print_tools_meta_boxes' ), $this->tools_page_id, 'normal', 'core', 'edit-outgoing-webhook' );
+			add_meta_box( 'rock-slackbot-edit-outgoing-webhook-mb', $meta_box_title, array( $this, 'print_settings_meta_boxes' ), $this->tools_page_id, 'normal', 'core', 'edit-outgoing-webhook' );
 
 		} else {
 
 			// Outgoing WebHooks
-			add_meta_box( 'rock-slackbot-outgoing-webhooks-mb', __( 'Slack Notifications', 'rock-the-slackbot' ), array( &$this, 'print_tools_meta_boxes' ), $this->tools_page_id, 'normal', 'core', 'outgoing-webhooks' );
+			add_meta_box( 'rock-slackbot-outgoing-webhooks-mb', __( 'Slack Notifications', 'rock-the-slackbot' ), array( $this, 'print_settings_meta_boxes' ), $this->tools_page_id, 'normal', 'core', 'outgoing-webhooks' );
 
 		}
 
 	}
 
 	/**
-	 * Print our tools meta boxes.
+	 * Print our network settings and tools meta boxes.
 	 *
 	 * @access  public
 	 * @since   1.0.0
 	 * @param 	array - $post - information about the current post, which is empty because there is no current post on a tools page
 	 * @param 	array - $metabox - information about the metabox
 	 */
-	public function print_tools_meta_boxes( $post, $metabox ) {
+	public function print_settings_meta_boxes( $post, $metabox ) {
 
 		switch( $metabox[ 'args' ] ) {
 
@@ -230,19 +307,49 @@ class Rock_The_Slackbot_Admin {
 	private function print_outgoing_webhooks_meta_box() {
 
 		// Get all of the outgoing webhooks
-		$outgoing_webhooks = rock_the_slackbot()->get_all_outgoing_webhooks();
+		$outgoing_webhooks = $this->get_outgoing_webhooks_setting( $this->is_network_admin );
+
+		// If we have webhooks, print an explanatory messages
+		if ( ! empty( $outgoing_webhooks ) ) {
+			?><div class="rock-slackbot-outgoing-webhooks-message"><?php printf( __( '%1$sSlack uses incoming webhooks%2$s as a simple way to pull in messages from external sources. Use the settings below to create outgoing webhooks which will send notifications following numerous WordPress events straight to a channel or direct message in your Slack account.', 'rock-the-slackbot' ), '<a href="https://api.slack.com/incoming-webhooks" target="_blank">', '</a>' ); ?></div><?php
+		}
+
+		// Print network message
+		if ( $this->is_network_admin ) {
+
+			?><div id="rock-slackbot-network-message">
+				<p class="slack-message"><span class="dashicons dashicons-info"></span> <?php _e( 'All notifications created in the network admin will be setup for every site on your network.', 'rock-the-slackbot' ); ?></p>
+			</div><?php
+
+		}
+
+		// If network activated and not network admin, tell us if there are network notifications
+		else if ( function_exists( 'is_plugin_active_for_network' )
+			&& is_plugin_active_for_network( ROCK_THE_SLACKBOT_PLUGIN_FILE )
+			&& ! empty( $this->get_outgoing_webhooks_setting( true ) ) ) {
+
+			?><div id="rock-slackbot-network-message">
+				<p class="slack-message"><span class="dashicons dashicons-info"></span> <?php _e( 'This plugin is network activate and has notifications that are setup for, and running on, this site.', 'rock-the-slackbot' );
+
+					if ( current_user_can( 'manage_network' ) ) {
+						?> <a href="<?php echo add_query_arg( array( 'page' => 'rock-the-slackbot' ), network_admin_url( 'settings.php' ) ); ?>"><?php _e( 'Manage network settings', 'rock-the-slackbot' ); ?></a><?php
+					}
+
+				?></p>
+			</div><?php
+
+		}
 
 		// If we have hooks, print the table
 		if ( ! $outgoing_webhooks ) {
 
 			?><div id="rock-slackbot-no-webhooks">
-				<a href="<?php echo add_query_arg(array('page' => 'rock-the-slackbot', 'add' => 1), admin_url('tools.php')); ?>"><span class="dashicons dashicons-plus-alt"></span> <span class="rts-link-text"><?php _e( "Let's get this party started", 'rock-the-slackbot' ); ?></span></a>
+				<a href="<?php echo add_query_arg( 'add', 1, $this->settings_page ); ?>"><span class="dashicons dashicons-plus-alt"></span> <span class="rts-link-text"><?php _e( "Let's get this party started", 'rock-the-slackbot' ); ?></span></a>
 			</div><?php
 
 		} else {
 
-			?><div class="rock-slackbot-outgoing-webhooks-message"><?php printf( __( '%1$sSlack uses incoming webhooks%2$s as a simple way to pull in messages from external sources. Use the settings below to create outgoing webhooks which will send notifications following numerous WordPress events straight to a channel or direct message in your Slack account.', 'rock-the-slackbot' ), '<a href="https://api.slack.com/incoming-webhooks" target="_blank">', '</a>' ); ?></div>
-			<table class="rock-slackbot rock-slackbot-outgoing-webhooks" cellpadding="0" cellspacing="0" border="0">
+			?><table class="rock-slackbot rock-slackbot-outgoing-webhooks" cellpadding="0" cellspacing="0" border="0">
 				<thead>
 					<tr>
 						<th class="index"></th>
@@ -275,7 +382,7 @@ class Rock_The_Slackbot_Admin {
 							<td class="status">
 								<div class="status-circle <?php echo $hook_status; ?>" title="<?php printf( __( 'This outgoing webhook is %s', 'rock-the-slackbot' ), $hook_status ); ?>"></div>
 							</td>
-							<td class="name"><a href="<?php echo add_query_arg( array( 'page' => 'rock-the-slackbot', 'edit' => $hook[ 'ID' ] ), admin_url( 'tools.php' ) ); ?>"><?php echo $hook[ 'name' ]; ?></a></td>
+							<td class="name"><a href="<?php echo add_query_arg( 'edit', $hook[ 'ID' ], $this->settings_page ); ?>"><?php echo $hook[ 'name' ]; ?></a></td>
 							<td class="account"><?php echo $hook[ 'account' ]; ?></td>
 							<td class="channel"><?php
 
@@ -294,7 +401,7 @@ class Rock_The_Slackbot_Admin {
 				?></tbody>
 			</table>
 			<div id="rts-add-button-wrapper">
-				<a class="button button-primary rts-dashicons rts-button" href="<?php echo add_query_arg(array('page' => 'rock-the-slackbot', 'add' => 1), admin_url('tools.php')); ?>"><span class="dashicons dashicons-plus-alt"></span> <?php _e( 'Add A Webhook', 'rock-the-slackbot' ); ?></a>
+				<a class="button button-primary rts-dashicons rts-button" href="<?php echo add_query_arg( 'add', 1, $this->settings_page ); ?>"><span class="dashicons dashicons-plus-alt"></span> <?php _e( 'Add A Webhook', 'rock-the-slackbot' ); ?></a>
 			</div><?php
 
 		}
@@ -312,7 +419,7 @@ class Rock_The_Slackbot_Admin {
 		// @TODO Set it up so webhook URL is validated when entered or edited and check each time settings page is loaded to show error message if not working
 
 		// Get our webhook
-		$webhook = $this->edit_webhook ? rock_the_slackbot()->get_outgoing_webhook( $this->edit_webhook ) : false;
+		$webhook = $this->edit_webhook ? $this->get_outgoing_webhook_setting( $this->edit_webhook, $this->is_network_admin ) : false;
 
 		// If we're adding and we have a value stored in transient from error processing
 		if ( $this->add_webhook ) {
@@ -328,19 +435,29 @@ class Rock_The_Slackbot_Admin {
 			?><div id="rock-slackbot-no-webhook-edit">
 				<p><?php _e( "Uh-oh. Someone doesn't like this URL. Here are some other ways to rock the Slackbot", 'rock-the-slackbot' ); ?>:</p>
 				<ul>
-					<li><a class="rts-dashicons rts-icons-link" href="<?php echo add_query_arg(array('page' => 'rock-the-slackbot'), admin_url('tools.php')); ?>"><span class="dashicons dashicons-arrow-left-alt"></span> <span class="rts-link-text"><?php _e( 'Back to Main Settings', 'rock-the-slackbot' ); ?></span></a></li>
-					<li><a class="rts-dashicons rts-icons-link" href="<?php echo add_query_arg(array('page' => 'rock-the-slackbot', 'add' => 1), admin_url('tools.php')); ?>"><span class="dashicons dashicons-plus-alt"></span> <span class="rts-link-text"><?php _e( 'Add A Webhook', 'rock-the-slackbot' ); ?></span></a></li>
+					<li><a class="rts-dashicons rts-icons-link" href="<?php echo $this->settings_page; ?>"><span class="dashicons dashicons-arrow-left-alt"></span> <span class="rts-link-text"><?php _e( 'Back to Main Settings', 'rock-the-slackbot' ); ?></span></a></li>
+					<li><a class="rts-dashicons rts-icons-link" href="<?php echo add_query_arg( 'add', 1, $this->settings_page ); ?>"><span class="dashicons dashicons-plus-alt"></span> <span class="rts-link-text"><?php _e( 'Add A Webhook', 'rock-the-slackbot' ); ?></span></a></li>
 				</ul>
 			</div><?php
 
 		} else {
 
-			?><form class="rock-slackbot-edit-outgoing-webhook-form" method="post" action="options.php" novalidate="novalidate"><?php
+			?><form class="rock-slackbot-edit-outgoing-webhook-form" method="post" action="<?php echo ( $this->is_network_admin ) ? 'settings.php' : 'options.php'; ?>" novalidate="novalidate"><?php
 
-				// Include our fields info
-				settings_fields('rock_the_slackbot_outgoing_webhooks');
+				// Handle network settings
+				if ( $this->is_network_admin ) {
+					wp_nonce_field( 'siteoptions' );
+				}
+
+				// Handle non-network settings
+				else {
+					settings_fields( 'rock_the_slackbot_outgoing_webhooks' );
+				}
 
 				// Get post types
+				// @TODO Add a way for user to manually include post type names
+				// for network admin since the network admin can't pick up
+				// post types registered on sites other than the main site
 				$post_types = get_post_types( array(), 'objects' );
 
 				// Remove the following since they have their own events
@@ -566,9 +683,9 @@ class Rock_The_Slackbot_Admin {
 					</tr>
 					<tr class="buttons">
 						<td class="rts-cancel">
-							<a class="button" href="<?php echo add_query_arg( array( 'page' => 'rock-the-slackbot' ), admin_url( 'tools.php' ) ); ?>"><?php _e( 'Cancel', 'rock-the-slackbot' ); ?></a>
+							<a class="button" href="<?php echo $this->settings_page; ?>"><?php _e( 'Cancel', 'rock-the-slackbot' ); ?></a>
 						</td>
-						<td class="rts-submit"><?php submit_button('Save WebHook', 'primary', 'rock_slackbot_save_outgoing_webhook', false); ?></td>
+						<td class="rts-submit"><?php submit_button( 'Save WebHook', 'primary', 'rock_slackbot_save_outgoing_webhook', false ); ?></td>
 					</tr>
 				</table>
 			</form><?php
@@ -578,12 +695,12 @@ class Rock_The_Slackbot_Admin {
 	}
 
 	/**
-	 * Print our tools management page.
+	 * Prints our network settings and tools page.
 	 *
 	 * @access  public
 	 * @since   1.0.0
 	 */
-	public function print_management_page() {
+	public function print_settings_page() {
 
 		?><div class="wrap">
 
@@ -620,14 +737,14 @@ class Rock_The_Slackbot_Admin {
 
 							// If we're viewing an edit or add page, add a link to the main page
 							if ( $this->edit_webhook || $this->add_webhook ) {
-								?><a id="rock-slackbot-back-button" class="button button-primary rts-dashicons rts-button rts-side-button" href="<?php echo add_query_arg(array('page' => 'rock-the-slackbot'), admin_url('tools.php')); ?>"><span class="dashicons dashicons-arrow-left-alt"></span> <?php _e( 'Back to Main Settings', 'rock-the-slackbot' ); ?></a><?php
+								?><a id="rock-slackbot-back-button" class="button button-primary rts-dashicons rts-button rts-side-button" href="<?php echo $this->settings_page; ?>"><span class="dashicons dashicons-arrow-left-alt"></span> <?php _e( 'Back to Main Settings', 'rock-the-slackbot' ); ?></a><?php
 							}
 
 							do_meta_boxes( $this->tools_page_id, 'side', array() );
 
 							// If we're viewing an edit page, add a delete button
 							if ( $this->edit_webhook ) {
-								?><a id="rock-slackbot-delete-button" class="button button-primary rts-dashicons rts-button rts-side-button" href="<?php echo wp_nonce_url( add_query_arg(array('page' => 'rock-the-slackbot', 'delete' => $this->edit_webhook ), admin_url('tools.php')), 'rts_delete_outgoing_webhook' ); ?>"><span class="dashicons dashicons-trash"></span> <?php _e( 'Delete This Webhook', 'rock-the-slackbot' ); ?></a><?php
+								?><a id="rock-slackbot-delete-button" class="button button-primary rts-dashicons rts-button rts-side-button" href="<?php echo wp_nonce_url( add_query_arg( 'delete', $this->edit_webhook, $this->settings_page ), 'rts_delete_outgoing_webhook' ); ?>"><span class="dashicons dashicons-trash"></span> <?php _e( 'Delete This Webhook', 'rock-the-slackbot' ); ?></a><?php
 							}
 
 						?></div> <!-- #side-sortables -->
@@ -663,22 +780,161 @@ class Rock_The_Slackbot_Admin {
 	public function register_settings() {
 
 		// Register the setting that holds our outgoing webhooks
-		register_setting( 'rock_the_slackbot_outgoing_webhooks', 'rock_the_slackbot_outgoing_webhooks', array( $this, 'sanitize_outgoing_webhooks_setting' ) );
+		register_setting( 'rock_the_slackbot_outgoing_webhooks', 'rock_the_slackbot_outgoing_webhooks', array( $this, 'update_outgoing_webhooks_setting' ) );
 
 	}
 
 	/**
-	 * Sanitizes the 'rock_the_slackbot_outgoing_webhooks' setting.
+	 * Returns all of our outgoing webhooks
+	 * without modification for settings sake.
+	 *
+	 * @access  public
+	 * @since   1.1.0
+	 * @param	boolean - $network - whether or not to retrieve network webhooks
+	 * @return  array|false - array of webhooks or false if none exist
+	 */
+	private function get_outgoing_webhooks_setting( $network = false ) {
+		return $network ? get_site_option( 'rock_the_slackbot_network_outgoing_webhooks', array() ) : get_option( 'rock_the_slackbot_outgoing_webhooks', array() );
+	}
+
+	/**
+	 * Returns a specific outgoing webhook
+	 * without modification for settings sake.
+	 *
+	 * @access  public
+	 * @since   1.1.0
+	 * @param	string - $hook_id - the hook ID
+	 * @param	boolean - $network - whether or not this is a network webhook
+	 * @return  array|false - array of webhook or false if doesn't exist
+	 */
+	private function get_outgoing_webhook_setting( $hook_id, $network = false ) {
+
+		// Get all outgoing webhooks settings
+		if ( ! ( $outgoing_webhooks = $this->get_outgoing_webhooks_setting( $network ) ) ) {
+			return false;
+		}
+
+		// Go through and find one with ID
+		foreach( $outgoing_webhooks as $hook ) {
+			if ( isset( $hook[ 'ID' ] ) && $hook[ 'ID' ] == $hook_id ) {
+				return $hook;
+			}
+		}
+
+		return false;
+	}
+
+	/**
+	 * Validates/updates our network outgoing webhooks.
+	 *
+	 * @access  public
+	 * @since   1.1.0
+	 */
+	public function update_network_outgoing_webhooks_setting() {
+
+		// Makes sure we're saving in the network admin
+		if ( current_user_can( 'manage_network_options' )
+			&& check_admin_referer( 'siteoptions' )
+			&& isset( $_POST[ 'rock_slackbot_save_outgoing_webhook' ] ) ) {
+
+			// Update/validate the outgoing webhooks
+			// Only run this code if we're editing - which is set in the edit form
+			if ( isset( $_POST[ 'rock_the_slackbot_outgoing_webhooks' ] )
+				&& ( $value = $_POST[ 'rock_the_slackbot_outgoing_webhooks' ] )
+				&& isset( $value[ 'editing' ] ) && $value[ 'editing' ] == 1 ) {
+
+				// Remove the editing value so it isn't stored
+				unset( $value[ 'editing' ] );
+
+				// Validate the webhook values
+				$value = $this->validate_outgoing_webhook( $value );
+
+				// If we didn't find any errors
+				if ( ! is_wp_error( $value ) ) {
+
+					// Get the saved outgoing webhooks
+					$saved_outgoing_webhooks = $this->get_outgoing_webhooks_setting( true );
+
+					// See if we have a hook ID which means we're editing a current hook
+					$edit_hook = isset( $value[ 'ID' ] ) && ! empty( $value[ 'ID' ] ) ? $value[ 'ID' ] : false;
+
+					// If we're editing...
+					if ( $edit_hook ) {
+
+						// Go through the saved webhooks and find the one being updated
+						foreach ( $saved_outgoing_webhooks as &$hook ) {
+							if ( $edit_hook && $edit_hook == $hook[ 'ID' ] ) {
+
+								// Was hook modified?
+								$hook_was_modified = false;
+								foreach ( $hook as $hook_key => $hook_value ) {
+									if ( ! isset( $value[ $hook_key ] ) || $value[ $hook_key ] !== $value ) {
+										$hook_was_modified = true;
+										break;
+									}
+								}
+
+								// If modified, update the date modified
+								if ( $hook_was_modified ) {
+									$value[ 'date_modified' ] = time();
+								}
+
+								// Update the hook
+								$hook = $value;
+
+							}
+						}
+
+					} // If we're adding...
+					else {
+
+						// Add the ID
+						$value[ 'ID' ] = uniqid();
+
+						// Add date created/modified
+						$value[ 'date_created' ] = $value[ 'date_modified' ] = time();
+
+						// Add to the mix
+						$saved_outgoing_webhooks[] = $value;
+
+						// Change the referer URL to change add=1 to edit=[ID] so that redirect will show edit screen
+						$_REQUEST[ '_wp_http_referer' ] = preg_replace( '/(\&add\=([^\&]*))/i', '&edit=' . $value[ 'ID' ], $_REQUEST[ '_wp_http_referer' ] );
+
+					}
+
+					// Update settings
+					update_site_option( 'rock_the_slackbot_network_outgoing_webhooks', $saved_outgoing_webhooks );
+
+					// If no errors, then show general message
+					add_settings_error( 'general', 'settings_updated', __( 'Settings saved.', 'rock-the-slackbot' ), 'updated' );
+
+				}
+
+				// Stores any settings errors so they can be displayed on redirect
+				set_transient( 'settings_errors', get_settings_errors(), 30 );
+
+				// Redirect to settings page
+				wp_redirect( add_query_arg( array( 'settings-updated' => 'true' ), $_REQUEST[ '_wp_http_referer' ] ) );
+				exit();
+
+			}
+
+		}
+
+	}
+
+	/**
+	 * Updates the 'rock_the_slackbot_outgoing_webhooks' setting.
 	 *
 	 * @access  public
 	 * @since   1.0.0
 	 * @param	array - the webhooks we're sanitizing
-	 * @return	array - the sanitized webhooks
+	 * @return	array - the updates webhooks
 	 */
-	public function sanitize_outgoing_webhooks_setting( $value ) {
+	public function update_outgoing_webhooks_setting( $value ) {
 
 		// Get the saved outgoing webhooks
-		$saved_outgoing_webhooks = rock_the_slackbot()->get_all_outgoing_webhooks();
+		$saved_outgoing_webhooks = $this->get_outgoing_webhooks_setting();
 
 		// Only run this code if we're editing - which is set in the edit form
 		if ( ! ( isset( $value[ 'editing' ] ) && $value[ 'editing' ] == 1 ) ) {
@@ -688,105 +944,23 @@ class Rock_The_Slackbot_Admin {
 		// Remove the editing value so it isn't stored
 		unset( $value[ 'editing' ] );
 
+		// Validate the webhook values
+		$value = $this->validate_outgoing_webhook( $value );
+
+		// If validation found errors, get out of here
+		if ( is_wp_error( $value ) ) {
+			return $saved_outgoing_webhooks;
+		}
+
 		// See if we have a hook ID which means we're editing a current hook
 		$edit_hook = isset( $value[ 'ID' ] ) && ! empty( $value[ 'ID' ] ) ? $value[ 'ID' ] : false;
-
-		// If true, we have an error and need to process
-		$editing_error = false;
-
-		// 1) Check the name
-		if ( ! ( isset( $value[ 'name' ] ) && ! empty( $value[ 'name' ] ) ) ) {
-
-			// We have an error
-			$editing_error = true;
-
-			// Add settings error
-			add_settings_error( 'rock_the_slackbot_outgoing_webhooks', 'no_name', __('You must provide a name for your outgoing webhook.', 'rock-the-slackbot'), 'error' );
-
-		} else {
-
-			// Trim it up!
-			$value[ 'name' ] = trim( $value[ 'name' ] );
-
-		}
-
-		// 2) Check the webhook URL
-		if ( ! ( isset( $value[ 'webhook_url' ] ) && ! empty( $value[ 'webhook_url' ] ) ) ) {
-
-			// We have an error
-			$editing_error = true;
-
-			// Add settings error
-			add_settings_error( 'rock_the_slackbot_outgoing_webhooks', 'no_webhook_url', __('You must provide a webhook URL for your outgoing webhook.', 'rock-the-slackbot'), 'error' );
-
-		} else {
-
-			// Trim it up!
-			$value[ 'webhook_url' ] = trim( $value[ 'webhook_url' ] );
-
-		}
-
-		// 3) Make sure the channel starts with either a # or @
-		if ( isset( $value[ 'channel' ] ) && ! empty( $value[ 'channel' ] ) ) {
-
-			// If it doesn't, prefix with a #
-			if ( ! preg_match( '/^(\#|\@)/i', $value[ 'channel' ] ) ) {
-				$value[ 'channel' ] = '#' . $value[ 'channel' ];
-			}
-
-			// Trim it up!
-			$value[ 'channel' ] = trim( $value[ 'channel' ] );
-
-		}
-
-		// 4) Make sure the icon emoji is wrapped with colons and trimmed
-		if ( isset( $value[ 'icon_emoji' ] ) && ! empty( $value[ 'icon_emoji' ] ) ) {
-			$value[ 'icon_emoji' ] = ':' . trim( str_replace( ':', '', $value[ 'icon_emoji' ] ) ) . ':';
-		}
-
-		// 5) Make sure the icon url is trimmed
-		if ( isset( $value[ 'icon_url' ] ) && ! empty( $value[ 'icon_url' ] ) ) {
-			$value[ 'icon_url' ] = trim( $value[ 'icon_url' ] );
-		}
-
-		// 6) Check the events
-		if ( isset( $value[ 'events' ] ) ) {
-			foreach( $value[ 'events' ] as &$event ) {
-
-				if ( isset( $event[ 'channel' ] ) && ! empty( $event[ 'channel' ] ) ) {
-
-					// If it doesn't, prefix with a #
-					if ( ! preg_match( '/^(\#|\@)/i', $event[ 'channel' ] ) ) {
-						$event[ 'channel' ] = '#' . $event[ 'channel' ];
-					}
-
-					// Trim it up!
-					$event[ 'channel' ] = trim( $event[ 'channel' ] );
-
-				}
-
-			}
-		}
-
-		// If we have an error...
-		if ( $editing_error ) {
-
-			// If we're adding a hook, stores value info so it can be re-populated
-			if ( ! $edit_hook ) {
-				set_transient( 'rock_the_slackbot_add_outgoing_webhook', $value, 60 );
-			}
-
-			// Get out of here
-			return $saved_outgoing_webhooks;
-
-		}
 
 		// If we're editing...
 		if ( $edit_hook ) {
 
 			// Go through the saved webhooks and find the one being updated
-			foreach ($saved_outgoing_webhooks as &$hook) {
-				if ($edit_hook && $edit_hook == $hook[ 'ID' ]) {
+			foreach ( $saved_outgoing_webhooks as &$hook ) {
+				if ( $edit_hook && $edit_hook == $hook[ 'ID' ] ) {
 
 					// Was hook modified?
 					$hook_was_modified = false;
@@ -833,6 +1007,111 @@ class Rock_The_Slackbot_Admin {
 	}
 
 	/**
+	 * Validates any added or edited outgoing webhooks.
+	 *
+	 * @access  public
+	 * @since   1.1.0
+	 * @param	array - the webhook we're validating
+	 * @return	array - the validated webhook
+	 */
+	public function validate_outgoing_webhook( $webhook ) {
+
+		// See if we have a hook ID which means we're editing a current hook
+		$edit_hook = isset( $webhook[ 'ID' ] ) && ! empty( $webhook[ 'ID' ] ) ? $webhook[ 'ID' ] : false;
+
+		// Will hold the errors
+		$errors = new WP_Error();
+
+		// 1) Check the name
+		if ( ! ( isset( $webhook[ 'name' ] ) && ! empty( $webhook[ 'name' ] ) ) ) {
+
+			// Add settings error
+			$error_message = __( 'You must provide a name for your outgoing webhook.', 'rock-the-slackbot' );
+			$errors->add( 'rock_the_slackbot_outgoing_webhook_no_name', $error_message );
+			add_settings_error( 'rock_the_slackbot_outgoing_webhooks', 'no_name', $error_message, 'error' );
+
+		} else {
+
+			// Trim it up!
+			$webhook[ 'name' ] = trim( $webhook[ 'name' ] );
+
+		}
+
+		// 2) Check the webhook URL
+		if ( ! ( isset( $webhook[ 'webhook_url' ] ) && ! empty( $webhook[ 'webhook_url' ] ) ) ) {
+
+			// Add settings error
+			$error_message = __( 'You must provide a webhook URL for your outgoing webhook.', 'rock-the-slackbot' );
+			$errors->add( 'rock_the_slackbot_outgoing_webhook_no_webhook_url', $error_message );
+			add_settings_error( 'rock_the_slackbot_outgoing_webhooks', 'no_webhook_url', $error_message, 'error' );
+
+		} else {
+
+			// Trim it up!
+			$webhook[ 'webhook_url' ] = trim( $webhook[ 'webhook_url' ] );
+
+		}
+
+		// 3) Make sure the channel starts with either a # or @
+		if ( isset( $webhook[ 'channel' ] ) && ! empty( $webhook[ 'channel' ] ) ) {
+
+			// If it doesn't, prefix with a #
+			if ( ! preg_match( '/^(\#|\@)/i', $webhook[ 'channel' ] ) ) {
+				$webhook[ 'channel' ] = '#' . $webhook[ 'channel' ];
+			}
+
+			// Trim it up!
+			$webhook[ 'channel' ] = trim( $webhook[ 'channel' ] );
+
+		}
+
+		// 4) Make sure the icon emoji is wrapped with colons and trimmed
+		if ( isset( $webhook[ 'icon_emoji' ] ) && ! empty( $webhook[ 'icon_emoji' ] ) ) {
+			$webhook[ 'icon_emoji' ] = ':' . trim( str_replace( ':', '', $webhook[ 'icon_emoji' ] ) ) . ':';
+		}
+
+		// 5) Make sure the icon url is trimmed
+		if ( isset( $webhook[ 'icon_url' ] ) && ! empty( $webhook[ 'icon_url' ] ) ) {
+			$webhook[ 'icon_url' ] = trim( $webhook[ 'icon_url' ] );
+		}
+
+		// 6) Check the events
+		if ( isset( $webhook[ 'events' ] ) ) {
+			foreach( $webhook[ 'events' ] as &$event ) {
+
+				if ( isset( $event[ 'channel' ] ) && ! empty( $event[ 'channel' ] ) ) {
+
+					// If it doesn't, prefix with a #
+					if ( ! preg_match( '/^(\#|\@)/i', $event[ 'channel' ] ) ) {
+						$event[ 'channel' ] = '#' . $event[ 'channel' ];
+					}
+
+					// Trim it up!
+					$event[ 'channel' ] = trim( $event[ 'channel' ] );
+
+				}
+
+			}
+		}
+
+		// If we have an error...
+		if ( ! empty( $errors->get_error_codes() ) ) {
+
+			// If we're adding a hook, stores value info so it can be re-populated
+			if ( ! $edit_hook ) {
+				set_transient( 'rock_the_slackbot_add_outgoing_webhook', $webhook, 60 );
+			}
+
+			// Return errors
+			return $errors;
+
+		}
+
+		// Return validated webhook
+		return $webhook;
+	}
+
+	/**
 	 * Handles when someone wants to delete an outgoing webhook.
 	 *
 	 * @access  public
@@ -857,12 +1136,12 @@ class Rock_The_Slackbot_Admin {
 
 		// Check the nonce itself
 		if ( ! wp_verify_nonce( $nonce, 'rts_delete_outgoing_webhook' ) ) {
-			$die_message = __('Oops. Looks like something went wrong.', 'rock-the-slackbot');
-			wp_die( $die_message, $die_message, array('back_link' => true));
+			$die_message = __( 'Oops. Looks like something went wrong.', 'rock-the-slackbot' );
+			wp_die( $die_message, $die_message, array( 'back_link' => true));
 		}
 
 		// Get all of the outgoing webhooks
-		if ( $outgoing_webhooks = rock_the_slackbot()->get_all_outgoing_webhooks() ) {
+		if ( $outgoing_webhooks = $this->get_outgoing_webhooks_setting() ) {
 
 			// Will be true if we deleted a hook
 			$deleted_hook = false;
@@ -895,7 +1174,7 @@ class Rock_The_Slackbot_Admin {
 
 				// Webhook deleted
 				// Redirect to the main page and prompt message
-				wp_redirect( add_query_arg( array( 'page' => 'rock-the-slackbot', 'webhook_deleted' => 1 ), admin_url( 'tools.php' ) ) );
+				wp_redirect( add_query_arg( 'webhook_deleted', 1, $this->settings_page ) );
 				exit;
 
 			}
@@ -904,7 +1183,7 @@ class Rock_The_Slackbot_Admin {
 
 		// This means there was no webhook with this ID
 		// Redirect to the main page and prompt message
-		wp_redirect( add_query_arg( array( 'page' => 'rock-the-slackbot', 'error_deleting_webhook' => 1 ), admin_url( 'tools.php' ) ) );
+		wp_redirect( add_query_arg( 'error_deleting_webhook', 1, $this->settings_page ) );
 		exit;
 
 	}
