@@ -21,6 +21,7 @@ if ( ! defined( 'WPINC' ) ) {
 // If you define them, will they be used?
 define( 'ROCK_THE_SLACKBOT_VERSION', '1.0.0' );
 define( 'ROCK_THE_SLACKBOT_PLUGIN_URL', 'https://wordpress.org/plugins/rock-the-slackbot/' );
+define( 'ROCK_THE_SLACKBOT_PLUGIN_FILE', 'rock-the-slackbot/rock-the-slackbot.php' );
 
 // Load the files
 require_once plugin_dir_path( __FILE__ ) . 'includes/hooks.php';
@@ -234,10 +235,26 @@ class Rock_The_Slackbot {
 	 *
 	 * @access  public
 	 * @since   1.0.0
+	 * @param	boolean - $network - whether or not to retrieve network webhooks
 	 * @return  array|false - array of webhook or false if none exist
 	 */
-	public function get_all_outgoing_webhooks() {
-		return get_option( 'rock_the_slackbot_outgoing_webhooks', array() );
+	public function get_all_outgoing_webhooks( $network = true ) {
+
+		// Get site webhooks
+		$webhooks = get_option( 'rock_the_slackbot_outgoing_webhooks', array() );
+
+		// Get network webhooks
+		if ( $network && is_multisite()
+			&& ( $plugins = get_site_option( 'active_sitewide_plugins' ) )
+			&& isset( $plugins[ ROCK_THE_SLACKBOT_PLUGIN_FILE ] ) ) {
+
+			if ( $network_webhooks = get_site_option( 'rock_the_slackbot_network_outgoing_webhooks', array() ) ) {
+				$webhooks = array_merge( $network_webhooks, $webhooks );
+			}
+
+		}
+
+		return $webhooks;
 	}
 
 	/**
@@ -384,12 +401,13 @@ class Rock_The_Slackbot {
 	 * @access  public
 	 * @since   1.0.0
 	 * @param	string - $hook_id - the hook ID
+	 * @param	boolean - $network - whether or not this is a network webhook
 	 * @return  array|false - the webhook or false if it doesn't exist
 	 */
-	public function get_outgoing_webhook( $hook_id ) {
+	public function get_outgoing_webhook( $hook_id, $network = false ) {
 
 		// Get all outgoing webhooks
-		if ( ! ( $outgoing_webhooks = $this->get_all_outgoing_webhooks() ) ) {
+		if ( ! ( $outgoing_webhooks = $this->get_all_outgoing_webhooks( $network ) ) ) {
 			return false;
 		}
 

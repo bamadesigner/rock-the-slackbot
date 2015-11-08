@@ -749,7 +749,7 @@ class Rock_The_Slackbot_Hooks {
 		$trans_post_id = wp_cache_get( 'transition_post_status_notification', 'rock_the_slackbot' );
 
 		// Clear out the cache
-		if ( $trans_post_id ) {
+		if ( $trans_post_id > 0 ) {
 
 			// Delete the cache
 			wp_cache_delete( 'transition_post_status_notification', 'rock_the_slackbot' );
@@ -1315,7 +1315,7 @@ class Rock_The_Slackbot_Hooks {
 
 		// See if it has already been sent
 		$sent_notification = wp_cache_get( 'sent_404_notification', 'rock_the_slackbot' );
-		if ( $sent_notification ) {
+		if ( ! empty( $sent_notification ) ) {
 
 			// Delete the cache
 			wp_cache_delete( 'sent_404_notification', 'rock_the_slackbot' );
