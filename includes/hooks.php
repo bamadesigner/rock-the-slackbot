@@ -56,6 +56,9 @@ class Rock_The_Slackbot_Hooks {
 		// Fires immediately before a user is deleted from the database
 		add_action( 'delete_user', array( $this, 'user_deleted_notification' ), 100, 2 );
 
+		// Fires after the user's role has changed
+		add_action( 'set_user_role', array( $this, 'user_role_notification' ), 100, 3 );
+
 	}
 
 	/**
@@ -1619,6 +1622,136 @@ class Rock_The_Slackbot_Hooks {
 				'fallback'      => $general_message,
 				'text'          => wp_trim_words( strip_tags( get_the_author_meta( 'description', $user_id ) ), 30, '...' ),
 				'author_name'   => $new_user_display_name,
+				'author_link'   => get_author_posts_url( $user_id ),
+				'author_icon'   => get_avatar_url( $user_id, 32 ),
+				'fields'        => $fields,
+			)
+		);
+
+		// Send each webhook
+		$this->send_outgoing_webhooks( $notification_event, $outgoing_webhooks, $payload, $attachments );
+
+	}
+
+	/**
+	 * Sends a notification to Slack
+	 * when a user's role has changed.
+	 *
+	 * Fires after the user's role has changed.
+	 *
+	 * @access	public
+	 * @since	1.1.0
+	 * @param	int - $user_id - the User ID
+	 * @param	string - $role - the new role.
+	 * @param	array - $old_roles - an array of the user's previous roles.
+	 * @return	bool - returns false if nothing happened
+	 */
+	public function user_role_notification( $user_id, $role, $old_roles ) {
+
+		// Which event are we processing?
+		$notification_event = 'set_user_role';
+
+		// Get the outgoing webhooks
+		$outgoing_webhooks = $this->get_outgoing_webhooks( $notification_event );
+
+		// If we have no webhooks, then there's no point
+		if ( ! $outgoing_webhooks ) {
+			return false;
+		}
+
+		// Get current user
+		$current_user = wp_get_current_user();
+
+		// Get site URL and name
+		$site_url = get_bloginfo( 'url' );
+		$site_name = get_bloginfo( 'name' );
+
+		// Get changed user data
+		$changed_user_data = get_userdata( $user_id );
+		$changed_user_display_name = get_the_author_meta( 'display_name', $user_id );
+
+		// Get role info
+		$all_roles = wp_roles()->roles;
+
+		// Create general message for the notification
+		$general_message = sprintf( __( '%1$s changed the user role for %2$s on the %3$s website at <%4$s>.', 'rock-the-slackbot' ),
+			$current_user->display_name,
+			$changed_user_display_name,
+			$site_name,
+			$site_url );
+
+		// Start creating the payload
+		$payload = array(
+			'text' => $general_message,
+		);
+
+		// Add current user roles
+		if ( ! empty( $changed_user_data->roles ) ) {
+
+			// Get role info
+			$all_roles = wp_roles()->roles;
+
+			// Build new array of roles
+			$roles = array();
+			foreach( $changed_user_data->roles as $role ) {
+				if ( array_key_exists( $role, $all_roles ) ) {
+					$roles[] = $all_roles[ $role ][ 'name' ];
+				} else {
+					$roles[] = $role;
+				}
+			}
+
+			// Add to fields
+			$fields[] = array(
+					'title' => __( 'Current User Role(s)', 'rock-the-slackbot' ),
+					'value' => implode( ', ', $roles ),
+					'short' => true,
+			);
+
+		}
+
+		// Add old user roles
+		if ( ! empty( $old_roles ) ) {
+
+			// Build new array of roles
+			$roles = array();
+			foreach( $old_roles as $role ) {
+				if ( array_key_exists( $role, $all_roles ) ) {
+					$roles[] = $all_roles[ $role ][ 'name' ];
+				} else {
+					$roles[] = $role;
+				}
+			}
+
+			// Add to fields
+			$fields[] = array(
+					'title' => __( 'Old User Role(s)', 'rock-the-slackbot' ),
+					'value' => implode( ', ', $roles ),
+					'short' => true,
+			);
+
+		}
+
+		// Add user login
+		$fields[] = array(
+			'title' => __( 'User Login', 'rock-the-slackbot' ),
+			'value' => get_the_author_meta( 'user_login', $user_id ),
+			'short' => true,
+		);
+
+		// Add user email
+		$fields[] = array(
+			'title' => __( 'User Email', 'rock-the-slackbot' ),
+			'value' => get_the_author_meta( 'user_email', $user_id ),
+			'short' => true,
+		);
+
+		// Create attachment
+		$attachments = array(
+			array(
+				'fallback'      => $general_message,
+				'text'          => wp_trim_words( strip_tags( get_the_author_meta( 'description', $user_id ) ), 30, '...' ),
+				'author_name'   => $changed_user_display_name,
 				'author_link'   => get_author_posts_url( $user_id ),
 				'author_icon'   => get_avatar_url( $user_id, 32 ),
 				'fields'        => $fields,

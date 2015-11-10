@@ -639,6 +639,9 @@ class Rock_The_Slackbot_Admin {
 											// Figure out if this event should be marked active
 											$event_is_active = $this->add_webhook ? ( isset( $event[ 'default' ] ) && $event[ 'default' ] == 1 ) : ( isset( $webhook[ 'events' ][ $event_name ][ 'active' ] ) && $webhook[ 'events' ][ $event_name ][ 'active' ] == 1 );
 
+											// Get the event channel
+											$webhook_event_channel = isset( $webhook[ 'events' ][ $event_name ][ 'channel' ] ) ? $webhook[ 'events' ][ $event_name ][ 'channel' ] : null;
+
 											?><div class="rts-event-choice<?php echo $event_is_active ? ' rts-choice-is-active' : null; ?>">
 												<div class="rts-event-choice-active">
 													<label for="<?php echo $event_field_id; ?>"><input id="<?php echo $event_field_id; ?>" class="rts-event-choice-active-field" type="checkbox" name="rock_the_slackbot_outgoing_webhooks[events][<?php echo $event_name; ?>][active]" value="1"<?php checked( $event_is_active ); ?> /> <?php echo $event[ 'label' ]; ?></label>
@@ -647,7 +650,7 @@ class Rock_The_Slackbot_Admin {
 													<tr>
 														<td class="rts-label"><label for="<?php echo $event_field_id; ?>-channel"><?php _e( 'Public Slack Channel or Direct Message', 'rock-the-slackbot' ); ?></label></td>
 														<td class="rts-field">
-															<input id="<?php echo $event_field_id; ?>-channel" class="rts-tooltip" type="text" name="rock_the_slackbot_outgoing_webhooks[events][<?php echo $event_name; ?>][channel]" value="<?php echo esc_attr($webhook[ 'events' ][ $event_name ][ 'channel' ]); ?>" title="<?php esc_attr_e( 'This allows you to set a public Slack channel or direct message for this specific event. Leave blank to use the default channel. Use a # or @ before the name to specify a public channel or direct message, respectively.', 'rock-the-slackbot' ); ?>" />
+															<input id="<?php echo $event_field_id; ?>-channel" class="rts-tooltip" type="text" name="rock_the_slackbot_outgoing_webhooks[events][<?php echo $event_name; ?>][channel]" value="<?php echo esc_attr( $webhook_event_channel ); ?>" title="<?php esc_attr_e( 'This allows you to set a public Slack channel or direct message for this specific event. Leave blank to use the default channel. Use a # or @ before the name to specify a public channel or direct message, respectively.', 'rock-the-slackbot' ); ?>" />
 															<span class="rts-field-desc"><?php _e( 'Leave blank to use the default channel.', 'rock-the-slackbot' ); ?></span>
 														</td>
 													</tr>

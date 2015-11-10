@@ -210,6 +210,9 @@ class Rock_The_Slackbot {
 					'user_deleted' => array(
 						'label' => __( 'When a user is deleted', 'rock-the-slackbot' ),
 					),
+					'set_user_role' => array(
+						'label' => __( "When a user's role has changed", 'rock-the-slackbot' ),
+					),
 				)
 			),
 			'updates' => array(
