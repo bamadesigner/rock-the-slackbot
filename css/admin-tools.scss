@@ -57,7 +57,7 @@
 .rts-dashicons {
 
     .dashicons {
-        line-height: inherit;
+        line-height: 0.9;
         margin: 0 2px 0 0;
     }
 
@@ -90,8 +90,40 @@
         text-align: center;
         cursor: pointer;
 
+        .dashicons {
+            vertical-align: middle;
+        }
+
         &.rts-button-block {
             display: block;
+        }
+
+        &.rts-button-green {
+            background: #1a937d;
+
+            &:hover {
+                background: #13806c;
+            }
+
+        }
+
+        &.rts-button-gold {
+            background: #e8a723;
+            color: #fff;
+
+            &:hover {
+                background: #de9b12;
+            }
+
+        }
+
+        &.rts-button-red {
+            background: #cc2027;
+
+            &:hover {
+                background: #b9070f;
+            }
+
         }
 
         &:hover {
@@ -112,15 +144,6 @@
     .rts-button {
         width: 100%;
         margin: 0;
-    }
-
-}
-
-#rock-slackbot-delete-button {
-    background: #cc2027;
-
-    &:hover {
-        background: #b9070f;
     }
 
 }
@@ -239,7 +262,7 @@
 }
 
 // Edit form
-form.rock-slackbot-edit-outgoing-webhook-form {
+#rock-slackbot-edit-outgoing-webhook-form {
     margin: 0;
     border: 0;
 }
@@ -258,16 +281,6 @@ table {
         td {
             width: auto;
             padding: 0;
-
-            &.rts-submit input {
-                width: 100%;
-                border: 0;
-                padding-left: 0;
-                padding-right: 0;
-                box-shadow: none;
-                border-radius: 0;
-            }
-
         }
 
         input[type="text"] {
@@ -508,16 +521,7 @@ table {
                     padding-right: 5px;
 
                     .button {
-                        background: #e8a723;
-                        color: #fff;
                         font-size: 12px;
-                        text-transform: uppercase;
-                        text-align: center;
-
-                        &:hover {
-                            background: #de9b12;
-                        }
-
                     }
 
                 }
@@ -525,15 +529,11 @@ table {
                 &.rts-submit {
                     padding-left: 5px;
 
-                    input {
-                        background: #1a937d;
+                    .button {
+                        width: 100%;
+                        padding-left: 0;
+                        padding-right: 0;
                         font-size: 14px;
-                        text-transform: uppercase;
-
-                        &:hover {
-                            background: #13806c;
-                        }
-
                     }
 
                 }
