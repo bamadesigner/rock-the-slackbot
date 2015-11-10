@@ -64,13 +64,5 @@ Please use [the Issues section of this plugin's GitHub repo](https://github.com/
 
 == Changelog ==
 
-= 1.1.0 =
-* Added emphasis to the settings page to make sure users know they can only send to public channels and direct messages.
-
 = 1.0.0 =
 Plugin launch
-
-== Upgrade Notice ==
-
-= 1.1.0 =
-* Added emphasis to the settings page to make sure users know they can only send to public channels and direct messages.
