@@ -246,12 +246,18 @@ class Rock_The_Slackbot {
 		// Get site webhooks
 		$webhooks = get_option( 'rock_the_slackbot_outgoing_webhooks', array() );
 
+		// Make sure its an array
+		if ( empty( $webhooks ) ) {
+			$webhooks = array();
+		}
+
 		// Get network webhooks
 		if ( $network && is_multisite()
 			&& ( $plugins = get_site_option( 'active_sitewide_plugins' ) )
 			&& isset( $plugins[ ROCK_THE_SLACKBOT_PLUGIN_FILE ] ) ) {
 
-			if ( $network_webhooks = get_site_option( 'rock_the_slackbot_network_outgoing_webhooks', array() ) ) {
+			if ( ( $network_webhooks = get_site_option( 'rock_the_slackbot_network_outgoing_webhooks', array() ) )
+				&& is_array( $network_webhooks ) ) {
 				$webhooks = array_merge( $network_webhooks, $webhooks );
 			}
 
