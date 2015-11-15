@@ -1365,6 +1365,15 @@ class Rock_The_Slackbot_Hooks {
 			),
 		);
 
+		// If there's a referer
+		if ( $referer = wp_get_referer() ) {
+			$fields[] = array(
+				'title' => 'Referer',
+				'value' => $referer,
+				'short' => true,
+			);
+		}
+
 		// If there's a user
 		if ( isset( $current_user->display_name ) ) {
 			$fields[] = array(
