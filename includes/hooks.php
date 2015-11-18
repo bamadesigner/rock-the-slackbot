@@ -23,6 +23,8 @@ class Rock_The_Slackbot_Hooks {
 		//		when plugins and themes are installed/uploaded
 		// 		When themes are selected
 
+		// Sends notifications when a core, plugin, or theme update is available
+		add_action( 'admin_init', array( $this, 'core_update_available_notification' ), 100 );
 		// Fires when the bulk upgrader process is complete
 		add_action( 'upgrader_process_complete', array( $this, 'upgrade_notification' ), 100, 2 );
 
@@ -172,6 +174,109 @@ class Rock_The_Slackbot_Hooks {
 	}
 
 	/**
+	 * Setup notifications for when a core update is available.
+	 *
+	 * @TODO might could change to be run
+	 * when the transients that store this info
+	 * are updated?
+	 *
+	 * get_site_transient( 'update_core' )
+	 *
+	 * @access  public
+	 * @since   1.1.0
+	 */
+	public function core_update_available_notification() {
+		global $wp_version;
+
+		// Only send update notices once a week
+		$core_update_transient = get_transient( 'rock_the_slack_core_update_available' );
+		if ( $core_update_transient !== false && ( time() - $core_update_transient ) < WEEK_IN_SECONDS ) {
+			return false;
+		}
+
+		// See if there's an update before moving forward
+		$update_wordpress = null;
+		if ( ! ( function_exists( 'get_core_updates' )
+			&& ( $update_wordpress = get_core_updates( array( 'dismissed' => false ) ) )
+			&& ! empty( $update_wordpress )
+			&& ( $update_wordpress = array_shift( $update_wordpress ) )
+			&& ! in_array( $update_wordpress->response, array( 'development', 'latest' ) ) ) ) {
+			return false;
+		}
+
+		// Which event are we processing?
+		$notification_event = 'core_update_available';
+
+		// Get the outgoing webhooks
+		$outgoing_webhooks = $this->get_outgoing_webhooks( $notification_event );
+
+		// If we have no webhooks, then there's no point
+		if ( ! $outgoing_webhooks ) {
+			return false;
+		}
+
+		// Get current user
+		$current_user = wp_get_current_user();
+
+		// Get site URL and name
+		$site_url = get_bloginfo( 'url' );
+		$site_name = get_bloginfo( 'name' );
+
+		// Get update URL
+		$core_update_url = is_multisite() ? network_admin_url( 'update-core.php' ) : admin_url( 'update-core.php' );
+
+		// Get core version
+		$core_update_version = isset( $update_wordpress->version ) ? $update_wordpress->version : false;
+
+		// Create general message for the notification
+		$general_message = sprintf( __( 'A WordPress core update is available on the %1$s website at <%2$s>.', 'rock-the-slackbot' ),
+			$site_name,
+			$site_url );
+
+		// Start creating the payload
+		$payload = array(
+			'text' => $general_message,
+		);
+
+		// Start creating the fields
+		$fields = array(
+			array(
+				'title' => __( 'Current Version', 'rock-the-slackbot' ),
+				'value' => $wp_version,
+				'short' => true,
+			)
+		);
+
+		// Add new version
+		if ( $core_update_version ) {
+			$fields[] = array(
+				'title' => __( 'New Version', 'rock-the-slackbot' ),
+				'value' => $core_update_version,
+				'short' => true,
+			);
+		}
+
+		// Create attachments
+		$attachments = array(
+			array(
+				'fallback'      => $general_message,
+				'text'          => null,
+				'title'         => 'Update WordPress Core',
+				'title_link'    => $core_update_url,
+				'author_name'   => $current_user->display_name,
+				'author_link'   => get_author_posts_url( $current_user->ID ),
+				'author_icon'   => get_avatar_url( $current_user->ID, 32 ),
+				'fields'        => $fields,
+			)
+		);
+
+		// Send each webhook
+		$this->send_outgoing_webhooks( $notification_event, $outgoing_webhooks, $payload, $attachments );
+
+		// Store timestamp in transient so it only sends the update notice once a week
+		set_transient( 'rock_the_slack_core_update_available', time(), WEEK_IN_SECONDS );
+
+	}
 	 * Sends a notification to Slack when
 	 * core, plugins, or themes are updated.
 	 *

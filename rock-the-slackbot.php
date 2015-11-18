@@ -218,6 +218,10 @@ class Rock_The_Slackbot {
 			'updates' => array(
 				'label' => __( 'Updates', 'rock-the-slackbot' ),
 				'events' => array(
+					'core_update_available' => array(
+						'label' => __( 'When a WordPress core update is available', 'rock-the-slackbot' ),
+						'default' => 1,
+					),
 					'core_updated' => array(
 						'label' => __( 'When WordPress core is updated', 'rock-the-slackbot' ),
 						'default' => 1,
