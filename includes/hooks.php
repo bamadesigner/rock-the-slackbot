@@ -1464,7 +1464,7 @@ class Rock_The_Slackbot_Hooks {
 		// Create the fields
 		$fields = array(
 			array(
-				'title' => 'URL',
+				'title' => __( 'URL', 'rock-the-slackbot' ),
 				'value' => $current_url,
 				'short' => true,
 			),
@@ -1473,8 +1473,17 @@ class Rock_The_Slackbot_Hooks {
 		// If there's a referer
 		if ( $referer = wp_get_referer() ) {
 			$fields[] = array(
-				'title' => 'Referer',
+				'title' => __( 'Referer', 'rock-the-slackbot' ),
 				'value' => $referer,
+				'short' => true,
+			);
+		}
+
+		// If there's an IP address
+		if ( isset( $_SERVER[ 'REMOTE_ADDR' ] ) ) {
+			$fields[] = array(
+				'title' => __( 'IP address', 'rock-the-slackbot' ),
+				'value' => $_SERVER[ 'REMOTE_ADDR' ],
 				'short' => true,
 			);
 		}
@@ -1482,9 +1491,18 @@ class Rock_The_Slackbot_Hooks {
 		// If there's a user
 		if ( isset( $current_user->display_name ) ) {
 			$fields[] = array(
-				'title' => 'Current User',
+				'title' => __( 'Current User', 'rock-the-slackbot' ),
 				'value' => $current_user->display_name,
 				'short' => true,
+			);
+		}
+
+		// If there's a user agent
+		if ( isset( $_SERVER[ 'HTTP_USER_AGENT' ] ) ) {
+			$fields[] = array(
+				'title' => __( 'User Agent', 'rock-the-slackbot' ),
+				'value' => $_SERVER[ 'HTTP_USER_AGENT' ],
+				'short' => false,
 			);
 		}
 
@@ -1492,7 +1510,7 @@ class Rock_The_Slackbot_Hooks {
 		$wp_query_vars = array_filter( $wp_query->query );
 		if ( ! empty( $wp_query_vars ) ) {
 			$fields[] = array(
-				'title' => 'WordPress Query',
+				'title' => __( 'WordPress Query', 'rock-the-slackbot' ),
 				'value' => build_query( preg_replace( '/[\s]{2,}/i', ' ', $wp_query_vars ) ),
 				'short' => false,
 			);
@@ -1500,7 +1518,7 @@ class Rock_The_Slackbot_Hooks {
 
 		// Add the MySQL request
 		$fields[] = array(
-			'title' => 'MySQL Request',
+			'title' => __( 'MySQL Request', 'rock-the-slackbot' ),
 			'value' => preg_replace( '/[\s]{2,}/i', ' ', $wp_query->request ),
 			'short' => false,
 		);
