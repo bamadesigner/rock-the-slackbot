@@ -425,7 +425,7 @@ class Rock_The_Slackbot_Admin {
 
 		// If we're adding and we have a value stored in transient from error processing
 		if ( $this->add_webhook ) {
-			$webhook_transient = get_transient( 'rock_the_slackbot_add_outgoing_webhook' );
+			$webhook_transient = rock_the_slackbot()->is_network_active ? get_site_transient( 'rock_the_slackbot_add_outgoing_webhook' ) : get_transient( 'rock_the_slackbot_add_outgoing_webhook' );
 			if ( $webhook_transient !== false ) {
 				$webhook = $webhook_transient;
 			}
@@ -931,7 +931,7 @@ class Rock_The_Slackbot_Admin {
 				}
 
 				// Stores any settings errors so they can be displayed on redirect
-				set_transient( 'settings_errors', get_settings_errors(), 30 );
+				set_site_transient( 'settings_errors', get_settings_errors(), 30 );
 
 				// Redirect to settings page
 				wp_redirect( add_query_arg( array( 'settings-updated' => 'true' ), $_REQUEST[ '_wp_http_referer' ] ) );
@@ -1119,7 +1119,11 @@ class Rock_The_Slackbot_Admin {
 
 			// If we're adding a hook, stores value info so it can be re-populated
 			if ( ! $edit_hook ) {
-				set_transient( 'rock_the_slackbot_add_outgoing_webhook', $webhook, 60 );
+				if ( rock_the_slackbot()->is_network_active ) {
+					set_site_transient( 'rock_the_slackbot_add_outgoing_webhook', $webhook, 60 );
+				} else {
+					set_transient( 'rock_the_slackbot_add_outgoing_webhook', $webhook, 60 );
+				}
 			}
 
 			// Return errors
@@ -1285,7 +1289,11 @@ class Rock_The_Slackbot_Admin {
 
 		// Store the info
 		if ( $pre_upgrade_info ) {
-			set_transient( 'rock_the_slackbot_pre_upgrade_information', $pre_upgrade_info, 60 );
+			if ( rock_the_slackbot()->is_network_active ) {
+				set_site_transient( 'rock_the_slackbot_pre_upgrade_information', $pre_upgrade_info, 60 );
+			} else {
+				set_transient( 'rock_the_slackbot_pre_upgrade_information', $pre_upgrade_info, 60 );
+			}
 		}
 
 	}

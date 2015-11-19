@@ -189,7 +189,7 @@ class Rock_The_Slackbot_Hooks {
 		global $wp_version;
 
 		// Only send update notices once a week
-		$core_update_transient = get_transient( 'rock_the_slack_core_update_available' );
+		$core_update_transient = rock_the_slackbot()->is_network_active ? get_site_transient( 'rock_the_slack_core_update_available' ) : get_transient( 'rock_the_slack_core_update_available' );
 		if ( $core_update_transient !== false && ( time() - $core_update_transient ) < WEEK_IN_SECONDS ) {
 			return false;
 		}
@@ -274,7 +274,14 @@ class Rock_The_Slackbot_Hooks {
 		$this->send_outgoing_webhooks( $notification_event, $outgoing_webhooks, $payload, $attachments );
 
 		// Store timestamp in transient so it only sends the update notice once a week
-		set_transient( 'rock_the_slack_core_update_available', time(), WEEK_IN_SECONDS );
+		if ( rock_the_slackbot()->is_network_active ) {
+			set_site_transient( 'rock_the_slack_core_update_available', time(), WEEK_IN_SECONDS );
+		} else {
+			set_transient( 'rock_the_slack_core_update_available', time(), WEEK_IN_SECONDS );
+		}
+
+	}
+
 
 	}
 	 * Sends a notification to Slack when
@@ -338,8 +345,13 @@ class Rock_The_Slackbot_Hooks {
 		}
 
 		// Get the pre upgrade info
-		$pre_upgrade_info = get_transient( 'rock_the_slackbot_pre_upgrade_information' );
-		delete_transient( 'rock_the_slackbot_pre_upgrade_information' );
+		if ( rock_the_slackbot()->is_network_active ) {
+			$pre_upgrade_info = get_site_transient( 'rock_the_slackbot_pre_upgrade_information' );
+			delete_site_transient( 'rock_the_slackbot_pre_upgrade_information' );
+		} else {
+			$pre_upgrade_info = get_transient( 'rock_the_slackbot_pre_upgrade_information' );
+			delete_transient( 'rock_the_slackbot_pre_upgrade_information' );
+		}
 
 		// Get current user
 		$current_user = wp_get_current_user();
