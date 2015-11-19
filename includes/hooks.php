@@ -581,10 +581,10 @@ class Rock_The_Slackbot_Hooks {
 						$item_title = ( 'plugin' == $upgrade_type ) ? ( isset( $item_data[ 'Name' ] ) ? $item_data[ 'Name' ] : false ) : $item_data->get( 'Name' );
 
 						// Set item URI
-						$item_uri = ( 'plugin' == $upgrade_type ) ? ( isset( $item_data[ 'PluginURI' ] ) ? html_entity_decode( $item_data[ 'PluginURI' ] ) : false ) : $item_data->get( 'ThemeURI' );
+						$item_uri = ( 'plugin' == $upgrade_type ) ? ( isset( $item_data[ 'PluginURI' ] ) ? $item_data[ 'PluginURI' ] : false ) : $item_data->get( 'ThemeURI' );
 
 						// Set item description
-						$item_desc = ( 'plugin' == $upgrade_type ) ? ( isset( $item_data[ 'Description' ] ) ? html_entity_decode( $item_data[ 'Description' ] ) : false ) : $item_data->get( 'Description' );
+						$item_desc = ( 'plugin' == $upgrade_type ) ? ( isset( $item_data[ 'Description' ] ) ? strip_tags( html_entity_decode( $item_data[ 'Description' ] ) ) : false ) : $item_data->get( 'Description' );
 
 						// Set item author name
 						$author_name = ( 'plugin' == $upgrade_type ) ? ( isset( $item_data[ 'AuthorName' ] ) ? $item_data[ 'AuthorName' ] : false ) : $item_data->get( 'Author' );
