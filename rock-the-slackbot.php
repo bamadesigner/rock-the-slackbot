@@ -35,6 +35,15 @@ if ( is_admin() ) {
 class Rock_The_Slackbot {
 
 	/**
+	 * Whether or not this plugin is network active.
+	 *
+	 * @since	1.1.0
+	 * @access	public
+	 * @var		boolean
+	 */
+	public $is_network_active;
+
+	/**
 	 * Holds the class instance.
 	 *
 	 * @since	1.0.0
@@ -65,6 +74,9 @@ class Rock_The_Slackbot {
 	 * @since   1.0.0
 	 */
 	protected function __construct() {
+
+		// Is this plugin network active?
+		$this->is_network_active = is_multisite() && ( $plugins = get_site_option( 'active_sitewide_plugins' ) ) && isset( $plugins[ ROCK_THE_SLACKBOT_PLUGIN_FILE ] );
 
 		// Load our textdomain
 		add_action( 'init', array( $this, 'textdomain' ) );
@@ -256,9 +268,7 @@ class Rock_The_Slackbot {
 		}
 
 		// Get network webhooks
-		if ( $network && is_multisite()
-			&& ( $plugins = get_site_option( 'active_sitewide_plugins' ) )
-			&& isset( $plugins[ ROCK_THE_SLACKBOT_PLUGIN_FILE ] ) ) {
+		if ( $network && $this->is_network_active ) {
 
 			if ( ( $network_webhooks = get_site_option( 'rock_the_slackbot_network_outgoing_webhooks', array() ) )
 				&& is_array( $network_webhooks ) ) {
