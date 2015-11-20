@@ -68,9 +68,8 @@ Please use [the Issues section of this plugin's GitHub repo](https://github.com/
 * Rock The Slackbot is now multisite compatible!
 * Setup Slack notification when a plugin, theme, or core update is available.
 * Setup Slack notification when a user's role has changed.
-* Adding wp_get_referer() field to the 404 notification.
-* Added emphasis to the settings page to make sure users know they can only send to public channels and direct messages.
-* Add "Save Webhook" button to the side column.
+* Adding wp_get_referer(), IP address, and HTTP_USER_AGENT fields to the 404 notification.
+* Added "Save Webhook" button to the side column.
 
 = 1.0.0 =
 Plugin launch
@@ -81,6 +80,5 @@ Plugin launch
 * Rock The Slackbot is now multisite compatible!
 * Setup Slack notification when a plugin, theme, or core update is available.
 * Setup Slack notification when a user's role has changed.
-* Adding wp_get_referer() field to the 404 notification.
-* Added emphasis to the settings page to make sure users know they can only send to public channels and direct messages.
-* Add "Save Webhook" button to the side column.
+* Adding wp_get_referer(), IP address, and HTTP_USER_AGENT fields to the 404 notification.
+* Added "Save Webhook" button to the side column.

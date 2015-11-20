@@ -572,10 +572,10 @@ class Rock_The_Slackbot_Admin {
 					</td>
 				</tr>
 				<tr>
-					<td class="rts-label"><label for="rts-webhook-channel"><?php _e( 'Send To <em>Public</em> Slack Channel or Direct Message', 'rock-the-slackbot' ); ?></label></td>
+					<td class="rts-label"><label for="rts-webhook-channel"><?php _e( 'Send To Slack Channel or Direct Message', 'rock-the-slackbot' ); ?></label></td>
 					<td class="rts-field">
 						<input id="rts-webhook-channel" type="text" name="rock_the_slackbot_outgoing_webhooks[channel]" value="<?php echo esc_attr($webhook[ 'channel' ]); ?>"/>
-						<span class="rts-field-desc"><?php _e( 'Incoming webhooks have a default channel but you can use this setting as an override. Use a "#" before the name to specify a public channel and a "@" to specify a direct message. For example, type "#wordpress" for your public Slack channel about WordPress or type "@bamadesigner" to send your notifications to me as a direct message, at least you could if I was a member of your Slack account. <strong>You can only send notifications to a public channel or direct message.</strong></em>', 'rock-the-slackbot' ); ?></span>
+						<span class="rts-field-desc"><?php _e( 'Incoming webhooks have a default channel but you can use this setting as an override. Use a "#" before the name to specify a channel and a "@" to specify a direct message. For example, type "#wordpress" for your Slack channel about WordPress or type "@bamadesigner" to send your notifications to me as a direct message, at least you could if I was a member of your Slack account.', 'rock-the-slackbot' ); ?></span>
 					</td>
 				</tr>
 				<tr>
@@ -648,9 +648,9 @@ class Rock_The_Slackbot_Admin {
 												</div>
 												<table class="rock-slackbot rts-event-choice-details" cellpadding="0" cellspacing="0" border="0">
 													<tr>
-														<td class="rts-label"><label for="<?php echo $event_field_id; ?>-channel"><?php _e( 'Public Slack Channel or Direct Message', 'rock-the-slackbot' ); ?></label></td>
+														<td class="rts-label"><label for="<?php echo $event_field_id; ?>-channel"><?php _e( 'Slack Channel or Direct Message', 'rock-the-slackbot' ); ?></label></td>
 														<td class="rts-field">
-															<input id="<?php echo $event_field_id; ?>-channel" class="rts-tooltip" type="text" name="rock_the_slackbot_outgoing_webhooks[events][<?php echo $event_name; ?>][channel]" value="<?php echo esc_attr( $webhook_event_channel ); ?>" title="<?php esc_attr_e( 'This allows you to set a public Slack channel or direct message for this specific event. Leave blank to use the default channel. Use a # or @ before the name to specify a public channel or direct message, respectively.', 'rock-the-slackbot' ); ?>" />
+															<input id="<?php echo $event_field_id; ?>-channel" class="rts-tooltip" type="text" name="rock_the_slackbot_outgoing_webhooks[events][<?php echo $event_name; ?>][channel]" value="<?php echo esc_attr( $webhook_event_channel ); ?>" title="<?php esc_attr_e( 'This allows you to set a Slack channel or direct message for this specific event. Leave blank to use the default channel. Use a # or @ before the name to specify a channel or direct message, respectively.', 'rock-the-slackbot' ); ?>" />
 															<span class="rts-field-desc"><?php _e( 'Leave blank to use the default channel.', 'rock-the-slackbot' ); ?></span>
 														</td>
 													</tr>
