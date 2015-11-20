@@ -179,7 +179,7 @@ class Rock_The_Slackbot_Hooks {
 	 *
 	 * @TODO might could change to be run
 	 * when the transients that store this info
-	 * are updated?
+	 * are updated? Would that run too often?
 	 *
 	 * get_site_transient( 'update_core' )
 	 *
@@ -434,7 +434,7 @@ class Rock_The_Slackbot_Hooks {
 	 *
 	 * @TODO might could change to be run
 	 * when the transients that store this info
-	 * are updated?
+	 * are updated? Would that run too often?
 	 *
 	 * get_site_transient( 'update_themes' )
 	 *

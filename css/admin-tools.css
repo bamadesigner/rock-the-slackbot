@@ -302,6 +302,14 @@ table.rock-slackbot-edit-outgoing-webhook td.rts-field.rts-field-required.rts-fi
 table.rock-slackbot-edit-outgoing-webhook td.rts-field.rts-field-required.rts-field-error input {
   border-color: #900;
 }
+table.rock-slackbot-edit-outgoing-webhook td.rts-field .rts-network-post-types {
+  margin: 10px -15px 0 -15px;
+  padding: 10px 15px;
+  border-top: 1px solid #eee;
+}
+table.rock-slackbot-edit-outgoing-webhook td.rts-field .rts-network-post-types input {
+  margin: 5px 0 0 0;
+}
 table.rock-slackbot-edit-outgoing-webhook td .rts-field-desc {
   display: block;
   clear: both;

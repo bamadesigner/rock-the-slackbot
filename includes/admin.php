@@ -445,9 +445,6 @@ class Rock_The_Slackbot_Admin {
 		} else {
 
 			// Get post types
-			// @TODO Add a way for user to manually include post type names
-			// for network admin since the network admin can't pick up
-			// post types registered on sites other than the main site
 			$post_types = get_post_types( array(), 'objects' );
 
 			// Remove the following since they have their own events
@@ -610,8 +607,23 @@ class Rock_The_Slackbot_Admin {
 							$pt_index++;
 						}
 
-						?><span class="rts-field-desc"><?php _e( 'By default, all post types will be included when sending notifications for content related events. Use this setting to exclude certain post types from your notifications.', 'rock-the-slackbot' ); ?></span>
-					</td>
+						?><span class="rts-field-desc"><?php _e( 'By default, all post types will be included when sending notifications for content related events. Use this setting to exclude certain post types from your notifications.', 'rock-the-slackbot' ); ?></span><?php
+
+						// Only need this setting in the network admin
+						if ( $this->is_network_admin ) {
+
+							// Convert the setting to a string for display
+							$network_exclude_post_types = isset( $webhook[ 'network_exclude_post_types' ] ) && ! empty( $webhook[ 'network_exclude_post_types' ] ) ? implode( ', ', $webhook[ 'network_exclude_post_types' ] ) : null;
+
+							?><div class="rts-network-post-types">
+								<strong><?php _e( 'Network Post Types', 'rock-the-slackbot' ); ?></strong><br />
+								<input id="rts-webhook-network-post-type" type="text" name="rock_the_slackbot_outgoing_webhooks[network_exclude_post_types]" value="<?php echo esc_attr( $network_exclude_post_types ); ?>" />
+								<span class="rts-field-desc"><?php _e( '<strong><em>Include only post type slugs, separated by commas.</em></strong><br />There is no straight forward way for the network admin to retrieve all post types that exist on your network. The network admin can only retrieve what\'s registered on your main site which are included as checkboxes above. Please use the text field above to designate the slugs of post types you would like to exclude on a network level.', 'rock-the-slackbot' ); ?></span>
+							</div><?php
+
+						}
+
+					?></td>
 				</tr>
 				<tr id="edit-rts-notification-events">
 					<td class="rts-label">Notification Events<br />
@@ -1095,7 +1107,14 @@ class Rock_The_Slackbot_Admin {
 			$webhook[ 'icon_url' ] = trim( $webhook[ 'icon_url' ] );
 		}
 
-		// 6) Check the events
+		// 6) Check the 'network_exclude_post_types' setting to make sure its an array
+		if ( isset( $webhook[ 'network_exclude_post_types' ] ) && ! empty( $webhook[ 'network_exclude_post_types' ] ) ) {
+			if ( ! is_array( $webhook[ 'network_exclude_post_types' ] ) ) {
+				$webhook[ 'network_exclude_post_types' ] = explode( ',', str_replace( ' ', '', $webhook[ 'network_exclude_post_types' ] ) );
+			}
+		}
+
+		// 7) Check the events
 		if ( isset( $webhook[ 'events' ] ) ) {
 			foreach( $webhook[ 'events' ] as &$event ) {
 

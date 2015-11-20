@@ -362,15 +362,40 @@ class Rock_The_Slackbot {
 			foreach( $outgoing_webhooks as $hook ) {
 
 				// If we have excluded post types and a post type was sent, then skip this webhook
-				if ( isset( $event_data[ 'post_type' ] ) && isset( $hook[ 'exclude_post_types' ] ) ) {
+				if ( isset( $event_data[ 'post_type' ] )
+					&& ( isset( $hook[ 'exclude_post_types' ] ) || isset( $hook[ 'network_exclude_post_types' ] ) ) ) {
 
-					// Make sure its an array
-					if ( ! is_array( $hook[ 'exclude_post_types' ] ) ) {
-						$hook[ 'exclude_post_types' ] = explode( ',', $hook[ 'exclude_post_types' ] );
+					// Get the post types we should exclude
+					$exclude_post_types = array();
+
+					// Get the regular exclude post types
+					if ( isset( $hook[ 'exclude_post_types' ] ) ) {
+
+						// Make sure its an array
+						if ( ! is_array( $hook[ 'exclude_post_types' ] ) ) {
+							$hook[ 'exclude_post_types' ] = explode( ',', $hook[ 'exclude_post_types' ] );
+						}
+
+						// Add to list
+						$exclude_post_types = $hook[ 'exclude_post_types' ];
+
+					}
+
+					// Get the network exclude post types
+					if ( isset( $hook[ 'network_exclude_post_types' ] ) ) {
+
+						// Make sure its an array
+						if ( ! is_array( $hook[ 'network_exclude_post_types' ] ) ) {
+							$hook[ 'network_exclude_post_types' ] = explode( ',', $hook[ 'network_exclude_post_types' ] );
+						}
+
+						// Add to list
+						$exclude_post_types = array_merge( $exclude_post_types, $hook[ 'network_exclude_post_types' ] );
+
 					}
 
 					// Check to see if the post type sent is supposed to be excluded
-					if ( array_intersect( $event_data[ 'post_type' ], $hook[ 'exclude_post_types' ] ) ) {
+					if ( array_intersect( $event_data[ 'post_type' ], $exclude_post_types ) ) {
 						continue;
 					}
 
