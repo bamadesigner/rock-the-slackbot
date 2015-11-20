@@ -4,7 +4,7 @@
  * Plugin Name:       Rock The Slackbot
  * Plugin URI:        https://wordpress.org/plugins/rock-the-slackbot/
  * Description:       Rock The Slackbot helps you stay on top of changes by sending notifications straight to you and your team inside your Slack account.
- * Version:           1.0.0
+ * Version:           1.1.0
  * Author:            Rachel Carden
  * Author URI:        http://bamadesigner.com
  * License:           GPL-2.0+
@@ -19,7 +19,7 @@ if ( ! defined( 'WPINC' ) ) {
 }
 
 // If you define them, will they be used?
-define( 'ROCK_THE_SLACKBOT_VERSION', '1.0.0' );
+define( 'ROCK_THE_SLACKBOT_VERSION', '1.1.0' );
 define( 'ROCK_THE_SLACKBOT_PLUGIN_URL', 'https://wordpress.org/plugins/rock-the-slackbot/' );
 define( 'ROCK_THE_SLACKBOT_PLUGIN_FILE', 'rock-the-slackbot/rock-the-slackbot.php' );
 
@@ -33,6 +33,15 @@ if ( is_admin() ) {
 }
 
 class Rock_The_Slackbot {
+
+	/**
+	 * Whether or not this plugin is network active.
+	 *
+	 * @since	1.1.0
+	 * @access	public
+	 * @var		boolean
+	 */
+	public $is_network_active;
 
 	/**
 	 * Holds the class instance.
@@ -65,6 +74,9 @@ class Rock_The_Slackbot {
 	 * @since   1.0.0
 	 */
 	protected function __construct() {
+
+		// Is this plugin network active?
+		$this->is_network_active = is_multisite() && ( $plugins = get_site_option( 'active_sitewide_plugins' ) ) && isset( $plugins[ ROCK_THE_SLACKBOT_PLUGIN_FILE ] );
 
 		// Load our textdomain
 		add_action( 'init', array( $this, 'textdomain' ) );
@@ -210,17 +222,30 @@ class Rock_The_Slackbot {
 					'user_deleted' => array(
 						'label' => __( 'When a user is deleted', 'rock-the-slackbot' ),
 					),
+					'set_user_role' => array(
+						'label' => __( "When a user's role has changed", 'rock-the-slackbot' ),
+					),
 				)
 			),
 			'updates' => array(
 				'label' => __( 'Updates', 'rock-the-slackbot' ),
 				'events' => array(
+					'core_update_available' => array(
+						'label' => __( 'When a WordPress core update is available', 'rock-the-slackbot' ),
+						'default' => 1,
+					),
 					'core_updated' => array(
 						'label' => __( 'When WordPress core is updated', 'rock-the-slackbot' ),
 						'default' => 1,
 					),
+					'plugin_update_available' => array(
+						'label' => __( 'When a plugin update is available', 'rock-the-slackbot' ),
+					),
 					'plugin_updated' => array(
 						'label' => __( 'When a plugin is updated', 'rock-the-slackbot' ),
+					),
+					'theme_update_available' => array(
+						'label' => __( 'When a theme update is available', 'rock-the-slackbot' ),
 					),
 					'theme_updated' => array(
 						'label' => __( 'When a theme is updated', 'rock-the-slackbot' ),
@@ -243,12 +268,16 @@ class Rock_The_Slackbot {
 		// Get site webhooks
 		$webhooks = get_option( 'rock_the_slackbot_outgoing_webhooks', array() );
 
-		// Get network webhooks
-		if ( $network && is_multisite()
-			&& ( $plugins = get_site_option( 'active_sitewide_plugins' ) )
-			&& isset( $plugins[ ROCK_THE_SLACKBOT_PLUGIN_FILE ] ) ) {
+		// Make sure its an array
+		if ( empty( $webhooks ) ) {
+			$webhooks = array();
+		}
 
-			if ( $network_webhooks = get_site_option( 'rock_the_slackbot_network_outgoing_webhooks', array() ) ) {
+		// Get network webhooks
+		if ( $network && $this->is_network_active ) {
+
+			if ( ( $network_webhooks = get_site_option( 'rock_the_slackbot_network_outgoing_webhooks', array() ) )
+				&& is_array( $network_webhooks ) ) {
 				$webhooks = array_merge( $network_webhooks, $webhooks );
 			}
 
@@ -333,15 +362,40 @@ class Rock_The_Slackbot {
 			foreach( $outgoing_webhooks as $hook ) {
 
 				// If we have excluded post types and a post type was sent, then skip this webhook
-				if ( isset( $event_data[ 'post_type' ] ) && isset( $hook[ 'exclude_post_types' ] ) ) {
+				if ( isset( $event_data[ 'post_type' ] )
+					&& ( isset( $hook[ 'exclude_post_types' ] ) || isset( $hook[ 'network_exclude_post_types' ] ) ) ) {
 
-					// Make sure its an array
-					if ( ! is_array( $hook[ 'exclude_post_types' ] ) ) {
-						$hook[ 'exclude_post_types' ] = explode( ',', $hook[ 'exclude_post_types' ] );
+					// Get the post types we should exclude
+					$exclude_post_types = array();
+
+					// Get the regular exclude post types
+					if ( isset( $hook[ 'exclude_post_types' ] ) ) {
+
+						// Make sure its an array
+						if ( ! is_array( $hook[ 'exclude_post_types' ] ) ) {
+							$hook[ 'exclude_post_types' ] = explode( ',', $hook[ 'exclude_post_types' ] );
+						}
+
+						// Add to list
+						$exclude_post_types = $hook[ 'exclude_post_types' ];
+
+					}
+
+					// Get the network exclude post types
+					if ( isset( $hook[ 'network_exclude_post_types' ] ) ) {
+
+						// Make sure its an array
+						if ( ! is_array( $hook[ 'network_exclude_post_types' ] ) ) {
+							$hook[ 'network_exclude_post_types' ] = explode( ',', $hook[ 'network_exclude_post_types' ] );
+						}
+
+						// Add to list
+						$exclude_post_types = array_merge( $exclude_post_types, $hook[ 'network_exclude_post_types' ] );
+
 					}
 
 					// Check to see if the post type sent is supposed to be excluded
-					if ( array_intersect( $event_data[ 'post_type' ], $hook[ 'exclude_post_types' ] ) ) {
+					if ( array_intersect( $event_data[ 'post_type' ], $exclude_post_types ) ) {
 						continue;
 					}
 

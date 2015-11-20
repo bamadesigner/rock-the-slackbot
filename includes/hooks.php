@@ -13,15 +13,18 @@ class Rock_The_Slackbot_Hooks {
 
 		// @TODO Setup notifications for:
 		//		When menu item is added
-		//		When a plugin, theme, or core update is available
 		//      When an option is added or edited?
 		//      When a new comment is added or is awaiting moderation?
-		//      When a user's role is changed?
 		//		When certain folks log in?
 		//      When there are PHP errors
 		//		When plugins are activated
 		//		when plugins and themes are installed/uploaded
 		// 		When themes are selected
+
+		// Sends notifications when a core, plugin, or theme update is available
+		add_action( 'admin_init', array( $this, 'core_update_available_notification' ), 100 );
+		add_action( 'admin_init', array( $this, 'plugin_update_available_notification' ), 100 );
+		add_action( 'admin_init', array( $this, 'theme_update_available_notification' ), 100 );
 
 		// Fires when the bulk upgrader process is complete
 		add_action( 'upgrader_process_complete', array( $this, 'upgrade_notification' ), 100, 2 );
@@ -55,6 +58,9 @@ class Rock_The_Slackbot_Hooks {
 
 		// Fires immediately before a user is deleted from the database
 		add_action( 'delete_user', array( $this, 'user_deleted_notification' ), 100, 2 );
+
+		// Fires after the user's role has changed
+		add_action( 'set_user_role', array( $this, 'user_role_notification' ), 100, 3 );
 
 	}
 
@@ -169,6 +175,407 @@ class Rock_The_Slackbot_Hooks {
 	}
 
 	/**
+	 * Setup notifications for when a core update is available.
+	 *
+	 * @TODO might could change to be run
+	 * when the transients that store this info
+	 * are updated? Would that run too often?
+	 *
+	 * get_site_transient( 'update_core' )
+	 *
+	 * @access  public
+	 * @since   1.1.0
+	 */
+	public function core_update_available_notification() {
+		global $wp_version;
+
+		// Only send update notices once a week
+		$core_update_transient = rock_the_slackbot()->is_network_active ? get_site_transient( 'rock_the_slack_core_update_available' ) : get_transient( 'rock_the_slack_core_update_available' );
+		if ( $core_update_transient !== false && ( time() - $core_update_transient ) < WEEK_IN_SECONDS ) {
+			return false;
+		}
+
+		// See if there's an update before moving forward
+		$update_wordpress = null;
+		if ( ! ( function_exists( 'get_core_updates' )
+			&& ( $update_wordpress = get_core_updates( array( 'dismissed' => false ) ) )
+			&& ! empty( $update_wordpress )
+			&& ( $update_wordpress = array_shift( $update_wordpress ) )
+			&& ! in_array( $update_wordpress->response, array( 'development', 'latest' ) ) ) ) {
+			return false;
+		}
+
+		// Which event are we processing?
+		$notification_event = 'core_update_available';
+
+		// Get the outgoing webhooks
+		$outgoing_webhooks = $this->get_outgoing_webhooks( $notification_event );
+
+		// If we have no webhooks, then there's no point
+		if ( ! $outgoing_webhooks ) {
+			return false;
+		}
+
+		// Get current user
+		$current_user = wp_get_current_user();
+
+		// Get site URL and name
+		$site_url = get_bloginfo( 'url' );
+		$site_name = get_bloginfo( 'name' );
+
+		// Get update URL
+		$core_update_url = is_multisite() ? network_admin_url( 'update-core.php' ) : admin_url( 'update-core.php' );
+
+		// Get core version
+		$core_update_version = isset( $update_wordpress->version ) ? $update_wordpress->version : false;
+
+		// Create general message for the notification
+		$general_message = sprintf( __( 'A WordPress core update is available on the %1$s website at <%2$s>.', 'rock-the-slackbot' ),
+			$site_name,
+			$site_url );
+
+		// Start creating the payload
+		$payload = array(
+			'text' => $general_message,
+		);
+
+		// Start creating the fields
+		$fields = array(
+			array(
+				'title' => __( 'Current Version', 'rock-the-slackbot' ),
+				'value' => $wp_version,
+				'short' => true,
+			)
+		);
+
+		// Add new version
+		if ( $core_update_version ) {
+			$fields[] = array(
+				'title' => __( 'New Version', 'rock-the-slackbot' ),
+				'value' => $core_update_version,
+				'short' => true,
+			);
+		}
+
+		// Create attachments
+		$attachments = array(
+			array(
+				'fallback'      => $general_message,
+				'text'          => null,
+				'title'         => 'Update WordPress Core',
+				'title_link'    => $core_update_url,
+				'author_name'   => $current_user->display_name,
+				'author_link'   => get_author_posts_url( $current_user->ID ),
+				'author_icon'   => get_avatar_url( $current_user->ID, 32 ),
+				'fields'        => $fields,
+			)
+		);
+
+		// Send each webhook
+		$this->send_outgoing_webhooks( $notification_event, $outgoing_webhooks, $payload, $attachments );
+
+		// Store timestamp in transient so it only sends the update notice once a week
+		if ( rock_the_slackbot()->is_network_active ) {
+			set_site_transient( 'rock_the_slack_core_update_available', time(), WEEK_IN_SECONDS );
+		} else {
+			set_transient( 'rock_the_slack_core_update_available', time(), WEEK_IN_SECONDS );
+		}
+
+	}
+
+	/**
+	 * Setup notifications for when a plugin update is available.
+	 *
+	 * @TODO might could change to be run
+	 * when the transients that store this info
+	 * are updated? Would that run too often?
+	 *
+	 * get_site_transient( 'update_plugins' )
+	 *
+	 * @access  public
+	 * @since   1.1.0
+	 */
+	public function plugin_update_available_notification() {
+
+		// Only send update notices once a week
+		$plugin_update_transient = rock_the_slackbot()->is_network_active ? get_site_transient( 'rock_the_slack_plugin_update_available' ) : get_transient( 'rock_the_slack_plugin_update_available' );
+		if ( $plugin_update_transient !== false && ( time() - $plugin_update_transient ) < WEEK_IN_SECONDS ) {
+			return false;
+		}
+
+		// Which event are we processing?
+		$notification_event = 'plugin_update_available';
+
+		// Get the outgoing webhooks
+		$outgoing_webhooks = $this->get_outgoing_webhooks( $notification_event );
+
+		// If we have no webhooks, then there's no point
+		if ( ! $outgoing_webhooks ) {
+			return false;
+		}
+
+		// Do we have any plugin updates?
+		if ( ! ( ( $update_plugins = get_site_transient( 'update_plugins' ) )
+			&& ! empty( $update_plugins->response ) ) ) {
+			return false;
+		}
+
+		// How many updates are available?
+		$update_count = count( $update_plugins->response );
+
+		// Get site URL and name
+		$site_url = get_bloginfo( 'url' );
+		$site_name = get_bloginfo( 'name' );
+
+		// Create general message for the notification
+		$general_message = sprintf( __( 'The following WordPress %1$s an update available on the %2$s website at <%3$s>.', 'rock-the-slackbot' ),
+			( $update_count == 1 ? 'plugin has' : 'plugins have' ),
+			$site_name,
+			$site_url );
+
+		// Loop through each webhook and send the notification
+		foreach( $outgoing_webhooks as $hook ) {
+
+			// We must have a webhook URL
+			if ( ! ( isset( $hook[ 'webhook_url' ] ) && ! empty( $hook[ 'webhook_url' ] ) ) ) {
+				continue;
+			}
+
+			// Start creating the payload
+			$payload = array(
+				'text' => $general_message,
+			);
+
+			// Create attachments
+			$attachments = array();
+
+			// Add upgrade items to the fields
+			foreach( $update_plugins->response as $plugin => $plugin_response_data ) {
+
+				// Get item data
+				$plugin_data = get_plugin_data( WP_CONTENT_DIR . '/plugins/' . $plugin );
+
+				// Set item title
+				$item_title = isset( $plugin_data[ 'Name' ] ) ? $plugin_data[ 'Name' ] : false;
+
+				// Set item URI
+				$item_uri = isset( $plugin_data[ 'PluginURI' ] ) ? $plugin_data[ 'PluginURI' ] : false;
+
+				// Set item description
+				$item_desc = isset( $plugin_data[ 'Description' ] ) ? strip_tags( html_entity_decode( $plugin_data[ 'Description' ] ) ) : false;
+
+				// Set item author name
+				$author_name = isset( $plugin_data[ 'AuthorName' ] ) ? $plugin_data[ 'AuthorName' ] : false;
+
+				// Set item author URI
+				$author_uri = isset( $plugin_data[ 'AuthorURI' ] ) ? $plugin_data[ 'AuthorURI' ] : false;
+
+				// Set item version
+				$item_version = isset( $plugin_data[ 'Version' ] ) ? $plugin_data[ 'Version' ] : false;
+
+				// Get new version
+				$new_version = isset( $plugin_response_data->new_version ) ? $plugin_response_data->new_version : false;
+
+				// Start creating the fields
+				$fields = array();
+
+				// Add version
+				$fields[] = array(
+					'title' => __( 'Current Version', 'rock-the-slackbot' ),
+					'value' => $item_version,
+					'short' => true,
+				);
+
+				// Add new version
+				if ( $new_version ) {
+					$fields[] = array(
+						'title' => __( 'New Version', 'rock-the-slackbot' ),
+						'value' => $new_version,
+						'short' => true,
+					);
+				}
+
+				// Add plugin URI
+				$fields[] = array(
+					'title' => __( 'Manage Plugins', 'rock-the-slackbot' ),
+					'value' => is_multisite() ? network_admin_url( 'plugins.php' ) : admin_url( 'plugins.php' ),
+					'short' => true,
+				);
+
+				// Add to attachments
+				$attachments[] = array(
+					'fallback'      => $general_message,
+					'text'          => wp_trim_words( strip_tags( $item_desc ), 30, '...' ),
+					'title'         => $item_title,
+					'title_link'    => $item_uri,
+					'author_name'   => $author_name,
+					'author_link'   => $author_uri,
+					'fields'        => $fields,
+				);
+
+			}
+
+			// Send each webhook
+			$this->send_outgoing_webhooks( $notification_event, $outgoing_webhooks, $payload, $attachments );
+
+		}
+
+		// Store timestamp in transient so it only sends the update notice once a week
+		if ( rock_the_slackbot()->is_network_active ) {
+			set_site_transient( 'rock_the_slack_plugin_update_available', time(), WEEK_IN_SECONDS );
+		} else {
+			set_transient( 'rock_the_slack_plugin_update_available', time(), WEEK_IN_SECONDS );
+		}
+
+	}
+
+	/**
+	 * Setup notifications for when a theme update is available.
+	 *
+	 * @TODO might could change to be run
+	 * when the transients that store this info
+	 * are updated? Would that run too often?
+	 *
+	 * get_site_transient( 'update_themes' )
+	 *
+	 * @access  public
+	 * @since   1.1.0
+	 */
+	public function theme_update_available_notification() {
+
+		// Only send update notices once a week
+		$theme_update_transient = rock_the_slackbot()->is_network_active ? get_site_transient( 'rock_the_slack_theme_update_available' ) : get_transient( 'rock_the_slack_theme_update_available' );
+		if ( $theme_update_transient !== false && ( time() - $theme_update_transient ) < WEEK_IN_SECONDS ) {
+			return false;
+		}
+
+		// Which event are we processing?
+		$notification_event = 'theme_update_available';
+
+		// Get the outgoing webhooks
+		$outgoing_webhooks = $this->get_outgoing_webhooks( $notification_event );
+
+		// If we have no webhooks, then there's no point
+		if ( ! $outgoing_webhooks ) {
+			return false;
+		}
+
+		// Do we have any theme updates?
+		if ( ! ( ( $update_themes = get_site_transient( 'update_themes' ) )
+			&& ! empty( $update_themes->response ) ) ) {
+			return false;
+		}
+
+		// How many updates are available?
+		$update_count = count( $update_themes->response );
+
+		// Get site URL and name
+		$site_url = get_bloginfo( 'url' );
+		$site_name = get_bloginfo( 'name' );
+
+		// Create general message for the notification
+		$general_message = sprintf( __( 'The following WordPress %1$s an update available on the %2$s website at <%3$s>.', 'rock-the-slackbot' ),
+			( $update_count == 1 ? 'theme has' : 'themes have' ),
+			$site_name,
+			$site_url );
+
+		// Loop through each webhook and send the notification
+		foreach( $outgoing_webhooks as $hook ) {
+
+			// We must have a webhook URL
+			if ( ! ( isset( $hook[ 'webhook_url' ] ) && ! empty( $hook[ 'webhook_url' ] ) ) ) {
+				continue;
+			}
+
+			// Start creating the payload
+			$payload = array(
+				'text' => $general_message,
+			);
+
+			// Create attachments
+			$attachments = array();
+
+			// Add upgrade items to the fields
+			foreach( $update_themes->response as $theme => $theme_response_data ) {
+
+				// Get item data
+				$theme_data = wp_get_theme( $theme_response_data[ 'theme' ] );
+
+				// Set item title
+				$item_title = $theme_data->get( 'Name' );
+
+				// Set item URI
+				$item_uri = $theme_data->get( 'ThemeURI' );
+
+				// Set item description
+				$item_desc = strip_tags( html_entity_decode( $theme_data->get( 'Description' ) ) );
+
+				// Set item author name
+				$author_name = $theme_data->get( 'Author' );
+
+				// Set item author URI
+				$author_uri = $theme_data->get( 'AuthorURI' );
+
+				// Set item version
+				$item_version = $theme_data->get( 'Version' );
+
+				// Get new version
+				$new_version = isset( $theme_response_data[ 'new_version' ] ) ? $theme_response_data[ 'new_version' ] : false;
+
+				// Start creating the fields
+				$fields = array();
+
+				// Add version
+				$fields[] = array(
+					'title' => __( 'Current Version', 'rock-the-slackbot' ),
+					'value' => $item_version,
+					'short' => true,
+				);
+
+				// Add new version
+				if ( $new_version ) {
+					$fields[] = array(
+						'title' => __( 'New Version', 'rock-the-slackbot' ),
+						'value' => $new_version,
+						'short' => true,
+					);
+				}
+
+				// Add theme URI
+				$fields[] = array(
+					'title' => __( 'Manage Themes', 'rock-the-slackbot' ),
+					'value' => is_multisite() ? network_admin_url( 'themes.php' ) : admin_url( 'themes.php' ),
+					'short' => true,
+				);
+
+				// Add to attachments
+				$attachments[] = array(
+					'fallback'      => $general_message,
+					'text'          => wp_trim_words( strip_tags( $item_desc ), 30, '...' ),
+					'title'         => $item_title,
+					'title_link'    => $item_uri,
+					'author_name'   => $author_name,
+					'author_link'   => $author_uri,
+					'fields'        => $fields,
+				);
+
+			}
+
+			// Send each webhook
+			$this->send_outgoing_webhooks( $notification_event, $outgoing_webhooks, $payload, $attachments );
+
+		}
+
+		// Store timestamp in transient so it only sends the update notice once a week
+		if ( rock_the_slackbot()->is_network_active ) {
+			set_site_transient( 'rock_the_slack_theme_update_available', time(), WEEK_IN_SECONDS );
+		} else {
+			set_transient( 'rock_the_slack_theme_update_available', time(), WEEK_IN_SECONDS );
+		}
+
+	}
+
+	/**
 	 * Sends a notification to Slack when
 	 * core, plugins, or themes are updated.
 	 *
@@ -230,8 +637,13 @@ class Rock_The_Slackbot_Hooks {
 		}
 
 		// Get the pre upgrade info
-		$pre_upgrade_info = get_transient( 'rock_the_slackbot_pre_upgrade_information' );
-		delete_transient( 'rock_the_slackbot_pre_upgrade_information' );
+		if ( rock_the_slackbot()->is_network_active ) {
+			$pre_upgrade_info = get_site_transient( 'rock_the_slackbot_pre_upgrade_information' );
+			delete_site_transient( 'rock_the_slackbot_pre_upgrade_information' );
+		} else {
+			$pre_upgrade_info = get_transient( 'rock_the_slackbot_pre_upgrade_information' );
+			delete_transient( 'rock_the_slackbot_pre_upgrade_information' );
+		}
 
 		// Get current user
 		$current_user = wp_get_current_user();
@@ -319,10 +731,10 @@ class Rock_The_Slackbot_Hooks {
 						$item_title = ( 'plugin' == $upgrade_type ) ? ( isset( $item_data[ 'Name' ] ) ? $item_data[ 'Name' ] : false ) : $item_data->get( 'Name' );
 
 						// Set item URI
-						$item_uri = ( 'plugin' == $upgrade_type ) ? ( isset( $item_data[ 'PluginURI' ] ) ? html_entity_decode( $item_data[ 'PluginURI' ] ) : false ) : $item_data->get( 'ThemeURI' );
+						$item_uri = ( 'plugin' == $upgrade_type ) ? ( isset( $item_data[ 'PluginURI' ] ) ? $item_data[ 'PluginURI' ] : false ) : $item_data->get( 'ThemeURI' );
 
 						// Set item description
-						$item_desc = ( 'plugin' == $upgrade_type ) ? ( isset( $item_data[ 'Description' ] ) ? html_entity_decode( $item_data[ 'Description' ] ) : false ) : $item_data->get( 'Description' );
+						$item_desc = ( 'plugin' == $upgrade_type ) ? ( isset( $item_data[ 'Description' ] ) ? strip_tags( html_entity_decode( $item_data[ 'Description' ] ) ) : false ) : $item_data->get( 'Description' );
 
 						// Set item author name
 						$author_name = ( 'plugin' == $upgrade_type ) ? ( isset( $item_data[ 'AuthorName' ] ) ? $item_data[ 'AuthorName' ] : false ) : $item_data->get( 'Author' );
@@ -1356,18 +1768,45 @@ class Rock_The_Slackbot_Hooks {
 		// Create the fields
 		$fields = array(
 			array(
-				'title' => 'URL',
+				'title' => __( 'URL', 'rock-the-slackbot' ),
 				'value' => $current_url,
 				'short' => true,
 			),
 		);
 
+		// If there's a referer
+		if ( $referer = wp_get_referer() ) {
+			$fields[] = array(
+				'title' => __( 'Referer', 'rock-the-slackbot' ),
+				'value' => $referer,
+				'short' => true,
+			);
+		}
+
+		// If there's an IP address
+		if ( isset( $_SERVER[ 'REMOTE_ADDR' ] ) ) {
+			$fields[] = array(
+				'title' => __( 'IP address', 'rock-the-slackbot' ),
+				'value' => $_SERVER[ 'REMOTE_ADDR' ],
+				'short' => true,
+			);
+		}
+
 		// If there's a user
 		if ( isset( $current_user->display_name ) ) {
 			$fields[] = array(
-				'title' => 'Current User',
+				'title' => __( 'Current User', 'rock-the-slackbot' ),
 				'value' => $current_user->display_name,
 				'short' => true,
+			);
+		}
+
+		// If there's a user agent
+		if ( isset( $_SERVER[ 'HTTP_USER_AGENT' ] ) ) {
+			$fields[] = array(
+				'title' => __( 'User Agent', 'rock-the-slackbot' ),
+				'value' => $_SERVER[ 'HTTP_USER_AGENT' ],
+				'short' => false,
 			);
 		}
 
@@ -1375,7 +1814,7 @@ class Rock_The_Slackbot_Hooks {
 		$wp_query_vars = array_filter( $wp_query->query );
 		if ( ! empty( $wp_query_vars ) ) {
 			$fields[] = array(
-				'title' => 'WordPress Query',
+				'title' => __( 'WordPress Query', 'rock-the-slackbot' ),
 				'value' => build_query( preg_replace( '/[\s]{2,}/i', ' ', $wp_query_vars ) ),
 				'short' => false,
 			);
@@ -1383,7 +1822,7 @@ class Rock_The_Slackbot_Hooks {
 
 		// Add the MySQL request
 		$fields[] = array(
-			'title' => 'MySQL Request',
+			'title' => __( 'MySQL Request', 'rock-the-slackbot' ),
 			'value' => preg_replace( '/[\s]{2,}/i', ' ', $wp_query->request ),
 			'short' => false,
 		);
@@ -1619,6 +2058,136 @@ class Rock_The_Slackbot_Hooks {
 				'fallback'      => $general_message,
 				'text'          => wp_trim_words( strip_tags( get_the_author_meta( 'description', $user_id ) ), 30, '...' ),
 				'author_name'   => $new_user_display_name,
+				'author_link'   => get_author_posts_url( $user_id ),
+				'author_icon'   => get_avatar_url( $user_id, 32 ),
+				'fields'        => $fields,
+			)
+		);
+
+		// Send each webhook
+		$this->send_outgoing_webhooks( $notification_event, $outgoing_webhooks, $payload, $attachments );
+
+	}
+
+	/**
+	 * Sends a notification to Slack
+	 * when a user's role has changed.
+	 *
+	 * Fires after the user's role has changed.
+	 *
+	 * @access	public
+	 * @since	1.1.0
+	 * @param	int - $user_id - the User ID
+	 * @param	string - $role - the new role.
+	 * @param	array - $old_roles - an array of the user's previous roles.
+	 * @return	bool - returns false if nothing happened
+	 */
+	public function user_role_notification( $user_id, $role, $old_roles ) {
+
+		// Which event are we processing?
+		$notification_event = 'set_user_role';
+
+		// Get the outgoing webhooks
+		$outgoing_webhooks = $this->get_outgoing_webhooks( $notification_event );
+
+		// If we have no webhooks, then there's no point
+		if ( ! $outgoing_webhooks ) {
+			return false;
+		}
+
+		// Get current user
+		$current_user = wp_get_current_user();
+
+		// Get site URL and name
+		$site_url = get_bloginfo( 'url' );
+		$site_name = get_bloginfo( 'name' );
+
+		// Get changed user data
+		$changed_user_data = get_userdata( $user_id );
+		$changed_user_display_name = get_the_author_meta( 'display_name', $user_id );
+
+		// Get role info
+		$all_roles = wp_roles()->roles;
+
+		// Create general message for the notification
+		$general_message = sprintf( __( '%1$s changed the user role for %2$s on the %3$s website at <%4$s>.', 'rock-the-slackbot' ),
+			$current_user->display_name,
+			$changed_user_display_name,
+			$site_name,
+			$site_url );
+
+		// Start creating the payload
+		$payload = array(
+			'text' => $general_message,
+		);
+
+		// Add current user roles
+		if ( ! empty( $changed_user_data->roles ) ) {
+
+			// Get role info
+			$all_roles = wp_roles()->roles;
+
+			// Build new array of roles
+			$roles = array();
+			foreach( $changed_user_data->roles as $role ) {
+				if ( array_key_exists( $role, $all_roles ) ) {
+					$roles[] = $all_roles[ $role ][ 'name' ];
+				} else {
+					$roles[] = $role;
+				}
+			}
+
+			// Add to fields
+			$fields[] = array(
+					'title' => __( 'Current User Role(s)', 'rock-the-slackbot' ),
+					'value' => implode( ', ', $roles ),
+					'short' => true,
+			);
+
+		}
+
+		// Add old user roles
+		if ( ! empty( $old_roles ) ) {
+
+			// Build new array of roles
+			$roles = array();
+			foreach( $old_roles as $role ) {
+				if ( array_key_exists( $role, $all_roles ) ) {
+					$roles[] = $all_roles[ $role ][ 'name' ];
+				} else {
+					$roles[] = $role;
+				}
+			}
+
+			// Add to fields
+			$fields[] = array(
+					'title' => __( 'Old User Role(s)', 'rock-the-slackbot' ),
+					'value' => implode( ', ', $roles ),
+					'short' => true,
+			);
+
+		}
+
+		// Add user login
+		$fields[] = array(
+			'title' => __( 'User Login', 'rock-the-slackbot' ),
+			'value' => get_the_author_meta( 'user_login', $user_id ),
+			'short' => true,
+		);
+
+		// Add user email
+		$fields[] = array(
+			'title' => __( 'User Email', 'rock-the-slackbot' ),
+			'value' => get_the_author_meta( 'user_email', $user_id ),
+			'short' => true,
+		);
+
+		// Create attachment
+		$attachments = array(
+			array(
+				'fallback'      => $general_message,
+				'text'          => wp_trim_words( strip_tags( get_the_author_meta( 'description', $user_id ) ), 30, '...' ),
+				'author_name'   => $changed_user_display_name,
 				'author_link'   => get_author_posts_url( $user_id ),
 				'author_icon'   => get_avatar_url( $user_id, 32 ),
 				'fields'        => $fields,

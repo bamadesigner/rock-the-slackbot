@@ -12,6 +12,8 @@ Rock The Slackbot is a WordPress plugin that helps you stay on top of changes by
 ##Why Rock The Slackbot?
 Because it can help you manage your websites, and stay on top of changes, by sending notifications (following numerous WordPress events) to your Slackbot who will pass them along to a channel or direct message in your Slack account.
 
+**Rock The Slackbot is multisite-friendly.**
+
 **Rock the Slackbot sends customizable notifications** for the following events:
 
 * When a post is published
@@ -26,26 +28,96 @@ Because it can help you manage your websites, and stay on top of changes, by sen
 * When media is deleted
 * When a user is added
 * When a user is deleted
-* When WordPress core is updated
-* When a plugin is updated
-* When a theme is updated
+* When a user's role is changed
+* When a plugin, theme, or core update is available
+* When a plugin, theme, or core is updated
 
 **I'm working to add the following events:**
 
 * When menu item is added
-* When a plugin, theme, or core update is available
 * When a new comment is added or is awaiting moderation
-* When a user's role is changed
 * When plugins or themes are uploaded
 * When plugins or themes are activated
 
 **Each event can be customized to allow you to send different event notifications to different Slack channels**, e.g. you can send core, theme and plugin updates to your "wp-development" channel while all of your post changes go to your "wp-content" channel.
 
-*I'm also working to make this plugin multisite-friendly.*
-
 Please use [the Issues section of this repo](https://github.com/bamadesigner/rock-the-slackbot/issues) to suggest features, like other notification events.
 
 **A Slack account is required to use this plugin** and is free to use for as long as you want and with an unlimited number of people. [Visit the Slack website](https://slack.com/) to learn more and sign up.
+
+##Filters
+
+Rock The Slackbot has filters setup to allow you to tweak each notification before it's sent. You can setup a filter for all notifications or drill down by event or specific webhook.
+
+Each filter passes the same argument: an array containing the webhook URL (the URL for your Slack account) and the payload (all of the information being sent to Slack).
+
+    // Filter all notifications
+    add_filter( 'rock_the_slackbot_notification', 'filter_rock_the_slackbot_notification' );
+    function filter_rock_the_slackbot_notification( $notification_pieces ) {
+
+        // Change the payload
+
+        // Return the payload
+        return $notification_pieces;
+    }
+
+    // Filter by webhook ID
+    // You can find the ID for each of your webhooks on their edit screen in the admin
+    add_filter( 'rock_the_slackbot_notification_(webhook_id)', 'filter_rock_the_slackbot_notification_webhook' );
+    function filter_rock_the_slackbot_notification_webhook( $notification_pieces ) {
+
+      // Change the payload
+
+      // Return the payload
+      return $notification_pieces;
+    }
+
+    // Filter by notification event slug
+    // The event slugs are listed below
+    add_filter( 'rock_the_slackbot_notification_(notification_event)', 'filter_rock_the_slackbot_notification_event' );
+    function filter_rock_the_slackbot_notification_event( $notification_pieces ) {
+
+      // Change the payload
+
+      // Return the payload
+      return $notification_pieces;
+    }
+
+###Event Slugs
+
+**Content**
+
+* post_published
+* post_unpublished
+* post_updated
+* post_deleted
+* post_trashed
+* is_404
+
+**Menus**
+
+* menu_item_deleted
+
+**Media**
+
+* add_attachment
+* edit_attachment
+* delete_attachment
+
+**Users**
+
+* user_added
+* user_deleted
+* set_user_role
+
+**Updates**
+
+* core_update_available
+* core_updated
+* plugin_update_available
+* plugin_updated
+* theme_update_available
+* theme_updated
 
 ##Installation
 

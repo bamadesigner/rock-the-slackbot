@@ -1,8 +1,8 @@
 (function( $ ) {
 	'use strict';
 
-	// When the window is loaded...
-	$( window ).load(function() {
+	// When the document is ready...
+	$(document).ready(function() {
 
 		// Setup the tooltips
 		$( '.rts-tooltip' ).tooltip();

@@ -46,7 +46,7 @@
 }
 
 .rts-dashicons .dashicons {
-  line-height: inherit;
+  line-height: 0.9;
   margin: 0 2px 0 0;
 }
 
@@ -73,8 +73,30 @@
   text-align: center;
   cursor: pointer;
 }
+.wp-core-ui .rts-button .dashicons {
+  vertical-align: middle;
+}
 .wp-core-ui .rts-button.rts-button-block {
   display: block;
+}
+.wp-core-ui .rts-button.rts-button-green {
+  background: #1a937d;
+}
+.wp-core-ui .rts-button.rts-button-green:hover {
+  background: #13806c;
+}
+.wp-core-ui .rts-button.rts-button-gold {
+  background: #e8a723;
+  color: #fff;
+}
+.wp-core-ui .rts-button.rts-button-gold:hover {
+  background: #de9b12;
+}
+.wp-core-ui .rts-button.rts-button-red {
+  background: #cc2027;
+}
+.wp-core-ui .rts-button.rts-button-red:hover {
+  background: #b9070f;
 }
 .wp-core-ui .rts-button:hover {
   background: #2daac1;
@@ -89,13 +111,6 @@
 #rts-add-button-wrapper .rts-button {
   width: 100%;
   margin: 0;
-}
-
-#rock-slackbot-delete-button {
-  background: #cc2027;
-}
-#rock-slackbot-delete-button:hover {
-  background: #b9070f;
 }
 
 #rock-slackbot-about-mb p {
@@ -182,7 +197,7 @@
   margin: 0 8px;
 }
 
-form.rock-slackbot-edit-outgoing-webhook-form {
+#rock-slackbot-edit-outgoing-webhook-form {
   margin: 0;
   border: 0;
 }
@@ -198,14 +213,6 @@ table.rock-slackbot {
 table.rock-slackbot td {
   width: auto;
   padding: 0;
-}
-table.rock-slackbot td.rts-submit input {
-  width: 100%;
-  border: 0;
-  padding-left: 0;
-  padding-right: 0;
-  box-shadow: none;
-  border-radius: 0;
 }
 table.rock-slackbot input[type="text"] {
   width: 100%;
@@ -295,6 +302,14 @@ table.rock-slackbot-edit-outgoing-webhook td.rts-field.rts-field-required.rts-fi
 table.rock-slackbot-edit-outgoing-webhook td.rts-field.rts-field-required.rts-field-error input {
   border-color: #900;
 }
+table.rock-slackbot-edit-outgoing-webhook td.rts-field .rts-network-post-types {
+  margin: 10px -15px 0 -15px;
+  padding: 10px 15px;
+  border-top: 1px solid #eee;
+}
+table.rock-slackbot-edit-outgoing-webhook td.rts-field .rts-network-post-types input {
+  margin: 5px 0 0 0;
+}
 table.rock-slackbot-edit-outgoing-webhook td .rts-field-desc {
   display: block;
   clear: both;
@@ -365,23 +380,14 @@ table.rock-slackbot-edit-outgoing-webhook tr.buttons td.rts-cancel {
   padding-right: 5px;
 }
 table.rock-slackbot-edit-outgoing-webhook tr.buttons td.rts-cancel .button {
-  background: #e8a723;
-  color: #fff;
   font-size: 12px;
-  text-transform: uppercase;
-  text-align: center;
-}
-table.rock-slackbot-edit-outgoing-webhook tr.buttons td.rts-cancel .button:hover {
-  background: #de9b12;
 }
 table.rock-slackbot-edit-outgoing-webhook tr.buttons td.rts-submit {
   padding-left: 5px;
 }
-table.rock-slackbot-edit-outgoing-webhook tr.buttons td.rts-submit input {
-  background: #1a937d;
+table.rock-slackbot-edit-outgoing-webhook tr.buttons td.rts-submit .button {
+  width: 100%;
+  padding-left: 0;
+  padding-right: 0;
   font-size: 14px;
-  text-transform: uppercase;
-}
-table.rock-slackbot-edit-outgoing-webhook tr.buttons td.rts-submit input:hover {
-  background: #13806c;
 }
