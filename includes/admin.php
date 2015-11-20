@@ -325,18 +325,24 @@ class Rock_The_Slackbot_Admin {
 
 		// If network activated and not network admin, tell us if there are network notifications
 		else if ( function_exists( 'is_plugin_active_for_network' )
-			&& is_plugin_active_for_network( ROCK_THE_SLACKBOT_PLUGIN_FILE )
-			&& ! empty( $this->get_outgoing_webhooks_setting( true ) ) ) {
+			&& is_plugin_active_for_network( ROCK_THE_SLACKBOT_PLUGIN_FILE ) ) {
 
-			?><div id="rock-slackbot-network-message">
-				<p class="slack-message"><span class="dashicons dashicons-info"></span> <?php _e( 'This plugin is network activate and has notifications that are setup for, and running on, this site.', 'rock-the-slackbot' );
+			// Get network setting
+			$network_setting = $this->get_outgoing_webhooks_setting( true );
+			if ( ! empty( $network_setting ) ) {
 
-					if ( current_user_can( 'manage_network' ) ) {
-						?> <a href="<?php echo add_query_arg( array( 'page' => 'rock-the-slackbot' ), network_admin_url( 'settings.php' ) ); ?>"><?php _e( 'Manage network settings', 'rock-the-slackbot' ); ?></a><?php
-					}
+				?><div id="rock-slackbot-network-message">
+					<p class="slack-message">
+						<span class="dashicons dashicons-info"></span> <?php _e( 'This plugin is network activate and has notifications that are setup for, and running on, this site.', 'rock-the-slackbot' );
 
-				?></p>
-			</div><?php
+						if ( current_user_can( 'manage_network' ) ) {
+							?><a href="<?php echo add_query_arg( array( 'page' => 'rock-the-slackbot' ), network_admin_url( 'settings.php' ) ); ?>"><?php _e( 'Manage network settings', 'rock-the-slackbot' ); ?></a><?php
+						}
+
+					?></p>
+				</div><?php
+
+			}
 
 		}
 
@@ -1134,7 +1140,8 @@ class Rock_The_Slackbot_Admin {
 		}
 
 		// If we have an error...
-		if ( ! empty( $errors->get_error_codes() ) ) {
+		$error_codes = $errors->get_error_codes();
+		if ( ! empty( $error_codes ) ) {
 
 			// If we're adding a hook, stores value info so it can be re-populated
 			if ( ! $edit_hook ) {
