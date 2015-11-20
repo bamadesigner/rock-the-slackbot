@@ -24,6 +24,8 @@ class Rock_The_Slackbot_Hooks {
 		// Sends notifications when a core, plugin, or theme update is available
 		add_action( 'admin_init', array( $this, 'core_update_available_notification' ), 100 );
 		add_action( 'admin_init', array( $this, 'plugin_update_available_notification' ), 100 );
+		add_action( 'admin_init', array( $this, 'theme_update_available_notification' ), 100 );
+
 		// Fires when the bulk upgrader process is complete
 		add_action( 'upgrader_process_complete', array( $this, 'upgrade_notification' ), 100, 2 );
 
@@ -426,6 +428,154 @@ class Rock_The_Slackbot_Hooks {
 		}
 
 	}
+
+	/**
+	 * Setup notifications for when a theme update is available.
+	 *
+	 * @TODO might could change to be run
+	 * when the transients that store this info
+	 * are updated?
+	 *
+	 * get_site_transient( 'update_themes' )
+	 *
+	 * @access  public
+	 * @since   1.1.0
+	 */
+	public function theme_update_available_notification() {
+
+		// Only send update notices once a week
+		$theme_update_transient = rock_the_slackbot()->is_network_active ? get_site_transient( 'rock_the_slack_theme_update_available' ) : get_transient( 'rock_the_slack_theme_update_available' );
+		if ( $theme_update_transient !== false && ( time() - $theme_update_transient ) < WEEK_IN_SECONDS ) {
+			return false;
+		}
+
+		// Which event are we processing?
+		$notification_event = 'theme_update_available';
+
+		// Get the outgoing webhooks
+		$outgoing_webhooks = $this->get_outgoing_webhooks( $notification_event );
+
+		// If we have no webhooks, then there's no point
+		if ( ! $outgoing_webhooks ) {
+			return false;
+		}
+
+		// Do we have any theme updates?
+		if ( ! ( ( $update_themes = get_site_transient( 'update_themes' ) )
+			&& ! empty( $update_themes->response ) ) ) {
+			return false;
+		}
+
+		// How many updates are available?
+		$update_count = count( $update_themes->response );
+
+		// Get site URL and name
+		$site_url = get_bloginfo( 'url' );
+		$site_name = get_bloginfo( 'name' );
+
+		// Create general message for the notification
+		$general_message = sprintf( __( 'The following WordPress %1$s an update available on the %2$s website at <%3$s>.', 'rock-the-slackbot' ),
+			( $update_count == 1 ? 'theme has' : 'themes have' ),
+			$site_name,
+			$site_url );
+
+		// Loop through each webhook and send the notification
+		foreach( $outgoing_webhooks as $hook ) {
+
+			// We must have a webhook URL
+			if ( ! ( isset( $hook[ 'webhook_url' ] ) && ! empty( $hook[ 'webhook_url' ] ) ) ) {
+				continue;
+			}
+
+			// Start creating the payload
+			$payload = array(
+				'text' => $general_message,
+			);
+
+			// Create attachments
+			$attachments = array();
+
+			// Add upgrade items to the fields
+			foreach( $update_themes->response as $theme => $theme_response_data ) {
+
+				// Get item data
+				$theme_data = wp_get_theme( $theme_response_data[ 'theme' ] );
+
+				// Set item title
+				$item_title = $theme_data->get( 'Name' );
+
+				// Set item URI
+				$item_uri = $theme_data->get( 'ThemeURI' );
+
+				// Set item description
+				$item_desc = strip_tags( html_entity_decode( $theme_data->get( 'Description' ) ) );
+
+				// Set item author name
+				$author_name = $theme_data->get( 'Author' );
+
+				// Set item author URI
+				$author_uri = $theme_data->get( 'AuthorURI' );
+
+				// Set item version
+				$item_version = $theme_data->get( 'Version' );
+
+				// Get new version
+				$new_version = isset( $theme_response_data[ 'new_version' ] ) ? $theme_response_data[ 'new_version' ] : false;
+
+				// Start creating the fields
+				$fields = array();
+
+				// Add version
+				$fields[] = array(
+					'title' => __( 'Current Version', 'rock-the-slackbot' ),
+					'value' => $item_version,
+					'short' => true,
+				);
+
+				// Add new version
+				if ( $new_version ) {
+					$fields[] = array(
+						'title' => __( 'New Version', 'rock-the-slackbot' ),
+						'value' => $new_version,
+						'short' => true,
+					);
+				}
+
+				// Add theme URI
+				$fields[] = array(
+					'title' => __( 'Manage Themes', 'rock-the-slackbot' ),
+					'value' => is_multisite() ? network_admin_url( 'themes.php' ) : admin_url( 'themes.php' ),
+					'short' => true,
+				);
+
+				// Add to attachments
+				$attachments[] = array(
+					'fallback'      => $general_message,
+					'text'          => wp_trim_words( strip_tags( $item_desc ), 30, '...' ),
+					'title'         => $item_title,
+					'title_link'    => $item_uri,
+					'author_name'   => $author_name,
+					'author_link'   => $author_uri,
+					'fields'        => $fields,
+				);
+
+			}
+
+			// Send each webhook
+			$this->send_outgoing_webhooks( $notification_event, $outgoing_webhooks, $payload, $attachments );
+
+		}
+
+		// Store timestamp in transient so it only sends the update notice once a week
+		if ( rock_the_slackbot()->is_network_active ) {
+			set_site_transient( 'rock_the_slack_theme_update_available', time(), WEEK_IN_SECONDS );
+		} else {
+			set_transient( 'rock_the_slack_theme_update_available', time(), WEEK_IN_SECONDS );
+		}
+
+	}
+
+	/**
 	 * Sends a notification to Slack when
 	 * core, plugins, or themes are updated.
 	 *

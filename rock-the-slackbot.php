@@ -244,6 +244,9 @@ class Rock_The_Slackbot {
 					'plugin_updated' => array(
 						'label' => __( 'When a plugin is updated', 'rock-the-slackbot' ),
 					),
+					'theme_update_available' => array(
+						'label' => __( 'When a theme update is available', 'rock-the-slackbot' ),
+					),
 					'theme_updated' => array(
 						'label' => __( 'When a theme is updated', 'rock-the-slackbot' ),
 					),
