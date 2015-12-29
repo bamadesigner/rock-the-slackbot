@@ -3,7 +3,7 @@
 /**
  * Plugin Name:       Rock The Slackbot
  * Plugin URI:        https://wordpress.org/plugins/rock-the-slackbot/
- * Description:       Rock The Slackbot helps you stay on top of changes by sending notifications straight to you and your team inside your Slack account.
+ * Description:       Helps you stay on top of changes by sending notifications straight to you and your team inside your Slack account.
  * Version:           1.1.0
  * Author:            Rachel Carden
  * Author URI:        http://bamadesigner.com
