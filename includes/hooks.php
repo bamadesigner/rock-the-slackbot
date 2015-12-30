@@ -1990,8 +1990,8 @@ class Rock_The_Slackbot_Hooks {
 		$site_name = get_bloginfo( 'name' );
 
 		// Get user data
-		$new_user_data = get_userdata( $user_id );
-		$new_user_display_name = get_the_author_meta( 'display_name', $user_id );
+		$deleted_user_data = get_userdata( $user_id );
+		$deleted_user_display_name = get_the_author_meta( 'display_name', $user_id );
 
 		// Create general message for the notification
 		$general_message = sprintf( __( '%1$s deleted the following user from the %2$s website at <%3$s>.', 'rock-the-slackbot' ),
@@ -2019,14 +2019,14 @@ class Rock_The_Slackbot_Hooks {
 		);
 
 		// Add user roles
-		if ( ! empty( $new_user_data->roles ) ) {
+		if ( ! empty( $deleted_user_data->roles ) ) {
 
 			// Get role info
 			$all_roles = wp_roles()->roles;
 
 			// Build new array of roles
 			$roles = array();
-			foreach( $new_user_data->roles as $role ) {
+			foreach( $deleted_user_data->roles as $role ) {
 				if ( array_key_exists( $role, $all_roles ) ) {
 					$roles[] = $all_roles[ $role ][ 'name' ];
 				} else {
@@ -2057,7 +2057,7 @@ class Rock_The_Slackbot_Hooks {
 			array(
 				'fallback'      => $general_message,
 				'text'          => wp_trim_words( strip_tags( get_the_author_meta( 'description', $user_id ) ), 30, '...' ),
-				'author_name'   => $new_user_display_name,
+				'author_name'   => $deleted_user_display_name,
 				'author_link'   => get_author_posts_url( $user_id ),
 				'author_icon'   => get_avatar_url( $user_id, 32 ),
 				'fields'        => $fields,
@@ -2121,49 +2121,48 @@ class Rock_The_Slackbot_Hooks {
 			'text' => $general_message,
 		);
 
+		// Build array of current user roles
+		$current_user_roles = array();
+
 		// Add current user roles
 		if ( ! empty( $changed_user_data->roles ) ) {
 
-			// Get role info
-			$all_roles = wp_roles()->roles;
-
-			// Build new array of roles
-			$roles = array();
 			foreach( $changed_user_data->roles as $role ) {
 				if ( array_key_exists( $role, $all_roles ) ) {
-					$roles[] = $all_roles[ $role ][ 'name' ];
+					$current_user_roles[] = $all_roles[ $role ][ 'name' ];
 				} else {
-					$roles[] = $role;
+					$current_user_roles[] = $role;
 				}
 			}
 
 			// Add to fields
 			$fields[] = array(
-					'title' => __( 'Current User Role(s)', 'rock-the-slackbot' ),
-					'value' => implode( ', ', $roles ),
-					'short' => true,
+				'title' => __( 'Current User Role(s)', 'rock-the-slackbot' ),
+				'value' => implode( ', ', $current_user_roles ),
+				'short' => true,
 			);
 
 		}
 
+		// Build array of old user roles
+		$old_user_roles = array();
+
 		// Add old user roles
 		if ( ! empty( $old_roles ) ) {
 
-			// Build new array of roles
-			$roles = array();
 			foreach( $old_roles as $role ) {
 				if ( array_key_exists( $role, $all_roles ) ) {
-					$roles[] = $all_roles[ $role ][ 'name' ];
+					$old_user_roles[] = $all_roles[ $role ][ 'name' ];
 				} else {
-					$roles[] = $role;
+					$old_user_roles[] = $role;
 				}
 			}
 
 			// Add to fields
 			$fields[] = array(
-					'title' => __( 'Old User Role(s)', 'rock-the-slackbot' ),
-					'value' => implode( ', ', $roles ),
-					'short' => true,
+				'title' => __( 'Old User Role(s)', 'rock-the-slackbot' ),
+				'value' => implode( ', ', $old_user_roles ),
+				'short' => true,
 			);
 
 		}
