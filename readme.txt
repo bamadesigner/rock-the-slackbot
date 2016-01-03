@@ -62,6 +62,9 @@ Please use [the Issues section of this plugin's GitHub repo](https://github.com/
 
 == Changelog ==
 
+= 1.1.1 =
+* Now passing event specific information to each filter so user can make adjustments according to the event.
+
 = 1.1.0 =
 * Rock The Slackbot is now multisite compatible!
 * Setup Slack notification when a plugin, theme, or core update is available - will need to enable
@@ -73,6 +76,9 @@ Plugin launch
 
 == Upgrade Notice ==
 
+= 1.1.1 =
+* Now passing event specific information to each filter so user can make adjustments according to the event.
+
 = 1.1.0 =
 * Rock The Slackbot is now multisite compatible!
 * Setup Slack notification when a plugin, theme, or core update is available - will need to enable
@@ -83,11 +89,13 @@ Plugin launch
 
 Rock The Slackbot has filters setup to allow you to tweak each notification before it's sent. You can setup a filter for all notifications or drill down by event or specific webhook.
 
-Each filter passes the same argument: an array containing the webhook URL (the URL for your Slack account) and the payload (all of the information being sent to Slack).
+Each filter passes two arguments:
+1. $notification_pieces - an array containing the webhook URL (the URL for your Slack account) and the payload (all of the information being sent to Slack)
+2. $event_args - an array containing event specific information
 
-`// Filter all notifications
-add_filter( 'rock_the_slackbot_notification', 'filter_rock_the_slackbot_notification' );
-function filter_rock_the_slackbot_notification( $notification_pieces ) {
+= Filter all notifications =
+`add_filter( 'rock_the_slackbot_notification', 'filter_rock_the_slackbot_notification', 10, 2 );
+function filter_rock_the_slackbot_notification( $notification_pieces, $event_args ) {
 
     // Change the payload
 
@@ -95,10 +103,10 @@ function filter_rock_the_slackbot_notification( $notification_pieces ) {
     return $notification_pieces;
 }`
 
-`// Filter by webhook ID
-// You can find the ID for each of your webhooks on their edit screen in the admin
-add_filter( 'rock_the_slackbot_notification_(webhook_id)', 'filter_rock_the_slackbot_notification_webhook' );
-function filter_rock_the_slackbot_notification_webhook( $notification_pieces ) {
+= Filter by webhook ID =
+`// You can find the ID for each of your webhooks on their edit screen in the admin
+add_filter( 'rock_the_slackbot_notification_(webhook_id)', 'filter_rock_the_slackbot_notification_webhook', 10, 2 );
+function filter_rock_the_slackbot_notification_webhook( $notification_pieces, $event_args ) {
 
   // Change the payload
 
@@ -106,10 +114,10 @@ function filter_rock_the_slackbot_notification_webhook( $notification_pieces ) {
   return $notification_pieces;
 }`
 
-`// Filter by notification event slug
-// The event slugs are listed below
-add_filter( 'rock_the_slackbot_notification_(notification_event)', 'filter_rock_the_slackbot_notification_event' );
-function filter_rock_the_slackbot_notification_event( $notification_pieces ) {
+= Filter by notification event slug =
+`// The event slugs are listed below
+add_filter( 'rock_the_slackbot_notification_(notification_event)', 'filter_rock_the_slackbot_notification_event', 10, 2 );
+function filter_rock_the_slackbot_notification_event( $notification_pieces, $event_args ) {
 
   // Change the payload
 
@@ -117,38 +125,75 @@ function filter_rock_the_slackbot_notification_event( $notification_pieces ) {
   return $notification_pieces;
 }`
 
-= Event Slugs =
+== Notification Events ==
 
-**Content**
+Including event specific information passed to filters for each notification event.
+
+= Content =
 
 * post_published
+    * post - the WP_Post object data of the post that was published
+    * old_post_status - the status of the post before it was published
+    * new_post_status - the current status of the published post
 * post_unpublished
+    * post - the WP_Post object data of the post that was unpublished
+    * old_post_status - the status of the post before it was unpublished
+    * new_post_status - the current status of the unpublished post
 * post_updated
+    * post_id - the post ID of the post you updated
+    * post_before - the WP_Post object data of the post before it was updated
+    * post_after - the WP_Post object data of the post after it was updated
 * post_deleted
+    * post - the WP_Post object data of the post that was deleted
 * post_trashed
+    * post - the WP_Post object data of the post that was trashed
 * is_404
+    * url - the URL that threw the 404 error
+    * referer - the HTTP referer (may not always be defined)
+    * ip_address - the IP address of the user who visited the URL (may not always be defined)
+    * user_agent - the user agent of the user who visited the URL (may not always be defined)
+    * wp_query - the WordPress query variables
+    * mysql_request - the MySQL query request
 
-**Menus**
+= Menus =
 
 * menu_item_deleted
+    * menu - the WP_Post object data of the menu that held the menu item
+    * menu_item_id - the post ID of the menu item that was deleted
 
-**Media**
+= Media =
 
 * add_attachment
+    * attachment_post - the WP_Post object data for the attachment you added
 * edit_attachment
+    * attachment_post - the WP_Post object data for the attachment you edited
 * delete_attachment
+    * attachment_post - the WP_Post object data for the attachment you deleted
 
-**Users**
+= Users =
 
 * user_added
+    * user - the WP_User data for the user you added
 * user_deleted
+    * user - the WP_User data for the user you deleted
 * set_user_role
+    * user - the WP_User data for the user whose role was changed
+    * current_user_roles - the current user roles for the user whose role was changed
+    * old_user_roles - the old user roles for the user whose role was changed
 
-**Updates**
+= Updates =
 
 * core_update_available
+    * current_version - the current version number of WordPress core
+    * new_version - the version number for the WordPress core update
 * core_updated
+    * current_version - the current version number of WordPress core after the update
+    * old_version - the old version number for WordPress core before the update
 * plugin_update_available
+    * plugins - includes an array of the plugins who have updates available
 * plugin_updated
+    * plugin - includes an array of the plugin(s) that were updated
 * theme_update_available
+    * themes - includes an array of the themes who have updates available
 * theme_updated
+    * theme - includes an array of the theme(s) that were updated
