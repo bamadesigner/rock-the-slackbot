@@ -479,6 +479,15 @@ class Rock_The_Slackbot {
 }
 
 /**
+ * Set emails to be HTML.
+ *
+ * @since   1.1.1
+ * @return  string - email content type
+ */
+function rock_the_slackbot_set_html_content_type() {
+	return 'text/html';
+}
+
  * Returns the instance of our main Rock_The_Slackbot class.
  *
  * Will come in handy when we need to access the

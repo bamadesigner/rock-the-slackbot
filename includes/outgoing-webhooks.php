@@ -153,17 +153,6 @@ class Rock_The_Slackbot_Outgoing_Webhooks {
 
 	}
 
-	/**
-	 * Set our error emails to be HTML.
-	 *
-	 * @access  public
-	 * @since   1.0.0
-	 * @return  string - email content type
-	 */
-	public function set_html_content_type() {
-		return 'text/html';
-	}
-
 }
 
 /**

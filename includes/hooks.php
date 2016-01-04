@@ -177,7 +177,7 @@ class Rock_The_Slackbot_Hooks {
 				// @TODO be able to filter this email
 
 				// Set email to be HTML
-				add_filter( 'wp_mail_content_type', array( $this, 'set_html_content_type' ) );
+				add_filter( 'wp_mail_content_type', 'rock_the_slackbot_set_html_content_type' );
 
 				// Build email message
 				$message = __( 'There was an error when trying to post to Slack from WordPress.', 'rock-the-slackbot' );
@@ -218,7 +218,7 @@ class Rock_The_Slackbot_Hooks {
 				wp_mail( get_bloginfo( 'admin_email' ), __( 'WordPress to Slack error', 'rock-the-slackbot' ), $message );
 
 				// Reset content-type to avoid conflicts
-				remove_filter( 'wp_mail_content_type',  array( $this, 'set_html_content_type' ) );
+				remove_filter( 'wp_mail_content_type',  'rock_the_slackbot_set_html_content_type' );
 
 			}
 
