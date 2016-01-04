@@ -183,6 +183,41 @@ Including event specific information passed to filters for each notification eve
     * **Passed To Filters**
         * theme - includes an array of the theme(s) that were updated
 
+## Filter Examples
+
+You can use a filter to change the Slack notification to go to a different Slack channel according to post information, like the post category:
+
+    add_filter( 'rock_the_slackbot_notification', 'filter_rock_the_slackbot_notification', 10, 3 );
+    function filter_rock_the_slackbot_notification( $notification, $notification_event, $event_args ) {
+
+        // Only run filter for specific events
+        switch( $notification_event ) {
+
+            // This way you can set which events you want to use
+            case 'post_published':
+            case 'post_unpublished':
+            case 'post_updated':
+            case 'post_deleted':
+            case 'post_trashed':
+
+                // Get category names
+                $categories = wp_get_post_categories( $event_args[ 'post_id' ], array( 'fields' => 'names' ) );
+
+                // Replace 'CategoryName' with the category you're looking for
+                if ( in_array( 'CategoryName', $categories ) ) {
+
+                    // Change the channel in the payload
+                    // Make sure you prefix the channel name with #
+                    $notification[ 'payload' ][ 'channel' ] = '#newchannel';
+
+                }
+                break;
+        }
+
+        // Return the notification
+        return $notification;
+    }
+
 ## Installation
 
 1. Upload 'rock-the-slackbot' to the '/wp-content/plugins/' directory
