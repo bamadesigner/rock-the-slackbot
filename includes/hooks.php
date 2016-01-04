@@ -160,6 +160,10 @@ class Rock_The_Slackbot_Hooks {
 			// Extract the filtered notification pieces
 			extract( $notification_pieces );
 
+			// Store information for the main notification filter
+			wp_cache_set( 'notification_event', $notification_event, 'rock_the_slackbot' );
+			wp_cache_set( 'notification_event_args', $event_args, 'rock_the_slackbot' );
+
 			// Send the notification
 			$sent_notification = rock_the_slackbot_notifications()->send_notification( $hook[ 'webhook_url' ], $payload );
 
