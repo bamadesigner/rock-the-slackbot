@@ -124,16 +124,6 @@ class Rock_The_Slackbot_Outgoing_Webhooks {
 			}
 		}
 
-		// See if we have stored information for the main filter
-		$notification_event = wp_cache_get( 'notification_event', 'rock_the_slackbot' );
-		$notification_event_args = wp_cache_get( 'notification_event_args', 'rock_the_slackbot' );
-
-		// Allows you to filter notifications
-		$notification_pieces = (array) apply_filters( 'rock_the_slackbot_notification', compact( array( 'webhook_url', 'payload' ) ), $notification_event, $notification_event_args );
-
-		// Delete the stored information
-		wp_cache_delete( 'notification_event', 'rock_the_slackbot' );
-		wp_cache_delete( 'notification_event_args', 'rock_the_slackbot' );
 
 		// Extract the filtered notification pieces
 		extract( $notification_pieces );
