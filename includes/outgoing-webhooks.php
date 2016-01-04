@@ -1,13 +1,13 @@
 <?php
 
-class Rock_The_Slackbot_Notifications {
+class Rock_The_Slackbot_Outgoing_Webhooks {
 
 	/**
 	 * Holds the class instance.
 	 *
 	 * @since	1.0.0
 	 * @access	private
-	 * @var		Rock_The_Slackbot_Notifications
+	 * @var		Rock_The_Slackbot_Outgoing_Webhooks
 	 */
 	private static $instance;
 
@@ -16,7 +16,7 @@ class Rock_The_Slackbot_Notifications {
 	 *
 	 * @access  public
 	 * @since   1.0.0
-	 * @return	Rock_The_Slackbot_Notifications
+	 * @return	Rock_The_Slackbot_Outgoing_Webhooks
 	 */
 	public static function instance() {
 		if ( ! isset( static::$instance ) ) {
@@ -27,7 +27,7 @@ class Rock_The_Slackbot_Notifications {
 	}
 
 	/**
-	 * This class sends notifications to Slack.
+	 * This class sends outgoing webhooks to Slack.
 	 *
 	 * @access  public
 	 * @since   1.0.0
@@ -53,21 +53,21 @@ class Rock_The_Slackbot_Notifications {
 	private function __wakeup() {}
 
 	/**
-	 * Sends a payload notification to Slack.
+	 * Sends a payload to Slack.
 	 *
 	 * @access  public
 	 * @since   1.0.0
 	 * @param   string - $webhook_url - send the payload to this URL
-	 * @param   array - $payload - the notification information
+	 * @param   array - $payload - the payload information
 	 * @return  boolean - whether or not it was sent without error
 	 */
-	function send_notification( $webhook_url, $payload = array() ) {
+	function send_payload( $webhook_url, $payload = array() ) {
 
 		// Set defaults
 		$payload_defaults = array(
 			'channel'       => null,
 			'username'      => get_bloginfo( 'name' ),
-			'text'          => __( 'This is a WordPress to Slack notification', 'rock-the-slackbot' ),
+			'text'          => __( 'This is a WordPress to Slack message.', 'rock-the-slackbot' ),
 			'icon_emoji'	=> null,
 			'icon_url'		=> trailingslashit( plugin_dir_url( dirname( __FILE__ ) ) ) . 'images/wordpress-icon-emoji.png',
 			'attachments'   => array(),
@@ -202,7 +202,7 @@ class Rock_The_Slackbot_Notifications {
 			remove_filter( 'wp_mail_content_type',  array( $this, 'set_html_content_type' ) );
 
 			// Return an error
-			return new WP_Error( 'slack_notification_error', $slack_response->get_error_message() );
+			return new WP_Error( 'slack_outgoing_webhook_error', $slack_response->get_error_message() );
 
 		}
 
@@ -224,16 +224,16 @@ class Rock_The_Slackbot_Notifications {
 }
 
 /**
- * Returns the instance of our Rock_The_Slackbot_Notifications class.
+ * Returns the instance of our Rock_The_Slackbot_Outgoing_Webhooks class.
  *
  * Will come in handy for anyone who wants to
- * manually send a notification outside of the
+ * manually send an outgoing webhook outside of the
  * plugin's control.
  *
  * @since	1.0.0
  * @access	public
- * @return	Rock_The_Slackbot_Notifications
+ * @return	Rock_The_Slackbot_Outgoing_Webhooks
  */
-function rock_the_slackbot_notifications() {
-	return Rock_The_Slackbot_Notifications::instance();
+function rock_the_slackbot_outgoing_webhooks() {
+	return Rock_The_Slackbot_Outgoing_Webhooks::instance();
 }

@@ -25,7 +25,7 @@ define( 'ROCK_THE_SLACKBOT_PLUGIN_FILE', 'rock-the-slackbot/rock-the-slackbot.ph
 
 // Load the files
 require_once plugin_dir_path( __FILE__ ) . 'includes/hooks.php';
-require_once plugin_dir_path( __FILE__ ) . 'includes/notifications.php';
+require_once plugin_dir_path( __FILE__ ) . 'includes/outgoing-webhooks.php';
 
 // We only need you in the admin
 if ( is_admin() ) {

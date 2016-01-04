@@ -165,7 +165,7 @@ class Rock_The_Slackbot_Hooks {
 			wp_cache_set( 'notification_event_args', $event_args, 'rock_the_slackbot' );
 
 			// Send the notification
-			$sent_notification = rock_the_slackbot_notifications()->send_notification( $hook[ 'webhook_url' ], $payload );
+			$sent_notification = rock_the_slackbot_outgoing_webhooks()->send_payload( $hook[ 'webhook_url' ], $payload );
 
 			// Was there an error?
 			if ( is_wp_error( $sent_notification ) ) {
