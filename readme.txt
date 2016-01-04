@@ -89,16 +89,19 @@ Plugin launch
 
 Rock The Slackbot has filters setup to allow you to tweak each notification before it's sent. You can setup a filter for all notifications or drill down by event or specific webhook.
 
-Each filter passes two arguments:
+Each filter passes three arguments:
 
-1. $notification_pieces - an array containing the webhook URL (the URL for your Slack account) and the payload (all of the information being sent to Slack)
-2. $event_args - an array containing event specific information
+1. $notification_pieces - an array containing the webhook URL (the URL for your Slack account) and the payload (all of the information being sent to Slack) for the notification
+2. $notification_event - the slug of the notification event
+    * Will be false if you send a custom Slack notification that doesn't involve a WordPress event
+3. $event_args - an array containing notification event specific information
+    * Will be false if you send a custom Slack notification that doesn't involve a WordPress event
 
 **See *Notification Events* below to learn which information is passed to the filters for each notification event.**
 
 = Filter all notifications =
-`add_filter( 'rock_the_slackbot_notification', 'filter_rock_the_slackbot_notification', 10, 2 );
-function filter_rock_the_slackbot_notification( $notification_pieces, $event_args ) {
+`add_filter( 'rock_the_slackbot_notification', 'filter_rock_the_slackbot_notification', 10, 3 );
+function filter_rock_the_slackbot_notification( $notification_pieces, $notification_event, $event_args ) {
 
     // Change the payload
 
@@ -108,8 +111,8 @@ function filter_rock_the_slackbot_notification( $notification_pieces, $event_arg
 
 = Filter by webhook ID =
 `// You can find the ID for each of your webhooks on their edit screen in the admin
-add_filter( 'rock_the_slackbot_notification_(webhook_id)', 'filter_rock_the_slackbot_notification_webhook', 10, 2 );
-function filter_rock_the_slackbot_notification_webhook( $notification_pieces, $event_args ) {
+add_filter( 'rock_the_slackbot_notification_(webhook_id)', 'filter_rock_the_slackbot_notification_webhook', 10, 3 );
+function filter_rock_the_slackbot_notification_webhook( $notification_pieces, $notification_event, $event_args ) {
 
   // Change the payload
 
@@ -119,8 +122,8 @@ function filter_rock_the_slackbot_notification_webhook( $notification_pieces, $e
 
 = Filter by notification event slug =
 `// The event slugs are listed below
-add_filter( 'rock_the_slackbot_notification_(notification_event)', 'filter_rock_the_slackbot_notification_event', 10, 2 );
-function filter_rock_the_slackbot_notification_event( $notification_pieces, $event_args ) {
+add_filter( 'rock_the_slackbot_notification_(notification_event)', 'filter_rock_the_slackbot_notification_event', 10, 3 );
+function filter_rock_the_slackbot_notification_event( $notification_pieces, $notification_event, $event_args ) {
 
   // Change the payload
 

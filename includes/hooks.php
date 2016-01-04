@@ -152,10 +152,10 @@ class Rock_The_Slackbot_Hooks {
 			$payload = $this->prepare_payload( $payload, $attachments, $hook, $notification_event );
 
 			// Filter by event
-			$notification_pieces = (array) apply_filters_ref_array( "rock_the_slackbot_notification_{$notification_event}", array( compact( array( 'webhook_url', 'payload' ) ) ), $event_args );
+			$notification_pieces = (array) apply_filters_ref_array( "rock_the_slackbot_notification_{$notification_event}", array( compact( array( 'webhook_url', 'payload' ) ) ), $notification_event, $event_args );
 
 			// Filter by hook ID
-			$notification_pieces = (array) apply_filters_ref_array( 'rock_the_slackbot_notification_' . $hook[ 'ID' ], array( compact( array( 'webhook_url', 'payload' ) ) ), $event_args );
+			$notification_pieces = (array) apply_filters_ref_array( 'rock_the_slackbot_notification_' . $hook[ 'ID' ], array( compact( array( 'webhook_url', 'payload' ) ) ), $notification_event, $event_args );
 
 			// Extract the filtered notification pieces
 			extract( $notification_pieces );
