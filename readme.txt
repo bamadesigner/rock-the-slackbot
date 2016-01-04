@@ -64,6 +64,7 @@ Please use [the Issues section of this plugin's GitHub repo](https://github.com/
 
 = 1.1.1 =
 * Updated the notification filters so now they include the notification pieces, the slug of the notification event, and event specific information so you can make adjustments according to the event.
+* Fixed where the webhook URL wasn't being sent to the filters.
 
 = 1.1.0 =
 * Rock The Slackbot is now multisite compatible!
@@ -78,6 +79,7 @@ Plugin launch
 
 = 1.1.1 =
 * Updated the notification filters so now they include the notification pieces, the slug of the notification event, and event specific information so you can make adjustments according to the event.
+* Fixed where the webhook URL wasn't being sent to the filters.
 
 = 1.1.0 =
 * Rock The Slackbot is now multisite compatible!

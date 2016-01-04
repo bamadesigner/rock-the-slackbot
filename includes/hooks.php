@@ -144,7 +144,8 @@ class Rock_The_Slackbot_Hooks {
 		foreach( $outgoing_webhooks as $hook ) {
 
 			// We must have a webhook URL
-			if ( ! ( isset( $hook[ 'webhook_url' ] ) && ! empty( $hook[ 'webhook_url' ] ) ) ) {
+			$webhook_url = isset( $hook[ 'webhook_url' ] ) && ! empty( $hook[ 'webhook_url' ] ) ? $hook[ 'webhook_url' ] : false;
+			if ( ! $webhook_url ) {
 				continue;
 			}
 
