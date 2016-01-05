@@ -34,6 +34,9 @@
 		// Define webhook URL field
 		var $rts_webhook_url = $('#rts-webhook-url');
 
+		// Check webhook URL input
+		rts_check_webhook_url_input();
+
 		// Setup the timer
 		var $rts_webhook_url_typing_timer;
 		var $rts_webhook_url_typing_interval = 500; // time in ms
