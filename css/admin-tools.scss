@@ -388,27 +388,39 @@ table {
                     border-top:0;
                 }
 
-                &.rts-field-required {
+                .rts-field-required-message,
+                .rts-field-invalid-message {
+                    display: none;
+                    clear: both;
+                    color: #900;
+                    font-weight: bold;
+                    margin: 5px 0 0 0;
+                    font-style: italic;
+                }
 
+                // When there's an error
+                &.rts-field-error {
+                    .rts-input {
+                        border-color: #900;
+                    }
+                }
+
+                // When the field is blank...
+                &.rts-field-is-blank {
+
+                    // Show the required message
                     .rts-field-required-message {
-                        display: none;
-                        clear: both;
-                        color: #900;
-                        font-weight: bold;
-                        margin: 5px 0 0 0;
-                        font-style: italic;
+                        display: block;
                     }
 
-                    &.rts-field-error {
+                }
 
-                        .rts-field-required-message {
-                            display: block;
-                        }
+                // When the field is invalid...
+                &.rts-field-is-invalid {
 
-                        input {
-                            border-color: #900;
-                        }
-
+                    // Show the invalid message
+                    .rts-field-invalid-message {
+                        display: block;
                     }
 
                 }

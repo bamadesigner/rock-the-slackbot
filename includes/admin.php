@@ -543,7 +543,7 @@ class Rock_The_Slackbot_Admin {
 
 				?><tr>
 					<td class="rts-label"><label for="rts-webhook-name"><?php _e( 'Name of Webhook', 'rock-the-slackbot' ); ?></label></td>
-					<td class="rts-field rts-field-required<?php echo ( ! isset( $webhook[ 'name' ] ) || empty( $webhook[ 'name' ] ) ) ? ' rts-field-error' : null; ?>"><?php
+					<td class="rts-field rts-field-required<?php echo ( ! isset( $webhook[ 'name' ] ) || empty( $webhook[ 'name' ] ) ) ? ' rts-field-error rts-field-is-blank' : null; ?>"><?php
 
 						// Print input
 						?><input id="rts-webhook-name" class="rts-input rts-input-text rts-input-required" type="text" name="rock_the_slackbot_outgoing_webhooks[name]" value="<?php echo esc_attr($webhook[ 'name' ]); ?>"/><?php
@@ -562,16 +562,36 @@ class Rock_The_Slackbot_Admin {
 					</td>
 				</tr>
 				<tr>
-					<td class="rts-label"><label for="rts-webhook-url"><?php _e( 'Webhook URL', 'rock-the-slackbot' ); ?></label></td>
-					<td class="rts-field rts-field-required<?php echo ( ! isset( $webhook[ 'name' ] ) || empty( $webhook[ 'name' ] ) ) ? ' rts-field-error' : null; ?>"><?php
+					<td class="rts-label"><label for="rts-webhook-url"><?php _e( 'Webhook URL', 'rock-the-slackbot' ); ?></label></td><?php
+
+					// Setup <td> classes
+					$td_classes = array( 'rts-field', 'rts-field-required' );
+
+					// If no value, then show error class
+					if ( ! isset( $webhook[ 'webhook_url' ] ) || empty( $webhook[ 'webhook_url' ] ) ) {
+						$td_classes = array_merge( $td_classes, array( 'rts-field-error', 'rts-field-is-blank' ) );
+					}
+
+					// If not a valid URL, then show error class
+					else if ( ! preg_match( '/^http/i', $webhook[ 'webhook_url' ] ) ) {
+						$td_classes = array_merge( $td_classes, array( 'rts-field-error', 'rts-field-is-invalid' ) );
+					}
+
+					?><td class="<?php echo implode( ' ', array_unique( $td_classes ) ); ?>"><?php
 
 						// Print input
-						?><input id="rts-webhook-url" class="rts-input-required" type="text" name="rock_the_slackbot_outgoing_webhooks[webhook_url]" value="<?php echo esc_attr($webhook[ 'webhook_url' ]); ?>"/><?php
+						?><div class="rts-input-button-combo">
+							<input id="rts-webhook-url" class="rts-input rts-input-text rts-input-required" type="text" name="rock_the_slackbot_outgoing_webhooks[webhook_url]" value="<?php echo esc_attr($webhook[ 'webhook_url' ]); ?>" autocomplete="off"/>
+							<div id="rts-test-webhook-url" class="button rts-input-button">Test this webhook</div>
+						</div><?php
 
 						// Print required message
 						echo $required_message;
 
-						?><span class="rts-field-desc"><?php printf( __( 'You must first %1$sset up an incoming webhook integration in your Slack account%2$s. Once you select a channel (which you can override below), click the button to add the integration, copy the provided webhook URL, and paste the URL in the box above.', 'rock-the-slackbot' ), '<a href="https://my.slack.com/services/new/incoming-webhook/" target="_blank">', '</a>' ); ?></span>
+						// Print validation message
+						?><span class="rts-field-invalid-message"><?php _e( 'This field must be a valid URL.', 'rock-the-slackbot' ); ?></span>
+
+						<span class="rts-field-desc"><?php printf( __( 'You must first %1$sset up an incoming webhook integration in your Slack account%2$s. Once you select a channel (which you can override below), click the button to add the integration, copy the provided webhook URL, and paste the URL in the box above.', 'rock-the-slackbot' ), '<a href="https://my.slack.com/services/new/incoming-webhook/" target="_blank">', '</a>' ); ?></span>
 					</td>
 				</tr>
 				<tr>
