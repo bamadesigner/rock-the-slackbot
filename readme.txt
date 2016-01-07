@@ -63,6 +63,7 @@ Please use [the Issues section of this plugin's GitHub repo](https://github.com/
 == Changelog ==
 
 = 1.1.1 =
+* Created rts_send_webhook_message() to make it easy for users to send simple, custom messages to Slack via webhook.
 * Updated the notification filters so they include the notification pieces, the slug of the notification event, and event specific information so you can make adjustments according to the event.
 * Added 'rock_the_slackbot_outgoing_webhook_payload' filter which allows you to change any payload sent to Slack in an outgoing webhook.
 * Fixed where the webhook URL wasn't being sent to the filters.
@@ -79,6 +80,7 @@ Plugin launch
 == Upgrade Notice ==
 
 = 1.1.1 =
+* Created rts_send_webhook_message() to make it easy for users to send simple, custom messages to Slack via webhook.
 * Updated the notification filters so they include the notification pieces, the slug of the notification event, and event specific information so you can make adjustments according to the event.
 * Added 'rock_the_slackbot_outgoing_webhook_payload' filter which allows you to change any payload sent to Slack in an outgoing webhook.
 * Fixed where the webhook URL wasn't being sent to the filters.
