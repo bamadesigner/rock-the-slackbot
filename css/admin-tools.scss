@@ -1,5 +1,9 @@
+$slack-green: #1a937d;
+$slack-blue: #30b7d0;
+$slack-gold: #e8a723;
+
 #rock-slackbot-intro-message {
-    background: #1a937d;
+    background: $slack-green;
     min-height: 50px;
     padding: 15px 15px 15px 102px;
     color: #fff;
@@ -75,7 +79,7 @@
 .wp-core-ui {
 
     .rts-button {
-        background: #30b7d0;
+        background: $slack-blue;
         color: #fff;
         width: auto;
         height: auto;
@@ -100,7 +104,7 @@
         }
 
         &.rts-button-green {
-            background: #1a937d;
+            background: $slack-green;
 
             &:hover {
                 background: #13806c;
@@ -109,7 +113,7 @@
         }
 
         &.rts-button-gold {
-            background: #e8a723;
+            background: $slack-gold;
             color: #fff;
 
             &:hover {
@@ -129,6 +133,7 @@
 
         &:hover {
             background: #2daac1;
+            color: #fff;
         }
 
     }
@@ -220,7 +225,7 @@
         margin: 0 auto;
 
         &:hover {
-            background: #30b7d0;
+            background: $slack-blue;
             color: #fff;
         }
 
@@ -438,6 +443,55 @@ table {
 
             }
 
+            $rts-input-has-button-width: 150px;
+            $rts-input-has-button-height: 28px;
+            .rts-input-button-combo {
+                position: relative;
+
+                .rts-input {
+                    height: $rts-input-has-button-height;
+                    line-height: $rts-input-has-button-height;
+                    padding: 0 5px;
+                    margin: 0;
+                }
+
+                // Hidden by default
+                .rts-input-button {
+                    display: none;
+                    width: $rts-input-has-button-width;
+                    background: #444;
+                    position: absolute;
+                    right: 0;
+                    top: 0;
+                    height: $rts-input-has-button-height;
+                    line-height: $rts-input-has-button-height;
+                    padding: 0 10px;
+                    box-shadow: none;
+                    border: 0;
+                    border-radius: 0;
+                    color: #fff;
+                    text-align: center;
+
+                    &:hover {
+                        background: #23282d;
+                    }
+
+                }
+
+                &.show-button {
+
+                    .rts-input {
+                        padding-right: $rts-input-has-button-width + 5px;
+                    }
+
+                    .rts-input-button {
+                        display: block;
+                    }
+
+                }
+
+            }
+
             .rts-field-desc {
                 display: block;
                 clear: both;
@@ -562,6 +616,71 @@ table {
 
                 }
 
+            }
+
+        }
+
+    }
+
+}
+
+#rts-popup-test-webhook-url {
+    background: url("../images/slack-logo.png") 5px 10px no-repeat #fff;
+    background-size: 100px auto;
+    min-height: 130px;
+    padding: 0 10px 0 130px;
+
+    p {
+        margin-bottom: 0.6em;
+    }
+
+    .rts-response {
+        display: block;
+        color: #fff;
+        padding: 5px;
+        margin: 11px 0 0 0;
+        text-align: center;
+        font-weight: bold;
+    }
+
+    .rts-response-success {
+        background: $slack-green;
+    }
+
+    .rts-response-fail {
+        background: #cc2027;
+    }
+
+    .rts-popup-buttons {
+
+        .button {
+            margin-left: 3px;
+
+            &.loading {
+
+                span {
+                    display: none;
+                }
+
+            }
+
+            &.button-primary {
+
+                &.loading {
+                    background-image: url( '../images/loading.gif' );
+                    background-position: center center;
+                    background-repeat: no-repeat;
+                    background-size: auto 80%;
+                }
+
+                &:hover {
+                    background-color: darken($slack-green, 6%);
+                }
+
+            }
+
+            &:first-child {
+                margin-left: 0;
             }
 
         }

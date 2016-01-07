@@ -101,6 +101,7 @@
 }
 .wp-core-ui .rts-button:hover {
   background: #2daac1;
+  color: #fff;
 }
 .wp-core-ui .rts-side-button {
   width: 100%;
@@ -289,7 +290,8 @@ table.rock-slackbot-edit-outgoing-webhook td.rts-field.rts-events, table.rock-sl
 table.rock-slackbot-edit-outgoing-webhook td.rts-field.rts-events {
   border-top: 0;
 }
-table.rock-slackbot-edit-outgoing-webhook td.rts-field.rts-field-required .rts-field-required-message {
+table.rock-slackbot-edit-outgoing-webhook td.rts-field .rts-field-required-message,
+table.rock-slackbot-edit-outgoing-webhook td.rts-field .rts-field-invalid-message {
   display: none;
   clear: both;
   color: #900;
@@ -297,11 +299,14 @@ table.rock-slackbot-edit-outgoing-webhook td.rts-field.rts-field-required .rts-f
   margin: 5px 0 0 0;
   font-style: italic;
 }
-table.rock-slackbot-edit-outgoing-webhook td.rts-field.rts-field-required.rts-field-error .rts-field-required-message {
+table.rock-slackbot-edit-outgoing-webhook td.rts-field.rts-field-error .rts-input {
+  border-color: #900;
+}
+table.rock-slackbot-edit-outgoing-webhook td.rts-field.rts-field-is-blank .rts-field-required-message {
   display: block;
 }
-table.rock-slackbot-edit-outgoing-webhook td.rts-field.rts-field-required.rts-field-error input {
-  border-color: #900;
+table.rock-slackbot-edit-outgoing-webhook td.rts-field.rts-field-is-invalid .rts-field-invalid-message {
+  display: block;
 }
 table.rock-slackbot-edit-outgoing-webhook td.rts-field .rts-network-post-types {
   margin: 10px -15px 0 -15px;
@@ -310,6 +315,40 @@ table.rock-slackbot-edit-outgoing-webhook td.rts-field .rts-network-post-types {
 }
 table.rock-slackbot-edit-outgoing-webhook td.rts-field .rts-network-post-types input {
   margin: 5px 0 0 0;
+}
+table.rock-slackbot-edit-outgoing-webhook td .rts-input-button-combo {
+  position: relative;
+}
+table.rock-slackbot-edit-outgoing-webhook td .rts-input-button-combo .rts-input {
+  height: 28px;
+  line-height: 28px;
+  padding: 0 5px;
+  margin: 0;
+}
+table.rock-slackbot-edit-outgoing-webhook td .rts-input-button-combo .rts-input-button {
+  display: none;
+  width: 150px;
+  background: #444;
+  position: absolute;
+  right: 0;
+  top: 0;
+  height: 28px;
+  line-height: 28px;
+  padding: 0 10px;
+  box-shadow: none;
+  border: 0;
+  border-radius: 0;
+  color: #fff;
+  text-align: center;
+}
+table.rock-slackbot-edit-outgoing-webhook td .rts-input-button-combo .rts-input-button:hover {
+  background: #23282d;
+}
+table.rock-slackbot-edit-outgoing-webhook td .rts-input-button-combo.show-button .rts-input {
+  padding-right: 155px;
+}
+table.rock-slackbot-edit-outgoing-webhook td .rts-input-button-combo.show-button .rts-input-button {
+  display: block;
 }
 table.rock-slackbot-edit-outgoing-webhook td .rts-field-desc {
   display: block;
@@ -391,4 +430,46 @@ table.rock-slackbot-edit-outgoing-webhook tr.buttons td.rts-submit .button {
   padding-left: 0;
   padding-right: 0;
   font-size: 14px;
+}
+
+#rts-popup-test-webhook-url {
+  background: url("../images/slack-logo.png") 5px 10px no-repeat #fff;
+  background-size: 100px auto;
+  min-height: 130px;
+  padding: 0 10px 0 130px;
+}
+#rts-popup-test-webhook-url p {
+  margin-bottom: 0.6em;
+}
+#rts-popup-test-webhook-url .rts-response {
+  display: block;
+  color: #fff;
+  padding: 5px;
+  margin: 11px 0 0 0;
+  text-align: center;
+  font-weight: bold;
+}
+#rts-popup-test-webhook-url .rts-response-success {
+  background: #1a937d;
+}
+#rts-popup-test-webhook-url .rts-response-fail {
+  background: #cc2027;
+}
+#rts-popup-test-webhook-url .rts-popup-buttons .button {
+  margin-left: 3px;
+}
+#rts-popup-test-webhook-url .rts-popup-buttons .button.loading span {
+  display: none;
+}
+#rts-popup-test-webhook-url .rts-popup-buttons .button.button-primary.loading {
+  background-image: url("../images/loading.gif");
+  background-position: center center;
+  background-repeat: no-repeat;
+  background-size: auto 80%;
+}
+#rts-popup-test-webhook-url .rts-popup-buttons .button.button-primary:hover {
+  background-color: #157967;
+}
+#rts-popup-test-webhook-url .rts-popup-buttons .button:first-child {
+  margin-left: 0;
 }

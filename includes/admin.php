@@ -134,6 +134,9 @@ class Rock_The_Slackbot_Admin {
 		add_action( 'admin_action_do-core-upgrade', array( $this, 'handle_pre_upgrade_information' ) );
 		add_action( 'admin_action_do-core-reinstall', array( $this, 'handle_pre_upgrade_information' ) );
 
+		// Run an ajax call to test a webhook URL
+		add_action( 'wp_ajax_test_webhook_url', array( $this, 'ajax_test_webhook_url' ) );
+
 	}
 
 	/**
@@ -219,6 +222,15 @@ class Rock_The_Slackbot_Admin {
 			// Need to send some data to our script
 			wp_localize_script( 'rock-the-slackbot-admin-tools', 'rock_the_slackbot', array(
 				'delete_webhook_conf' => __( 'Are you sure you want to delete this webhook?', 'rock-the-slackbot' ),
+				'webhook_test_responses' => array(
+					'error' => __( 'We tried to send a message and got the following error:', 'rock-the-slackbot' ),
+					'success' => __( 'Success! We rocked the Slackbot and your webhook passed the test.', 'rock-the-slackbot' ),
+					'failed' => __( "Hmm. That's weird. There wasn't an error but the test message did not send. Please try again.", 'rock-the-slackbot' ),
+				),
+				'webhook_send_test' => __( 'Send a test message', 'rock-the-slackbot' ),
+				'webhook_send_another' => __( 'Send another test message', 'rock-the-slackbot' ),
+				'close' => __( 'Close', 'rock-the-slackbot' ),
+				'cancel' => __( 'Cancel', 'rock-the-slackbot' ),
 			));
 
 		}
@@ -562,7 +574,7 @@ class Rock_The_Slackbot_Admin {
 					</td>
 				</tr>
 				<tr>
-					<td class="rts-label"><label for="rts-webhook-url"><?php _e( 'Webhook URL', 'rock-the-slackbot' ); ?></label></td><?php
+					<td class="rts-label"><label for="rts-webhook-url-input"><?php _e( 'Webhook URL', 'rock-the-slackbot' ); ?></label></td><?php
 
 					// Setup <td> classes
 					$td_classes = array( 'rts-field', 'rts-field-required' );
@@ -581,8 +593,8 @@ class Rock_The_Slackbot_Admin {
 
 						// Print input
 						?><div class="rts-input-button-combo">
-							<input id="rts-webhook-url" class="rts-input rts-input-text rts-input-required" type="text" name="rock_the_slackbot_outgoing_webhooks[webhook_url]" value="<?php echo esc_attr($webhook[ 'webhook_url' ]); ?>" autocomplete="off"/>
-							<div id="rts-test-webhook-url" class="button rts-input-button">Test this webhook</div>
+							<input id="rts-webhook-url-input" class="rts-input rts-input-text rts-input-required" type="text" name="rock_the_slackbot_outgoing_webhooks[webhook_url]" value="<?php echo esc_attr($webhook[ 'webhook_url' ]); ?>" />
+							<a class="thickbox button rts-input-button" href="#TB_inline?width=420&height=175&inlineId=rts-test-webhook-url-tb"><?php _e( 'Test this webhook' ); ?></a>
 						</div><?php
 
 						// Print required message
@@ -826,6 +838,18 @@ class Rock_The_Slackbot_Admin {
 			}
 
 		?></div><?php
+
+		// Popup to test the webhook URL
+		add_thickbox();
+		?><div id="rts-test-webhook-url-tb" style="display:none;">
+			<div id="rts-popup-test-webhook-url">
+				<p id="rts-popup-test-webhook-message"><?php _e( 'In order to test your webhook URL, and make sure your webhook is functioning correctly, a test message must be sent to your Slack account.', 'rock-the-slackbot' ); ?></p>
+				<div class="rts-popup-buttons">
+					<a id="rts-test-webhook-url-close" class="button rts-button rts-button-gold rts-close-thickbox" href="#"><?php _e( 'Cancel', 'rock-the-slackbot' ); ?></a>
+					<a id="rts-test-webhook-url-init" class="button button-primary rts-button rts-button-green" href="#"><span><?php _e( 'Send a test message', 'rock-the-slackbot' ); ?></span></a>
+				</div>
+			</div>
+		</div><?php
 
 	}
 
@@ -1342,6 +1366,47 @@ class Rock_The_Slackbot_Admin {
 			}
 		}
 
+	}
+
+	/**
+	 * Is used on the settings page to run an
+	 * AJAX call to test the provided webhook URL.
+	 *
+	 * @access  public
+	 * @since   1.0.1
+	 */
+	public function ajax_test_webhook_url() {
+
+		// Set the passed webhook URL
+		$webhook_url = isset( $_POST[ 'webhook_url' ] ) && ! empty( $_POST[ 'webhook_url' ] ) ? $_POST[ 'webhook_url' ] : null;
+
+		// We must have a URL and message
+		if ( $webhook_url ) {
+
+			// Set the passed channel
+			$channel = isset( $_POST[ 'channel' ] ) && ! empty( $_POST[ 'channel' ] ) ? $_POST[ 'channel' ] : null;
+
+			// Get site URL and name for message
+			$site_url = get_bloginfo( 'url' );
+			$site_name = get_bloginfo( 'name' );
+
+			// Set the test message
+			$message = sprintf( __( 'This is a Rock The Slackbot test message from the %1$s website at <%2$s>.', 'rock-the-slackbot' ),
+				$site_name,
+				$site_url );
+
+			// Try sending the message
+			$send_message = rts_send_webhook_message( $webhook_url, $message, $channel );
+
+			// Return a message to the JS
+			if ( is_wp_error( $send_message ) ) {
+				echo json_encode( array( 'error' => $send_message ) );
+			} else {
+				echo json_encode( array( 'sent' => $send_message ) );
+			}
+
+		}
+		die();
 	}
 
 }
