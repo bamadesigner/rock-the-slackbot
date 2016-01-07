@@ -127,11 +127,6 @@ class Rock_The_Slackbot_Outgoing_Webhooks {
 		// Allows you to filter the payload
 		$payload = (array) apply_filters( 'rock_the_slackbot_outgoing_webhook_payload', $payload, $webhook_url );
 
-		// No point if we don't have a channel
-		if ( ! $payload[ 'channel' ] ) {
-			return false;
-		}
-
 		// Send to Slack
 		$slack_response = wp_remote_post( $webhook_url, array(
 			'body'      => json_encode( $payload ),
