@@ -119,6 +119,83 @@ Each filter passes the same argument: an array containing the webhook URL (the U
 * theme_update_available
 * theme_updated
 
+
+### Example Usage
+
+**Note:** The best practice when writing filters, is to use a plugin which adds and manages additional filters within Wordpress. For example: [add-actions-and-filters](https://wordpress.org/support/view/plugin-reviews/add-actions-and-filters)
+
+Let's assume that we'd like to remove extra fields from the notification sent to Slack. We should first examine the structure of `$notification_pieces`, which the filter receives for a `post_published` event:
+
+```
+(
+    [payload] => Array
+        (
+            [text] => GENERAL_MESSAGE
+            [channel] => #channel_name
+            [attachments] => Array
+                (
+                    [0] => Array
+                        (
+                            [fallback] => GENERAL_MESSAGE
+                            [text] => TEXT
+                            [title] => TITLE
+                            [title_link] => TITLE_LINK
+                            [author_name] => AUTHOR_NAME
+                            [author_link] => AUTHOR_LINK
+                            [author_icon] => AUTHOR_ICON
+                            [fields] => Array
+                                (
+                                    [0] => Array
+                                        (
+                                            [title] => Content Author
+                                            [value] => AUTHOR_NAME
+                                            [short] => 1
+                                        )
+                                    [1] => Array
+                                        (
+                                            [title] => Edit the Content
+                                            [value] => EDIT_POST_LINK
+                                            [short] => 1
+                                        )
+                                    [2] => Array
+                                        (
+                                            [title] => Old Status
+                                            [value] => OLD_STATUS
+                                            [short] => 1
+                                        )
+                                    [3] => Array
+                                        (
+                                            [title] => Current Status
+                                            [value] => NEW_STATUS
+                                            [short] => 1
+                                        )
+                                    [4] => Array
+                                        (
+                                            [title] => Content Type
+                                            [value] => POST_TYPE
+                                            [short] => 1
+                                        )
+                                )
+                        )
+                )
+        )
+)
+```
+
+Thus, with the following code, we can remove all extra fields:
+
+```
+function remove_extra_fields_from_slack_notification( $notification_pieces ) {
+    // Change the payload - remove unwanted fields.
+    unset($notification_pieces['payload']['attachments'][0]['fields']);
+
+    // Return the payload
+    return $notification_pieces;
+}
+
+add_filter( 'rock_the_slackbot_notification_WEBHOOK_ID', 'remove_extra_fields_from_slack_notification' );
+```
+
 ##Installation
 
 1. Upload 'rock-the-slackbot' to the '/wp-content/plugins/' directory
