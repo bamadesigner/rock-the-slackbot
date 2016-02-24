@@ -45,6 +45,18 @@ Please use [the Issues section of this repo](https://github.com/bamadesigner/roc
 
 **A Slack account is required to use this plugin** and is free to use for as long as you want and with an unlimited number of people. [Visit the Slack website](https://slack.com/) to learn more and sign up.
 
+## Send A Simple Slack Message
+
+You can use the following function to send a simple message to your Slack account.
+
+**The function acceps the following parameters:**
+
+1. $webhook_id_or_url - provide the webhook URL or the ID of one stored in settings
+2. $message - the message you want to send
+3. $channel - OPTIONAL - the channel you want to send message to. Prefix with # for a specific channel or @ for a specific user. Will use default channel if nothing is passed.
+
+    rock_the_slackbot()->send_webhook_message( '564d3c1cdf52d', 'this is a test', '#testchannel' );
+
 ## Filters
 
 Rock The Slackbot has filters setup to allow you to tweak each WordPress notification before it's sent. You can setup a filter for all notifications or drill down by event or specific webhook.
