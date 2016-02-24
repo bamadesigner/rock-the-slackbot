@@ -345,10 +345,10 @@ class Rock_The_Slackbot_Admin {
 
 				?><div id="rock-slackbot-network-message">
 					<p class="slack-message">
-						<span class="dashicons dashicons-info"></span> <?php _e( 'This plugin is network activate and has notifications that are setup for, and running on, this site.', 'rock-the-slackbot' );
+						<span class="dashicons dashicons-info"></span> <?php _e( 'This plugin is activated network-wide and has notifications that are setup for, and running on, this site.', 'rock-the-slackbot' );
 
 						if ( current_user_can( 'manage_network' ) ) {
-							?><a href="<?php echo add_query_arg( array( 'page' => 'rock-the-slackbot' ), network_admin_url( 'settings.php' ) ); ?>"><?php _e( 'Manage network settings', 'rock-the-slackbot' ); ?></a><?php
+							?> <a href="<?php echo add_query_arg( array( 'page' => 'rock-the-slackbot' ), network_admin_url( 'settings.php' ) ); ?>"><?php _e( 'Manage network settings', 'rock-the-slackbot' ); ?></a><?php
 						}
 
 					?></p>
@@ -1396,7 +1396,7 @@ class Rock_The_Slackbot_Admin {
 				$site_url );
 
 			// Try sending the message
-			$send_message = rts_send_webhook_message( $webhook_url, $message, $channel );
+			$send_message = rock_the_slackbot()->send_webhook_message( $webhook_url, $message, $channel );
 
 			// Return a message to the JS
 			if ( is_wp_error( $send_message ) ) {

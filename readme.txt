@@ -64,11 +64,12 @@ Please use [the Issues section of this plugin's GitHub repo](https://github.com/
 
 = 1.1.1 =
 * Added process to test webhook URL on settings page.
-* Created rts_send_webhook_message() to make it easy for users to send simple, custom messages to Slack via webhook.
+* Created rock_the_slackbot()->send_webhook_message() to make it easy for users to send simple, custom messages to Slack via webhook.
 * Updated the notification filters so they include the notification pieces, the slug of the notification event, and event specific information so you can make adjustments according to the event.
 * Fixed bug where filters weren't "inheriting" each other.
 * Added 'rock_the_slackbot_outgoing_webhook_payload' filter which allows you to change any payload sent to Slack in an outgoing webhook.
 * Fixed where the webhook URL wasn't being sent to the filters.
+* If you use send_notification() from the Rock_The_Slackbot_Notifications class, that class has been heavily changed. You can now use rock_the_slackbot()->send_webhook_message() to send a custom message.
 
 = 1.1.0 =
 * Rock The Slackbot is now multisite compatible!
@@ -83,17 +84,30 @@ Plugin launch
 
 = 1.1.1 =
 * Added process to test webhook URL on settings page.
-* Created rts_send_webhook_message() to make it easy for users to send simple, custom messages to Slack via webhook.
+* Created rock_the_slackbot()->send_webhook_message() to make it easy for users to send simple, custom messages to Slack via webhook.
 * Updated the notification filters so they include the notification pieces, the slug of the notification event, and event specific information so you can make adjustments according to the event.
 * Fixed bug where filters weren't "inheriting" each other.
 * Added 'rock_the_slackbot_outgoing_webhook_payload' filter which allows you to change any payload sent to Slack in an outgoing webhook.
 * Fixed where the webhook URL wasn't being sent to the filters.
+* If you use send_notification() from the Rock_The_Slackbot_Notifications class, that class has been heavily changed. You can now use rock_the_slackbot()->send_webhook_message() to send a custom message.
 
 = 1.1.0 =
 * Rock The Slackbot is now multisite compatible!
 * Setup Slack notification when a plugin, theme, or core update is available - will need to enable
 * Setup Slack notification when a user's role has changed - will need to enable
 * Adding wp_get_referer(), IP address, and HTTP_USER_AGENT fields to the 404 notification.
+
+== Send A Simple Slack Message==
+
+You can use the following function to send a simple message to your Slack account.
+
+**The function acceps the following parameters:**
+
+1. $webhook_id_or_url - provide the webhook URL or the ID of one stored in settings
+2. $message - the message you want to send
+3. $channel - OPTIONAL - the channel you want to send message to. Prefix with # for a specific channel or @ for a specific user. Will use default channel if nothing is passed.
+
+`rock_the_slackbot()->send_webhook_message( '564d3c1cdf52d', 'this is a test', '#testchannel' );`
 
 == Filters ==
 
