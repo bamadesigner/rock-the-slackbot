@@ -153,7 +153,7 @@
 				// There was an error sending the message to Slack
 				if ( $response.error !== undefined && $response.error != '' ) {
 					$test_worked = false;
-					$response_message = rock_the_slackbot.webhook_test_responses.error + $response.error;
+					$response_message = rock_the_slackbot.webhook_test_responses.error;
 				}
 
 				// This means the test message was sent to Slack

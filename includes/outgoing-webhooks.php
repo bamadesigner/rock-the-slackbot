@@ -135,11 +135,19 @@ class Rock_The_Slackbot_Outgoing_Webhooks {
 			)
 		));
 
-		// If there's an error...
+		// If there's a WordPress error...
 		if ( is_wp_error( $slack_response ) ) {
 
 			// Return an error
 			return new WP_Error( 'slack_outgoing_webhook_error', $slack_response->get_error_message() );
+
+		}
+
+		// If there's an error from Slack...
+		if ( ! ( isset( $slack_response->response ) && isset( $slack_response->response->code ) && 200 == $slack_response->response->code ) ) {
+
+			// Return an error
+			return new WP_Error( 'slack_outgoing_webhook_error', __( 'The payload did not send to Slack.', 'rock-the-slackbot' ) );
 
 		}
 

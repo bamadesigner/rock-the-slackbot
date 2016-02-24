@@ -223,7 +223,7 @@ class Rock_The_Slackbot_Admin {
 			wp_localize_script( 'rock-the-slackbot-admin-tools', 'rock_the_slackbot', array(
 				'delete_webhook_conf' => __( 'Are you sure you want to delete this webhook?', 'rock-the-slackbot' ),
 				'webhook_test_responses' => array(
-					'error' => __( 'We tried to send a message and got the following error:', 'rock-the-slackbot' ),
+					'error' => __( 'We tried to send a message to Slack and it failed.', 'rock-the-slackbot' ),
 					'success' => __( 'Success! We rocked the Slackbot and your webhook passed the test.', 'rock-the-slackbot' ),
 					'failed' => __( "Hmm. That's weird. There wasn't an error but the test message did not send. Please try again.", 'rock-the-slackbot' ),
 				),
