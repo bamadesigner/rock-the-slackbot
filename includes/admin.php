@@ -211,13 +211,13 @@ class Rock_The_Slackbot_Admin {
 		}
 
 		// Enqueue our main styles
-		wp_enqueue_style( 'rock-the-slackbot-admin-tools', trailingslashit( plugin_dir_url( dirname( __FILE__ ) ) . 'css' ) . 'admin-tools.min.css', array(), ROCK_THE_SLACKBOT_VERSION );
+		wp_enqueue_style( 'rock-the-slackbot-admin-tools', trailingslashit( plugin_dir_url( dirname( __FILE__ ) ) . 'css' ) . 'admin-tools.css', array(), ROCK_THE_SLACKBOT_VERSION );
 
 		// We only need the script on the add and edit page
 		if ( $this->add_webhook || $this->edit_webhook ) {
 
 			wp_enqueue_style( 'rts-jquery-ui', '//code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css' );
-			wp_enqueue_script( 'rock-the-slackbot-admin-tools', trailingslashit(plugin_dir_url(dirname(__FILE__)) . 'js' ) . 'admin-tools.min.js', array( 'jquery', 'jquery-ui-tooltip' ), ROCK_THE_SLACKBOT_VERSION, true );
+			wp_enqueue_script( 'rock-the-slackbot-admin-tools', trailingslashit(plugin_dir_url(dirname(__FILE__)) . 'js' ) . 'admin-tools-min.js', array( 'jquery', 'jquery-ui-tooltip' ), ROCK_THE_SLACKBOT_VERSION, true );
 
 			// Need to send some data to our script
 			wp_localize_script( 'rock-the-slackbot-admin-tools', 'rock_the_slackbot', array(
