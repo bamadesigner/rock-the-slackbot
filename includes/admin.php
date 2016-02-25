@@ -601,7 +601,7 @@ class Rock_The_Slackbot_Admin {
 						echo $required_message;
 
 						// Print validation message
-						?><span class="rts-field-invalid-message"><?php _e( 'This field must be a valid URL.', 'rock-the-slackbot' ); ?></span>
+						?><span class="rts-field-invalid-message"><?php _e( 'This field must be a valid Slack URL.', 'rock-the-slackbot' ); ?></span>
 
 						<span class="rts-field-desc"><?php printf( __( 'You must first %1$sset up an incoming webhook integration in your Slack account%2$s. Once you select a channel (which you can override below), click the button to add the integration, copy the provided webhook URL, and paste the URL in the box above.', 'rock-the-slackbot' ), '<a href="https://my.slack.com/services/new/incoming-webhook/" target="_blank">', '</a>' ); ?></span>
 					</td>

@@ -208,7 +208,7 @@
 		var $input_button_combo = $rts_webhook_url_input.closest( '.rts-input-button-combo' );
 
 		// If the input matches the URL test...
-		if ( $rts_webhook_url_input.val().match(/^http/i) ) {
+		if ( $rts_webhook_url_input.val().match( '^https\:\/\/hooks\.slack\.com\/' ) ) {
 
 			// Hide the error message and show the button
 			$rts_field_td.removeClass('rts-field-error').removeClass('rts-field-is-invalid');
