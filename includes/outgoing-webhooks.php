@@ -171,7 +171,8 @@ class Rock_The_Slackbot_Outgoing_Webhooks {
 		}
 
 		// If errors, return errors
-		if ( ! empty( $slack_errors->get_error_messages() ) ) {
+		$error_messages = $slack_errors->get_error_messages();
+		if ( ! empty( $error_messages ) ) {
 			return $slack_errors;
 		}
 
