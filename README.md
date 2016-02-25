@@ -55,7 +55,7 @@ You can use the following send_webhook_message() function to send a simple messa
 2. $message - the message you want to send
 3. $channel - OPTIONAL - the channel you want to send message to. Prefix with # for a specific channel or @ for a specific user. Will use default channel if nothing is passed.
 
-``
+```
 // Use this function to send a simple message to Slack
 rock_the_slackbot()->send_webhook_message( '564d3c1cdf52d', 'this is a test', '#testchannel' );
 ```
