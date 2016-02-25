@@ -134,6 +134,9 @@ class Rock_The_Slackbot_Admin {
 		add_action( 'admin_action_do-core-upgrade', array( $this, 'handle_pre_upgrade_information' ) );
 		add_action( 'admin_action_do-core-reinstall', array( $this, 'handle_pre_upgrade_information' ) );
 
+		// Run an ajax call to test a webhook URL
+		add_action( 'wp_ajax_test_webhook_url', array( $this, 'ajax_test_webhook_url' ) );
+
 	}
 
 	/**
@@ -208,17 +211,26 @@ class Rock_The_Slackbot_Admin {
 		}
 
 		// Enqueue our main styles
-		wp_enqueue_style( 'rock-the-slackbot-admin-tools', trailingslashit( plugin_dir_url( dirname( __FILE__ ) ) . 'css' ) . 'admin-tools.min.css', array(), ROCK_THE_SLACKBOT_VERSION );
+		wp_enqueue_style( 'rock-the-slackbot-admin-tools', trailingslashit( plugin_dir_url( dirname( __FILE__ ) ) . 'css' ) . 'admin-tools.css', array(), ROCK_THE_SLACKBOT_VERSION );
 
 		// We only need the script on the add and edit page
 		if ( $this->add_webhook || $this->edit_webhook ) {
 
 			wp_enqueue_style( 'rts-jquery-ui', '//code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css' );
-			wp_enqueue_script( 'rock-the-slackbot-admin-tools', trailingslashit(plugin_dir_url(dirname(__FILE__)) . 'js' ) . 'admin-tools.min.js', array( 'jquery', 'jquery-ui-tooltip' ), ROCK_THE_SLACKBOT_VERSION, true );
+			wp_enqueue_script( 'rock-the-slackbot-admin-tools', trailingslashit(plugin_dir_url(dirname(__FILE__)) . 'js' ) . 'admin-tools-min.js', array( 'jquery', 'jquery-ui-tooltip' ), ROCK_THE_SLACKBOT_VERSION, true );
 
 			// Need to send some data to our script
 			wp_localize_script( 'rock-the-slackbot-admin-tools', 'rock_the_slackbot', array(
 				'delete_webhook_conf' => __( 'Are you sure you want to delete this webhook?', 'rock-the-slackbot' ),
+				'webhook_test_responses' => array(
+					'error' => __( 'We tried to send a message to Slack and it failed.', 'rock-the-slackbot' ),
+					'success' => __( 'Success! We rocked the Slackbot and your webhook passed the test.', 'rock-the-slackbot' ),
+					'failed' => __( "Hmm. That's weird. There wasn't an error but the test message did not send. Please try again.", 'rock-the-slackbot' ),
+				),
+				'webhook_send_test' => __( 'Send a test message', 'rock-the-slackbot' ),
+				'webhook_send_another' => __( 'Send another test message', 'rock-the-slackbot' ),
+				'close' => __( 'Close', 'rock-the-slackbot' ),
+				'cancel' => __( 'Cancel', 'rock-the-slackbot' ),
 			));
 
 		}
@@ -333,10 +345,10 @@ class Rock_The_Slackbot_Admin {
 
 				?><div id="rock-slackbot-network-message">
 					<p class="slack-message">
-						<span class="dashicons dashicons-info"></span> <?php _e( 'This plugin is network activate and has notifications that are setup for, and running on, this site.', 'rock-the-slackbot' );
+						<span class="dashicons dashicons-info"></span> <?php _e( 'This plugin is activated network-wide and has notifications that are setup for, and running on, this site.', 'rock-the-slackbot' );
 
 						if ( current_user_can( 'manage_network' ) ) {
-							?><a href="<?php echo add_query_arg( array( 'page' => 'rock-the-slackbot' ), network_admin_url( 'settings.php' ) ); ?>"><?php _e( 'Manage network settings', 'rock-the-slackbot' ); ?></a><?php
+							?> <a href="<?php echo add_query_arg( array( 'page' => 'rock-the-slackbot' ), network_admin_url( 'settings.php' ) ); ?>"><?php _e( 'Manage network settings', 'rock-the-slackbot' ); ?></a><?php
 						}
 
 					?></p>
@@ -421,10 +433,6 @@ class Rock_The_Slackbot_Admin {
 	 * @since   1.0.0
 	 */
 	private function print_edit_outgoing_webhook_meta_box() {
-
-		// @TODO Set it up so webhook URL is validated when entered or edited and check each time settings page is loaded to show error message if not working
-		// This is not possible unless the test sends a message
-		// Could add button that says "Test Webhook" which prompts a confirm message which tells them this will send a test message
 
 		// Get our webhook
 		$webhook = $this->edit_webhook ? $this->get_outgoing_webhook_setting( $this->edit_webhook, $this->is_network_admin ) : false;
@@ -543,10 +551,10 @@ class Rock_The_Slackbot_Admin {
 
 				?><tr>
 					<td class="rts-label"><label for="rts-webhook-name"><?php _e( 'Name of Webhook', 'rock-the-slackbot' ); ?></label></td>
-					<td class="rts-field rts-field-required<?php echo ( ! isset( $webhook[ 'name' ] ) || empty( $webhook[ 'name' ] ) ) ? ' rts-field-error' : null; ?>"><?php
+					<td class="rts-field rts-field-required<?php echo ( ! isset( $webhook[ 'name' ] ) || empty( $webhook[ 'name' ] ) ) ? ' rts-field-error rts-field-is-blank' : null; ?>"><?php
 
 						// Print input
-						?><input id="rts-webhook-name" class="rts-input-required" type="text" name="rock_the_slackbot_outgoing_webhooks[name]" value="<?php echo esc_attr($webhook[ 'name' ]); ?>"/><?php
+						?><input id="rts-webhook-name" class="rts-input rts-input-text rts-input-required" type="text" name="rock_the_slackbot_outgoing_webhooks[name]" value="<?php echo esc_attr($webhook[ 'name' ]); ?>"/><?php
 
 						// Print required message
 						echo $required_message;
@@ -557,48 +565,68 @@ class Rock_The_Slackbot_Admin {
 				<tr>
 					<td class="rts-label"><label for="rts-webhook-account"><?php _e( 'Name of Slack Account', 'rock-the-slackbot' ); ?></label></td>
 					<td class="rts-field">
-						<input id="rts-webhook-account" type="text" name="rock_the_slackbot_outgoing_webhooks[account]" value="<?php echo esc_attr($webhook[ 'account' ]); ?>"/>
+						<input id="rts-webhook-account" class="rts-input rts-input-text" type="text" name="rock_the_slackbot_outgoing_webhooks[account]" value="<?php echo esc_attr($webhook[ 'account' ]); ?>"/>
 						<span class="rts-field-desc"><?php _e( 'This information is for administrative purposes, to help you see where your messages are going.', 'rock-the-slackbot' ); ?></span>
 					</td>
 				</tr>
 				<tr>
-					<td class="rts-label"><label for="rts-webhook-url"><?php _e( 'Webhook URL', 'rock-the-slackbot' ); ?></label></td>
-					<td class="rts-field rts-field-required<?php echo ( ! isset( $webhook[ 'name' ] ) || empty( $webhook[ 'name' ] ) ) ? ' rts-field-error' : null; ?>"><?php
+					<td class="rts-label"><label for="rts-webhook-url-input"><?php _e( 'Webhook URL', 'rock-the-slackbot' ); ?></label></td><?php
+
+					// Setup <td> classes
+					$td_classes = array( 'rts-field', 'rts-field-required' );
+
+					// If no value, then show error class
+					if ( ! isset( $webhook[ 'webhook_url' ] ) || empty( $webhook[ 'webhook_url' ] ) ) {
+						$td_classes = array_merge( $td_classes, array( 'rts-field-error', 'rts-field-is-blank' ) );
+					}
+
+					// If not a valid URL, then show error class
+					else if ( ! preg_match( '/^http/i', $webhook[ 'webhook_url' ] ) ) {
+						$td_classes = array_merge( $td_classes, array( 'rts-field-error', 'rts-field-is-invalid' ) );
+					}
+
+					?><td class="<?php echo implode( ' ', array_unique( $td_classes ) ); ?>"><?php
 
 						// Print input
-						?><input id="rts-webhook-url" class="rts-input-required" type="text" name="rock_the_slackbot_outgoing_webhooks[webhook_url]" value="<?php echo esc_attr($webhook[ 'webhook_url' ]); ?>"/><?php
+						?><div class="rts-input-button-combo">
+							<input id="rts-webhook-url-input" class="rts-input rts-input-text rts-input-required" type="text" name="rock_the_slackbot_outgoing_webhooks[webhook_url]" value="<?php echo esc_attr($webhook[ 'webhook_url' ]); ?>" />
+							<a class="thickbox button rts-input-button" href="#TB_inline?width=420&height=175&inlineId=rts-test-webhook-url-tb"><?php _e( 'Test this webhook' ); ?></a>
+						</div><?php
 
 						// Print required message
 						echo $required_message;
 
-						?><span class="rts-field-desc"><?php printf( __( 'You must first %1$sset up an incoming webhook integration in your Slack account%2$s. Once you select a channel (which you can override below), click the button to add the integration, copy the provided webhook URL, and paste the URL in the box above.', 'rock-the-slackbot' ), '<a href="https://my.slack.com/services/new/incoming-webhook/" target="_blank">', '</a>' ); ?></span>
+						// Print validation message
+						?><span class="rts-field-invalid-message"><?php _e( 'This field must be a valid Slack URL.', 'rock-the-slackbot' ); ?></span>
+
+						<span class="rts-field-desc"><?php printf( __( 'You must first %1$sset up an incoming webhook integration in your Slack account%2$s. Once you select a channel (which you can override below), click the button to add the integration, copy the provided webhook URL, and paste the URL in the box above.', 'rock-the-slackbot' ), '<a href="https://my.slack.com/services/new/incoming-webhook/" target="_blank">', '</a>' ); ?></span>
 					</td>
 				</tr>
 				<tr>
 					<td class="rts-label"><label for="rts-webhook-channel"><?php _e( 'Send To Slack Channel or Direct Message', 'rock-the-slackbot' ); ?></label></td>
 					<td class="rts-field">
-						<input id="rts-webhook-channel" type="text" name="rock_the_slackbot_outgoing_webhooks[channel]" value="<?php echo esc_attr($webhook[ 'channel' ]); ?>"/>
+						<input id="rts-webhook-channel" class="rts-input rts-input-text" type="text" name="rock_the_slackbot_outgoing_webhooks[channel]" value="<?php echo esc_attr($webhook[ 'channel' ]); ?>"/>
 						<span class="rts-field-desc"><?php _e( 'Incoming webhooks have a default channel but you can use this setting as an override. Use a "#" before the name to specify a channel and a "@" to specify a direct message. For example, type "#wordpress" for your Slack channel about WordPress or type "@bamadesigner" to send your notifications to me as a direct message, at least you could if I was a member of your Slack account.', 'rock-the-slackbot' ); ?></span>
 					</td>
 				</tr>
 				<tr>
 					<td class="rts-label"><label for="rts-webhook-username"><?php _e( 'Post Message As Which Slack Username', 'rock-the-slackbot' ); ?></label></td>
 					<td class="rts-field">
-						<input id="rts-webhook-username" type="text" name="rock_the_slackbot_outgoing_webhooks[username]" value="<?php echo esc_attr($webhook[ 'username' ]); ?>"/>
+						<input id="rts-webhook-username" class="rts-input rts-input-text" type="text" name="rock_the_slackbot_outgoing_webhooks[username]" value="<?php echo esc_attr($webhook[ 'username' ]); ?>"/>
 						<span class="rts-field-desc"><?php _e( 'Incoming webhooks have a default username but you can use this setting as an override.', 'rock-the-slackbot' ); ?></span>
 					</td>
 				</tr>
 				<tr>
 					<td class="rts-label"><label for="rts-webhook-icon-emoji"><?php _e( 'Icon Emoji For Message', 'rock-the-slackbot' ); ?></label></td>
 					<td class="rts-field">
-						<input id="rts-webhook-icon-emoji" type="text" name="rock_the_slackbot_outgoing_webhooks[icon_emoji]" value="<?php echo esc_attr($webhook[ 'icon_emoji' ]); ?>"/>
+						<input id="rts-webhook-icon-emoji" class="rts-input rts-input-text" type="text" name="rock_the_slackbot_outgoing_webhooks[icon_emoji]" value="<?php echo esc_attr($webhook[ 'icon_emoji' ]); ?>"/>
 						<span class="rts-field-desc"><?php _e( 'You can use this setting to designate a specific emoji for your message icon, e.g. ":thumbsup:" or ":sunglasses:". If this setting, and the custom URL setting below, is left blank, a WordPress icon will be used.', 'rock-the-slackbot' ); ?></span>
 					</td>
 				</tr>
 				<tr>
 					<td class="rts-label"><label for="rts-webhook-icon-url"><?php _e( 'Use Custom URL For Message Icon', 'rock-the-slackbot' ); ?></label></td>
 					<td class="rts-field">
-						<input id="rts-webhook-icon-url" type="text" name="rock_the_slackbot_outgoing_webhooks[icon_url]" value="<?php echo esc_attr($webhook[ 'icon_url' ]); ?>"/>
+						<input id="rts-webhook-icon-url" class="rts-input rts-input-text" type="text" name="rock_the_slackbot_outgoing_webhooks[icon_url]" value="<?php echo esc_attr($webhook[ 'icon_url' ]); ?>"/>
 						<span class="rts-field-desc"><?php _e( 'You can use this setting to designate your own message icon from a URL. If this setting, and the emoji setting above, is left blank, a WordPress icon will be used.', 'rock-the-slackbot' ); ?></span>
 					</td>
 				</tr>
@@ -609,7 +637,7 @@ class Rock_The_Slackbot_Admin {
 						$pt_index = 0;
 						foreach( $sorted_post_types as $pt_name => $pt_label ) {
 							$pt_field_id = "rts-webhook-post-type-{$pt_index}";
-							?><span class="rts-choice"><input id="<?php echo $pt_field_id; ?>" type="checkbox" name="rock_the_slackbot_outgoing_webhooks[exclude_post_types][]" value="<?php echo $pt_name; ?>"<?php checked( isset( $webhook[ 'exclude_post_types' ] ) && in_array( $pt_name, $webhook[ 'exclude_post_types' ] ) ); ?> /> <label for="<?php echo $pt_field_id; ?>"> <?php echo $pt_label; ?></label></span><?php
+							?><span class="rts-choice"><input id="<?php echo $pt_field_id; ?>" class="rts-input rts-input-checkbox" type="checkbox" name="rock_the_slackbot_outgoing_webhooks[exclude_post_types][]" value="<?php echo $pt_name; ?>"<?php checked( isset( $webhook[ 'exclude_post_types' ] ) && in_array( $pt_name, $webhook[ 'exclude_post_types' ] ) ); ?> /> <label for="<?php echo $pt_field_id; ?>"> <?php echo $pt_label; ?></label></span><?php
 							$pt_index++;
 						}
 
@@ -623,7 +651,7 @@ class Rock_The_Slackbot_Admin {
 
 							?><div class="rts-network-post-types">
 								<strong><?php _e( 'Network Post Types', 'rock-the-slackbot' ); ?></strong><br />
-								<input id="rts-webhook-network-post-type" type="text" name="rock_the_slackbot_outgoing_webhooks[network_exclude_post_types]" value="<?php echo esc_attr( $network_exclude_post_types ); ?>" />
+								<input id="rts-webhook-network-post-type" class="rts-input rts-input-text" type="text" name="rock_the_slackbot_outgoing_webhooks[network_exclude_post_types]" value="<?php echo esc_attr( $network_exclude_post_types ); ?>" />
 								<span class="rts-field-desc"><?php _e( '<strong><em>Include only post type slugs, separated by commas.</em></strong><br />There is no straight forward way for the network admin to retrieve all post types that exist on your network. The network admin can only retrieve what\'s registered on your main site which are included as checkboxes above. Please use the text field above to designate the slugs of post types you would like to exclude on a network level.', 'rock-the-slackbot' ); ?></span>
 							</div><?php
 
@@ -662,13 +690,13 @@ class Rock_The_Slackbot_Admin {
 
 											?><div class="rts-event-choice<?php echo $event_is_active ? ' rts-choice-is-active' : null; ?>">
 												<div class="rts-event-choice-active">
-													<label for="<?php echo $event_field_id; ?>"><input id="<?php echo $event_field_id; ?>" class="rts-event-choice-active-field" type="checkbox" name="rock_the_slackbot_outgoing_webhooks[events][<?php echo $event_name; ?>][active]" value="1"<?php checked( $event_is_active ); ?> /> <?php echo $event[ 'label' ]; ?></label>
+													<label for="<?php echo $event_field_id; ?>"><input id="<?php echo $event_field_id; ?>" class="rts-input rts-input-checkbox rts-event-choice-active-field" type="checkbox" name="rock_the_slackbot_outgoing_webhooks[events][<?php echo $event_name; ?>][active]" value="1"<?php checked( $event_is_active ); ?> /> <?php echo $event[ 'label' ]; ?></label>
 												</div>
 												<table class="rock-slackbot rts-event-choice-details" cellpadding="0" cellspacing="0" border="0">
 													<tr>
 														<td class="rts-label"><label for="<?php echo $event_field_id; ?>-channel"><?php _e( 'Slack Channel or Direct Message', 'rock-the-slackbot' ); ?></label></td>
 														<td class="rts-field">
-															<input id="<?php echo $event_field_id; ?>-channel" class="rts-tooltip" type="text" name="rock_the_slackbot_outgoing_webhooks[events][<?php echo $event_name; ?>][channel]" value="<?php echo esc_attr( $webhook_event_channel ); ?>" title="<?php esc_attr_e( 'This allows you to set a Slack channel or direct message for this specific event. Leave blank to use the default channel. Use a # or @ before the name to specify a channel or direct message, respectively.', 'rock-the-slackbot' ); ?>" />
+															<input id="<?php echo $event_field_id; ?>-channel" class="rts-input rts-input-text rts-tooltip" type="text" name="rock_the_slackbot_outgoing_webhooks[events][<?php echo $event_name; ?>][channel]" value="<?php echo esc_attr( $webhook_event_channel ); ?>" title="<?php esc_attr_e( 'This allows you to set a Slack channel or direct message for this specific event. Leave blank to use the default channel. Use a # or @ before the name to specify a channel or direct message, respectively.', 'rock-the-slackbot' ); ?>" />
 															<span class="rts-field-desc"><?php _e( 'Leave blank to use the default channel.', 'rock-the-slackbot' ); ?></span>
 														</td>
 													</tr>
@@ -688,7 +716,7 @@ class Rock_The_Slackbot_Admin {
 				<tr>
 					<td class="rts-label"><?php _e( 'Deactivate', 'rock-the-slackbot' ); ?></td>
 					<td class="rts-field">
-						<input id="rts-webhook-deactivate" type="checkbox" name="rock_the_slackbot_outgoing_webhooks[deactivate]" value="1"<?php echo checked(isset($webhook[ 'deactivate' ]) && $webhook[ 'deactivate' ], 1); ?> /> <label for="rts-webhook-deactivate"><?php _e( 'Deactivate this webhook', 'rock-the-slackbot' ); ?></label>
+						<input id="rts-webhook-deactivate" class="rts-input rts-input-checkbox" type="checkbox" name="rock_the_slackbot_outgoing_webhooks[deactivate]" value="1"<?php echo checked(isset($webhook[ 'deactivate' ]) && $webhook[ 'deactivate' ], 1); ?> /> <label for="rts-webhook-deactivate"><?php _e( 'Deactivate this webhook', 'rock-the-slackbot' ); ?></label>
 						<span class="rts-field-desc"><?php _e( 'For when you need to disable this webhook without deleting your settings.', 'rock-the-slackbot' ); ?></span>
 					</td>
 				</tr>
@@ -806,6 +834,18 @@ class Rock_The_Slackbot_Admin {
 			}
 
 		?></div><?php
+
+		// Popup to test the webhook URL
+		add_thickbox();
+		?><div id="rts-test-webhook-url-tb" style="display:none;">
+			<div id="rts-popup-test-webhook-url">
+				<p id="rts-popup-test-webhook-message"><?php _e( 'In order to test your webhook URL, and make sure your webhook is functioning correctly, a test message must be sent to your Slack account.', 'rock-the-slackbot' ); ?></p>
+				<div class="rts-popup-buttons">
+					<a id="rts-test-webhook-url-close" class="button rts-button rts-button-gold rts-close-thickbox" href="#"><?php _e( 'Cancel', 'rock-the-slackbot' ); ?></a>
+					<a id="rts-test-webhook-url-init" class="button button-primary rts-button rts-button-green" href="#"><span><?php _e( 'Send a test message', 'rock-the-slackbot' ); ?></span></a>
+				</div>
+			</div>
+		</div><?php
 
 	}
 
@@ -1322,6 +1362,47 @@ class Rock_The_Slackbot_Admin {
 			}
 		}
 
+	}
+
+	/**
+	 * Is used on the settings page to run an
+	 * AJAX call to test the provided webhook URL.
+	 *
+	 * @access  public
+	 * @since   1.1.1
+	 */
+	public function ajax_test_webhook_url() {
+
+		// Set the passed webhook URL
+		$webhook_url = isset( $_POST[ 'webhook_url' ] ) && ! empty( $_POST[ 'webhook_url' ] ) ? $_POST[ 'webhook_url' ] : null;
+
+		// We must have a URL and message
+		if ( $webhook_url ) {
+
+			// Set the passed channel
+			$channel = isset( $_POST[ 'channel' ] ) && ! empty( $_POST[ 'channel' ] ) ? $_POST[ 'channel' ] : null;
+
+			// Get site URL and name for message
+			$site_url = get_bloginfo( 'url' );
+			$site_name = get_bloginfo( 'name' );
+
+			// Set the test message
+			$message = sprintf( __( 'This is a Rock The Slackbot test message from the %1$s website at <%2$s>.', 'rock-the-slackbot' ),
+				$site_name,
+				$site_url );
+
+			// Try sending the message
+			$send_message = rock_the_slackbot()->send_webhook_message( $webhook_url, $message, $channel );
+
+			// Return a message to the JS
+			if ( is_wp_error( $send_message ) ) {
+				echo json_encode( array( 'error' => $send_message ) );
+			} else {
+				echo json_encode( array( 'sent' => $send_message ) );
+			}
+
+		}
+		die();
 	}
 
 }

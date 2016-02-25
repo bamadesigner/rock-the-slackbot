@@ -3,8 +3,8 @@
 /**
  * Plugin Name:       Rock The Slackbot
  * Plugin URI:        https://wordpress.org/plugins/rock-the-slackbot/
- * Description:       Rock The Slackbot helps you stay on top of changes by sending notifications straight to you and your team inside your Slack account.
- * Version:           1.1.0
+ * Description:       Helps you stay on top of changes by sending notifications straight to you and your team inside your Slack account.
+ * Version:           1.1.1
  * Author:            Rachel Carden
  * Author URI:        http://bamadesigner.com
  * License:           GPL-2.0+
@@ -19,13 +19,13 @@ if ( ! defined( 'WPINC' ) ) {
 }
 
 // If you define them, will they be used?
-define( 'ROCK_THE_SLACKBOT_VERSION', '1.1.0' );
+define( 'ROCK_THE_SLACKBOT_VERSION', '1.1.1' );
 define( 'ROCK_THE_SLACKBOT_PLUGIN_URL', 'https://wordpress.org/plugins/rock-the-slackbot/' );
 define( 'ROCK_THE_SLACKBOT_PLUGIN_FILE', 'rock-the-slackbot/rock-the-slackbot.php' );
 
 // Load the files
 require_once plugin_dir_path( __FILE__ ) . 'includes/hooks.php';
-require_once plugin_dir_path( __FILE__ ) . 'includes/notifications.php';
+require_once plugin_dir_path( __FILE__ ) . 'includes/outgoing-webhooks.php';
 
 // We only need you in the admin
 if ( is_admin() ) {
@@ -60,11 +60,11 @@ class Rock_The_Slackbot {
 	 * @return	Rock_The_Slackbot
 	 */
 	public static function instance() {
-		if ( ! isset( static::$instance ) ) {
+		if ( ! isset( self::$instance ) ) {
 			$className = __CLASS__;
-			static::$instance = new $className;
+			self::$instance = new $className;
 		}
-		return static::$instance;
+		return self::$instance;
 	}
 
 	/**
@@ -476,6 +476,70 @@ class Rock_The_Slackbot {
 
 	}
 
+	/**
+	 * Send a simple, custom message to Slack via webhook.
+	 *
+	 * @access  public
+	 * @since   1.1.1
+	 * @param   string - $webhook_id_or_url - provide the webhook URL or the ID of one stored in settings
+	 * @param   string - $message - the message you want to send
+	 * @param	string - $channel - the channel you want to send message to, will use default channel if webhook ID is passed
+	 * @return  boolean|WP_Error - true if sent, WP_Error if error
+	 */
+	public function send_webhook_message( $webhook_id_or_url, $message, $channel = '' ) {
+
+		// Create the payload
+		$payload = array(
+			'channel'	=> $channel,
+			'text' 		=> $message,
+		);
+
+		// Set webhook URL if what is passed is URL
+		$webhook_url = preg_match( '/^http/i', $webhook_id_or_url ) ? $webhook_id_or_url : false;
+
+		// If not URL, check for ID
+		if ( ! $webhook_url ) {
+
+			// Get webhook - check the network too
+			$webhook = rock_the_slackbot()->get_outgoing_webhook( $webhook_id_or_url, true );
+
+			// If webhook and has URL
+			if ( $webhook && isset( $webhook[ 'webhook_url' ] ) ) {
+				$webhook_url = $webhook[ 'webhook_url' ];
+			} else {
+
+				// Return the error
+				return new WP_Error( 'slack_send_message_error', __( 'The webhook ID passed is not valid.', 'rock-the-slackbot' ) );
+
+			}
+
+		}
+
+		// Send the message
+		$sent_message = rock_the_slackbot_outgoing_webhooks()->send_payload( $webhook_url, $payload );
+
+		// Was there an error?
+		if ( is_wp_error( $sent_message ) ) {
+
+			// Return the error
+			return new WP_Error( 'slack_send_message_error', $sent_message->get_error_message() );
+
+		}
+
+		return true;
+
+	}
+
+}
+
+/**
+ * Set emails to be HTML.
+ *
+ * @since   1.1.1
+ * @return  string - email content type
+ */
+function rock_the_slackbot_set_html_content_type() {
+	return 'text/html';
 }
 
 /**

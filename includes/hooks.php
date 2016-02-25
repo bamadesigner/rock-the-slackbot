@@ -132,9 +132,10 @@ class Rock_The_Slackbot_Hooks {
 	 * @param   array - $outgoing_webhooks - array of webhooks being sent
 	 * @param   array - $payload - payload info for notification
 	 * @param   array - $attachments - attachments info for notification
+	 * @param	array - $event_args - event specific information to send to the filters
 	 * @return  true|array - true if all notifications were sent, array of error(s) otherwise
 	 */
-	private function send_outgoing_webhooks( $notification_event, $outgoing_webhooks, $payload = array(), $attachments = array() ) {
+	private function send_outgoing_webhooks( $notification_event, $outgoing_webhooks, $payload = array(), $attachments = array(), $event_args = array() ) {
 
 		// Will hold notification errors if any
 		$notification_errors = array();
@@ -143,28 +144,85 @@ class Rock_The_Slackbot_Hooks {
 		foreach( $outgoing_webhooks as $hook ) {
 
 			// We must have a webhook URL
-			if ( ! ( isset( $hook[ 'webhook_url' ] ) && ! empty( $hook[ 'webhook_url' ] ) ) ) {
+			$webhook_url = isset( $hook[ 'webhook_url' ] ) && ! empty( $hook[ 'webhook_url' ] ) ? $hook[ 'webhook_url' ] : false;
+			if ( ! $webhook_url ) {
 				continue;
 			}
 
 			// Prepare the payload
 			$payload = $this->prepare_payload( $payload, $attachments, $hook, $notification_event );
 
+			// Setup the pieces
+			$notification_pieces = compact( array( 'webhook_url', 'payload' ) );
+
 			// Filter by event
-			$notification_pieces = (array) apply_filters_ref_array( "rock_the_slackbot_notification_{$notification_event}", array( compact( array( 'webhook_url', 'payload' ) ) ) );
+			$notification_pieces = (array) apply_filters( "rock_the_slackbot_notification_{$notification_event}", $notification_pieces, $notification_event, $event_args );
 
 			// Filter by hook ID
-			$notification_pieces = (array) apply_filters_ref_array( 'rock_the_slackbot_notification_' . $hook[ 'ID' ], array( compact( array( 'webhook_url', 'payload' ) ) ) );
+			$notification_pieces = (array) apply_filters( 'rock_the_slackbot_notification_' . $hook[ 'ID' ], $notification_pieces, $notification_event, $event_args );
+
+			// General filter
+			$notification_pieces = (array) apply_filters( 'rock_the_slackbot_notification', $notification_pieces, $notification_event, $event_args );
 
 			// Extract the filtered notification pieces
 			extract( $notification_pieces );
 
 			// Send the notification
-			$sent_notification = rock_the_slackbot_notifications()->send_notification( $hook[ 'webhook_url' ], $payload );
+			$sent_notification = rock_the_slackbot_outgoing_webhooks()->send_payload( $webhook_url, $payload );
 
 			// Was there an error?
 			if ( is_wp_error( $sent_notification ) ) {
+
+				// Add to errors
 				$notification_errors[] = $sent_notification;
+
+				// @TODO add settings to disable this or change who the email goes to
+				// @TODO be able to filter this email
+
+				// Set email to be HTML
+				add_filter( 'wp_mail_content_type', 'rock_the_slackbot_set_html_content_type' );
+
+				// Build email message
+				$message = __( 'There was an error when trying to post to Slack from WordPress.', 'rock-the-slackbot' );
+
+				// Add payload URL and channel
+				$message .= "\n\n<br /><br /><strong>" . __( 'Payload URL', 'rock-the-slackbot' ) . ":</strong> {$webhook_url}";
+				$message .= "\n<br /><strong>" . __( 'Channel', 'rock-the-slackbot' ) . ":</strong> " . $payload[ 'channel' ];
+
+				// Fix any links in the general text message
+				if ( ! empty( $payload[ 'text' ] ) ) {
+
+					// Replace Slack links
+					$payload[ 'text' ] = rock_the_slackbot()->unformat_slack_links( $payload[ 'text' ] );
+
+				}
+
+				// Add general message
+				$message .= "\n\n<br /><br /><strong>" . __( 'Message', 'rock-the-slackbot' ) . ":</strong> " . $payload[ 'text' ];
+
+				// Add attachment info
+				if ( isset( $payload[ 'attachments' ] ) ) {
+
+					$message .= "\n\n<br /><br /><strong>" . __( 'Attachments', 'rock-the-slackbot' ) . ":</strong>";
+					foreach( $payload[ 'attachments' ] as $attachment ) {
+						$message .= "\n<br />";
+
+						// Add fields
+						if ( isset( $attachment[ 'fields' ] ) ) {
+							foreach( $attachment[ 'fields' ] as $field ) {
+								$message .= "\n\t<br />&nbsp;&nbsp;&nbsp;&nbsp;<strong>" . $field[ 'title' ] . ":</strong> " . $field[ 'value' ];
+							}
+						}
+
+					}
+				}
+
+				// Send email notification to the admin
+				wp_mail( get_bloginfo( 'admin_email' ), __( 'WordPress to Slack error', 'rock-the-slackbot' ), $message );
+
+				// Reset content-type to avoid conflicts
+				remove_filter( 'wp_mail_content_type',  'rock_the_slackbot_set_html_content_type' );
+
 			}
 
 		}
@@ -272,7 +330,10 @@ class Rock_The_Slackbot_Hooks {
 		);
 
 		// Send each webhook
-		$this->send_outgoing_webhooks( $notification_event, $outgoing_webhooks, $payload, $attachments );
+		$this->send_outgoing_webhooks( $notification_event, $outgoing_webhooks, $payload, $attachments, array(
+			'current_version' 	=> $wp_version,
+			'new_version'		=> $core_update_version,
+		) );
 
 		// Store timestamp in transient so it only sends the update notice once a week
 		if ( rock_the_slackbot()->is_network_active ) {
@@ -416,7 +477,9 @@ class Rock_The_Slackbot_Hooks {
 			}
 
 			// Send each webhook
-			$this->send_outgoing_webhooks( $notification_event, $outgoing_webhooks, $payload, $attachments );
+			$this->send_outgoing_webhooks( $notification_event, $outgoing_webhooks, $payload, $attachments, array(
+				'plugins' => $update_plugins->response,
+			) );
 
 		}
 
@@ -562,7 +625,9 @@ class Rock_The_Slackbot_Hooks {
 			}
 
 			// Send each webhook
-			$this->send_outgoing_webhooks( $notification_event, $outgoing_webhooks, $payload, $attachments );
+			$this->send_outgoing_webhooks( $notification_event, $outgoing_webhooks, $payload, $attachments, array(
+				'themes' => $update_themes->response,
+			) );
 
 		}
 
@@ -713,8 +778,23 @@ class Rock_The_Slackbot_Hooks {
 			// Create attachments
 			$attachments = array();
 
-			// Add some more info for plugins and themes
+			// Will hold the event info we want to pass to the filters
+			$event_args = array();
+
+			// Get event info for core upgrade type
 			if ( 'core' != $upgrade_type ) {
+
+				// Store version numbers for the filters
+				$event_args[ 'current_version' ] = $wp_version;
+				$event_args[ 'old_version' ] = $pre_upgrade_info[ 'core' ][ 'version' ];
+
+			}
+
+			// Add some more info for plugins and themes
+			else if ( 'core' != $upgrade_type ) {
+
+				// Store the upgrade item(s) for themes and plugins
+				$event_args[ $upgrade_type ] = $upgrade_items;
 
 				// Add upgrade items to the fields
 				if ( $upgrade_items ) {
@@ -910,7 +990,9 @@ class Rock_The_Slackbot_Hooks {
 		);
 
 		// Send each webhook
-		$this->send_outgoing_webhooks( $notification_event, $outgoing_webhooks, $payload, $attachments );
+		$this->send_outgoing_webhooks( $notification_event, $outgoing_webhooks, $payload, $attachments, array(
+			'attachment_post' => $attachment_post,
+		) );
 
 	}
 
@@ -1028,7 +1110,9 @@ class Rock_The_Slackbot_Hooks {
 		);
 
 		// Send each webhook
-		$this->send_outgoing_webhooks( $notification_event, $outgoing_webhooks, $payload, $attachments );
+		$this->send_outgoing_webhooks( $notification_event, $outgoing_webhooks, $payload, $attachments, array(
+			'attachment_post' => $attachment_post,
+		) );
 
 	}
 
@@ -1127,7 +1211,9 @@ class Rock_The_Slackbot_Hooks {
 		);
 
 		// Send each webhook
-		$this->send_outgoing_webhooks( $notification_event, $outgoing_webhooks, $payload, $attachments );
+		$this->send_outgoing_webhooks( $notification_event, $outgoing_webhooks, $payload, $attachments, array(
+			'attachment_post' => $attachment_post,
+		) );
 
 	}
 
@@ -1263,7 +1349,11 @@ class Rock_The_Slackbot_Hooks {
 		);
 
 		// Send each webhook
-		$this->send_outgoing_webhooks( $notification_event, $outgoing_webhooks, $payload, $attachments );
+		$this->send_outgoing_webhooks( $notification_event, $outgoing_webhooks, $payload, $attachments, array(
+			'post_id'		=> $post_id,
+			'post_before'	=> $post_before,
+			'post_after'	=> $post_after,
+		) );
 
 	}
 
@@ -1396,7 +1486,11 @@ class Rock_The_Slackbot_Hooks {
 		);
 
 		// Send each webhook
-		$send_webhooks = $this->send_outgoing_webhooks( $notification_event, $outgoing_webhooks, $payload, $attachments );
+		$send_webhooks = $this->send_outgoing_webhooks( $notification_event, $outgoing_webhooks, $payload, $attachments, array(
+			'post'				=> $post,
+			'old_post_status'	=> $old_status,
+			'new_post_status'	=> $new_status,
+		) );
 
 		// Store cache info if notification was sent
 		if ( $send_webhooks === true ) {
@@ -1490,7 +1584,9 @@ class Rock_The_Slackbot_Hooks {
 		);
 
 		// Send each webhook
-		$this->send_outgoing_webhooks( $notification_event, $outgoing_webhooks, $payload, $attachments );
+		$this->send_outgoing_webhooks( $notification_event, $outgoing_webhooks, $payload, $attachments, array(
+			'post' => $post,
+		) );
 
 	}
 
@@ -1566,6 +1662,9 @@ class Rock_The_Slackbot_Hooks {
 
 		// Start creating the fields
 		$fields = array();
+
+		// Will hold the event info we want to pass to the filters
+		$event_args = array();
 
 		// Add menu information
 		if ( $is_menu_item ) {
@@ -1666,6 +1765,11 @@ class Rock_The_Slackbot_Hooks {
 				)
 			);
 
+			// Add event info to pass to filters
+			$event_args[ 'menu' ] = $menu;
+			$event_args[ 'menu_item_id' ] = $post_id;
+
+
 		} else {
 
 			// Add the content author and type
@@ -1681,6 +1785,9 @@ class Rock_The_Slackbot_Hooks {
 					'short' => true,
 				)
 			));
+
+			// Add event info to pass to filters
+			$event_args[ 'post' ] = $post;
 
 		}
 
@@ -1699,7 +1806,7 @@ class Rock_The_Slackbot_Hooks {
 		);
 
 		// Send each webhook
-		$this->send_outgoing_webhooks( $notification_event, $outgoing_webhooks, $payload, $attachments );
+		$this->send_outgoing_webhooks( $notification_event, $outgoing_webhooks, $payload, $attachments, $event_args );
 
 	}
 
@@ -1765,6 +1872,9 @@ class Rock_The_Slackbot_Hooks {
 			'text' => $general_message,
 		);
 
+		// Will hold the event info we want to pass to the filters
+		$event_args = array( 'url' => $current_url );
+
 		// Create the fields
 		$fields = array(
 			array(
@@ -1776,20 +1886,32 @@ class Rock_The_Slackbot_Hooks {
 
 		// If there's a referer
 		if ( $referer = wp_get_referer() ) {
+
+			// Store event info for filters
+			$event_args[ 'referer' ] = $referer;
+
+			// Store for fields
 			$fields[] = array(
 				'title' => __( 'Referer', 'rock-the-slackbot' ),
 				'value' => $referer,
 				'short' => true,
 			);
+
 		}
 
 		// If there's an IP address
 		if ( isset( $_SERVER[ 'REMOTE_ADDR' ] ) ) {
+
+			// Store event info for filters
+			$event_args[ 'ip_address' ] = $_SERVER[ 'REMOTE_ADDR' ];
+
+			// Store for fields
 			$fields[] = array(
 				'title' => __( 'IP address', 'rock-the-slackbot' ),
 				'value' => $_SERVER[ 'REMOTE_ADDR' ],
 				'short' => true,
 			);
+
 		}
 
 		// If there's a user
@@ -1803,29 +1925,55 @@ class Rock_The_Slackbot_Hooks {
 
 		// If there's a user agent
 		if ( isset( $_SERVER[ 'HTTP_USER_AGENT' ] ) ) {
+
+			// Store event info for filters
+			$event_args[ 'user_agent' ] = $_SERVER[ 'HTTP_USER_AGENT' ];
+
+			// Store for fields
 			$fields[] = array(
 				'title' => __( 'User Agent', 'rock-the-slackbot' ),
 				'value' => $_SERVER[ 'HTTP_USER_AGENT' ],
 				'short' => false,
 			);
+
 		}
 
 		// Add WordPress query
 		$wp_query_vars = array_filter( $wp_query->query );
 		if ( ! empty( $wp_query_vars ) ) {
+
+			// Build query string
+			$wp_query_string = build_query( preg_replace( '/[\s]{2,}/i', ' ', $wp_query_vars ) );
+
+			// Store event info for filters
+			$event_args[ 'wp_query' ] = $wp_query_vars;
+
+			// Store for fields
 			$fields[] = array(
 				'title' => __( 'WordPress Query', 'rock-the-slackbot' ),
-				'value' => build_query( preg_replace( '/[\s]{2,}/i', ' ', $wp_query_vars ) ),
+				'value' => $wp_query_string,
 				'short' => false,
 			);
+
 		}
 
 		// Add the MySQL request
-		$fields[] = array(
-			'title' => __( 'MySQL Request', 'rock-the-slackbot' ),
-			'value' => preg_replace( '/[\s]{2,}/i', ' ', $wp_query->request ),
-			'short' => false,
-		);
+		if ( ! empty( $wp_query->request ) ) {
+
+			// Build request
+			$mysql_request = preg_replace( '/[\s]{2,}/i', ' ', $wp_query->request );
+
+			// Store event info for filters
+			$event_args[ 'mysql_request' ] = $mysql_request;
+
+			// Store for fields
+			$fields[] = array(
+				'title' => __( 'MySQL Request', 'rock-the-slackbot' ),
+				'value' => $mysql_request,
+				'short' => false
+			);
+
+		}
 
 		// Create attachment
 		$attachments = array(
@@ -1842,7 +1990,7 @@ class Rock_The_Slackbot_Hooks {
 		);
 
 		// Send each webhook
-		$send_webhooks = $this->send_outgoing_webhooks( $notification_event, $outgoing_webhooks, $payload, $attachments );
+		$send_webhooks = $this->send_outgoing_webhooks( $notification_event, $outgoing_webhooks, $payload, $attachments, $event_args );
 
 		// Store cache info if notification was sent
 		if ( $send_webhooks === true ) {
@@ -1952,7 +2100,9 @@ class Rock_The_Slackbot_Hooks {
 		);
 
 		// Send each webhook
-		$this->send_outgoing_webhooks( $notification_event, $outgoing_webhooks, $payload, $attachments );
+		$this->send_outgoing_webhooks( $notification_event, $outgoing_webhooks, $payload, $attachments, array(
+			'user' => $new_user_data,
+		) );
 
 	}
 
@@ -1990,8 +2140,8 @@ class Rock_The_Slackbot_Hooks {
 		$site_name = get_bloginfo( 'name' );
 
 		// Get user data
-		$new_user_data = get_userdata( $user_id );
-		$new_user_display_name = get_the_author_meta( 'display_name', $user_id );
+		$deleted_user_data = get_userdata( $user_id );
+		$deleted_user_display_name = get_the_author_meta( 'display_name', $user_id );
 
 		// Create general message for the notification
 		$general_message = sprintf( __( '%1$s deleted the following user from the %2$s website at <%3$s>.', 'rock-the-slackbot' ),
@@ -2019,14 +2169,14 @@ class Rock_The_Slackbot_Hooks {
 		);
 
 		// Add user roles
-		if ( ! empty( $new_user_data->roles ) ) {
+		if ( ! empty( $deleted_user_data->roles ) ) {
 
 			// Get role info
 			$all_roles = wp_roles()->roles;
 
 			// Build new array of roles
 			$roles = array();
-			foreach( $new_user_data->roles as $role ) {
+			foreach( $deleted_user_data->roles as $role ) {
 				if ( array_key_exists( $role, $all_roles ) ) {
 					$roles[] = $all_roles[ $role ][ 'name' ];
 				} else {
@@ -2057,7 +2207,7 @@ class Rock_The_Slackbot_Hooks {
 			array(
 				'fallback'      => $general_message,
 				'text'          => wp_trim_words( strip_tags( get_the_author_meta( 'description', $user_id ) ), 30, '...' ),
-				'author_name'   => $new_user_display_name,
+				'author_name'   => $deleted_user_display_name,
 				'author_link'   => get_author_posts_url( $user_id ),
 				'author_icon'   => get_avatar_url( $user_id, 32 ),
 				'fields'        => $fields,
@@ -2065,7 +2215,9 @@ class Rock_The_Slackbot_Hooks {
 		);
 
 		// Send each webhook
-		$this->send_outgoing_webhooks( $notification_event, $outgoing_webhooks, $payload, $attachments );
+		$this->send_outgoing_webhooks( $notification_event, $outgoing_webhooks, $payload, $attachments, array(
+			'user' => $deleted_user_data,
+		) );
 
 	}
 
@@ -2121,49 +2273,48 @@ class Rock_The_Slackbot_Hooks {
 			'text' => $general_message,
 		);
 
+		// Build array of current user roles
+		$current_user_roles = array();
+
 		// Add current user roles
 		if ( ! empty( $changed_user_data->roles ) ) {
 
-			// Get role info
-			$all_roles = wp_roles()->roles;
-
-			// Build new array of roles
-			$roles = array();
 			foreach( $changed_user_data->roles as $role ) {
 				if ( array_key_exists( $role, $all_roles ) ) {
-					$roles[] = $all_roles[ $role ][ 'name' ];
+					$current_user_roles[] = $all_roles[ $role ][ 'name' ];
 				} else {
-					$roles[] = $role;
+					$current_user_roles[] = $role;
 				}
 			}
 
 			// Add to fields
 			$fields[] = array(
-					'title' => __( 'Current User Role(s)', 'rock-the-slackbot' ),
-					'value' => implode( ', ', $roles ),
-					'short' => true,
+				'title' => __( 'Current User Role(s)', 'rock-the-slackbot' ),
+				'value' => implode( ', ', $current_user_roles ),
+				'short' => true,
 			);
 
 		}
 
+		// Build array of old user roles
+		$old_user_roles = array();
+
 		// Add old user roles
 		if ( ! empty( $old_roles ) ) {
 
-			// Build new array of roles
-			$roles = array();
 			foreach( $old_roles as $role ) {
 				if ( array_key_exists( $role, $all_roles ) ) {
-					$roles[] = $all_roles[ $role ][ 'name' ];
+					$old_user_roles[] = $all_roles[ $role ][ 'name' ];
 				} else {
-					$roles[] = $role;
+					$old_user_roles[] = $role;
 				}
 			}
 
 			// Add to fields
 			$fields[] = array(
-					'title' => __( 'Old User Role(s)', 'rock-the-slackbot' ),
-					'value' => implode( ', ', $roles ),
-					'short' => true,
+				'title' => __( 'Old User Role(s)', 'rock-the-slackbot' ),
+				'value' => implode( ', ', $old_user_roles ),
+				'short' => true,
 			);
 
 		}
@@ -2195,7 +2346,11 @@ class Rock_The_Slackbot_Hooks {
 		);
 
 		// Send each webhook
-		$this->send_outgoing_webhooks( $notification_event, $outgoing_webhooks, $payload, $attachments );
+		$this->send_outgoing_webhooks( $notification_event, $outgoing_webhooks, $payload, $attachments, array(
+			'user'				=> $changed_user_data,
+			'current_user_roles'=> $current_user_roles,
+			'old_user_roles'	=> $old_user_roles,
+		) );
 
 	}
 
