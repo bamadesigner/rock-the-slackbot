@@ -127,28 +127,52 @@ class Rock_The_Slackbot_Outgoing_Webhooks {
 		// Allows you to filter the payload
 		$payload = (array) apply_filters( 'rock_the_slackbot_outgoing_webhook_payload', $payload, $webhook_url );
 
-		// Send to Slack
-		$slack_response = wp_remote_post( $webhook_url, array(
-			'body'      => json_encode( $payload ),
-			'headers'   => array(
-				'Content-Type' => 'application/json',
-			)
-		));
+		// See if we have multiple channels
+		$channels = isset( $payload[ 'channel' ] ) && ! empty( $payload[ 'channel' ] ) ? $payload[ 'channel' ] : array();
 
-		// If there's a WordPress error...
-		if ( is_wp_error( $slack_response ) ) {
+		// Make sure its an array
+		if ( ! is_array( $channels ) ) {
+			$channels = explode( ',', str_replace( ' ', '', $channels ) );
+		}
 
-			// Return an error
-			return new WP_Error( 'slack_outgoing_webhook_error', $slack_response->get_error_message() );
+		// Will hold any errors
+		$slack_errors = new WP_Error();
+
+		// Try to send to each channel
+		foreach( $channels as $channel ) {
+
+			// Add channel to the payload
+			$payload[ 'channel' ] = $channel;
+
+			// Send to Slack
+			$slack_response = wp_remote_post( $webhook_url, array(
+				'body'      => json_encode( $payload ),
+				'headers'   => array(
+					'Content-Type' => 'application/json',
+				)
+			));
+
+			// If there's a WordPress error...
+			if ( is_wp_error( $slack_response ) ) {
+
+				// Set an error
+				$slack_errors->add( 'slack_outgoing_webhook_error', $slack_response->get_error_message() );
+
+			}
+
+			// If there's an error from Slack...
+			if ( isset( $slack_response[ 'response' ] ) && isset( $slack_response[ 'response' ][ 'code' ] ) && '200' != $slack_response[ 'response' ][ 'code' ] ) {
+
+				// Set an error
+				$slack_errors->add( 'slack_outgoing_webhook_error', __( 'The payload did not send to Slack.', 'rock-the-slackbot' ) );
+
+			}
 
 		}
 
-		// If there's an error from Slack...
-		if ( isset( $slack_response[ 'response' ] ) && isset( $slack_response[ 'response' ][ 'code' ] ) && '200' != $slack_response[ 'response' ][ 'code' ] ) {
-
-			// Return an error
-			return new WP_Error( 'slack_outgoing_webhook_error', __( 'The payload did not send to Slack.', 'rock-the-slackbot' ) );
-
+		// If errors, return errors
+		if ( ! empty( $slack_errors->get_error_messages() ) ) {
+			return $slack_errors;
 		}
 
 		return true;
