@@ -99,15 +99,16 @@ Plugin launch
 
 == Send A Simple Slack Message==
 
-You can use the following function to send a simple message to your Slack account.
+You can use the following send_webhook_message() function to send a simple message to your Slack account.
 
-**The function acceps the following parameters:**
+**The function accepts the following parameters:**
 
 1. $webhook_id_or_url - provide the webhook URL or the ID of one stored in settings
 2. $message - the message you want to send
 3. $channel - OPTIONAL - the channel you want to send message to. Prefix with # for a specific channel or @ for a specific user. Will use default channel if nothing is passed.
 
-`rock_the_slackbot()->send_webhook_message( '564d3c1cdf52d', 'this is a test', '#testchannel' );`
+`// Use this function to send a simple message to Slack
+rock_the_slackbot()->send_webhook_message( '564d3c1cdf52d', 'this is a test', '#testchannel' );`
 
 == Filters ==
 
