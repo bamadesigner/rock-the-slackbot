@@ -476,6 +476,60 @@ class Rock_The_Slackbot {
 
 	}
 
+	/**
+	 * Send a simple, custom message to Slack via webhook.
+	 *
+	 * @access  public
+	 * @since   1.1.1
+	 * @param   string - $webhook_id_or_url - provide the webhook URL or the ID of one stored in settings
+	 * @param   string - $message - the message you want to send
+	 * @param	string - $channel - the channel you want to send message to, will use default channel if webhook ID is passed
+	 * @return  boolean|WP_Error - true if sent, WP_Error if error
+	 */
+	public function send_webhook_message( $webhook_id_or_url, $message, $channel = '' ) {
+
+		// Create the payload
+		$payload = array(
+			'channel'	=> $channel,
+			'text' 		=> $message,
+		);
+
+		// Set webhook URL if what is passed is URL
+		$webhook_url = preg_match( '/^http/i', $webhook_id_or_url ) ? $webhook_id_or_url : false;
+
+		// If not URL, check for ID
+		if ( ! $webhook_url ) {
+
+			// Get webhook - check the network too
+			$webhook = rock_the_slackbot()->get_outgoing_webhook( $webhook_id_or_url, true );
+
+			// If webhook and has URL
+			if ( $webhook && isset( $webhook[ 'webhook_url' ] ) ) {
+				$webhook_url = $webhook[ 'webhook_url' ];
+			} else {
+
+				// Return the error
+				return new WP_Error( 'slack_send_message_error', __( 'The webhook ID passed is not valid.', 'rock-the-slackbot' ) );
+
+			}
+
+		}
+
+		// Send the message
+		$sent_message = rock_the_slackbot_outgoing_webhooks()->send_payload( $webhook_url, $payload );
+
+		// Was there an error?
+		if ( is_wp_error( $sent_message ) ) {
+
+			// Return the error
+			return new WP_Error( 'slack_send_message_error', $sent_message->get_error_message() );
+
+		}
+
+		return true;
+
+	}
+
 }
 
 /**
@@ -489,58 +543,6 @@ function rock_the_slackbot_set_html_content_type() {
 }
 
 /**
- * Send a simple, custom message to Slack via webhook.
- *
- * @access  public
- * @since   1.1.1
- * @param   string - $webhook_id_or_url - provide the webhook URL or the ID of one stored in settings
- * @param   string - $message - the message you want to send
- * @param	string - $channel - the channel you want to send message to, will use default channel if webhook ID is passed
- * @return  boolean|WP_Error - true if sent, WP_Error if error
- */
-function rts_send_webhook_message( $webhook_id_or_url, $message, $channel = '' ) {
-
-	// Create the payload
-	$payload = array(
-		'channel'	=> $channel,
-		'text' 		=> $message,
-	);
-
-	// Set webhook URL if what is passed is URL
-	$webhook_url = preg_match( '/^http/i', $webhook_id_or_url ) ? $webhook_id_or_url : false;
-
-	// If not URL, check for ID
-	if ( ! $webhook_url ) {
-
-		// Get webhook - check the network too
-		$webhook = rock_the_slackbot()->get_outgoing_webhook( $webhook_id_or_url, true );
-
-		// If webhook and has URL
-		if ( $webhook && isset( $webhook[ 'webhook_url' ] ) ) {
-			$webhook_url = $webhook[ 'webhook_url' ];
-		} else {
-
-			// Return the error
-			return new WP_Error( 'slack_send_message_error', __( 'The webhook ID passed is not valid.', 'rock-the-slackbot' ) );
-
-		}
-
-	}
-
-	// Send the message
-	$sent_message = rock_the_slackbot_outgoing_webhooks()->send_payload( $webhook_url, $payload );
-
-	// Was there an error?
-	if ( is_wp_error( $sent_message ) ) {
-
-		// Return the error
-		return new WP_Error( 'slack_send_message_error', $sent_message->get_error_message() );
-
-	}
-
-	return true;
-
-}
  * Returns the instance of our main Rock_The_Slackbot class.
  *
  * Will come in handy when we need to access the
