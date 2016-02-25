@@ -64,6 +64,7 @@ Please use [the Issues section of this plugin's GitHub repo](https://github.com/
 
 = 1.1.1 =
 * Added process to test webhook URL on settings page.
+* Added event-specific information to go with each filter.
 * Created rock_the_slackbot()->send_webhook_message() to make it easy for users to send simple, custom messages to Slack via webhook.
 * Updated the notification filters so they include the notification pieces, the slug of the notification event, and event specific information so you can make adjustments according to the event.
 * Fixed bug where filters weren't "inheriting" each other.
@@ -84,6 +85,7 @@ Plugin launch
 
 = 1.1.1 =
 * Added process to test webhook URL on settings page.
+* Added event-specific information to go with each filter.
 * Created rock_the_slackbot()->send_webhook_message() to make it easy for users to send simple, custom messages to Slack via webhook.
 * Updated the notification filters so they include the notification pieces, the slug of the notification event, and event specific information so you can make adjustments according to the event.
 * Fixed bug where filters weren't "inheriting" each other.

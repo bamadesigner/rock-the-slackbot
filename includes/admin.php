@@ -434,10 +434,6 @@ class Rock_The_Slackbot_Admin {
 	 */
 	private function print_edit_outgoing_webhook_meta_box() {
 
-		// @TODO Set it up so webhook URL is validated when entered or edited and check each time settings page is loaded to show error message if not working
-		// This is not possible unless the test sends a message
-		// Could add button that says "Test Webhook" which prompts a confirm message which tells them this will send a test message
-
 		// Get our webhook
 		$webhook = $this->edit_webhook ? $this->get_outgoing_webhook_setting( $this->edit_webhook, $this->is_network_admin ) : false;
 
@@ -1373,7 +1369,7 @@ class Rock_The_Slackbot_Admin {
 	 * AJAX call to test the provided webhook URL.
 	 *
 	 * @access  public
-	 * @since   1.0.1
+	 * @since   1.1.1
 	 */
 	public function ajax_test_webhook_url() {
 
