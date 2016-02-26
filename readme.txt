@@ -1,4 +1,4 @@
-=== Plugin Name ===
+=== Rock The Slackbot ===
 Contributors: bamadesigner
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=ZCAN2UX7QHZPL&lc=US&item_name=Rachel%20Carden%20%28Rock%20The%20Slackbot%29&currency_code=USD&bn=PP%2dDonationsBF%3abtn_donate_SM%2egif%3aNonHosted
 Tags: slack, slackbot, chat, collaboration, notification, team
