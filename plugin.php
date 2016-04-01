@@ -18,6 +18,8 @@ if ( ! defined( 'WPINC' ) ) {
 	die;
 }
 
+// @TODO add some identifiable info to the "Exclude Post Types" life for when CPTs share the same label (from Matt)
+
 // If you define them, will they be used?
 define( 'ROCK_THE_SLACKBOT_VERSION', '1.1.1' );
 define( 'ROCK_THE_SLACKBOT_PLUGIN_URL', 'https://wordpress.org/plugins/rock-the-slackbot/' );
