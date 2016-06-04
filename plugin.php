@@ -87,6 +87,9 @@ class Rock_The_Slackbot {
 		// Runs when the plugin is upgraded
 		add_action( 'upgrader_process_complete', array( $this, 'upgrader_process_complete' ), 1, 2 );
 
+		// Expose the send_webhook_message function via an action
+		add_action( 'rock_the_slackbot_send_webhook_message', array( $this, 'send_webhook_message'), 10, 3 );
+
 	}
 
 	/**
