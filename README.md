@@ -47,7 +47,7 @@ Please use [the Issues section of this repo](https://github.com/bamadesigner/roc
 
 ## Send A Simple Slack Message
 
-You can use the following send_webhook_message() function to send a simple message to your Slack account.
+You can use the `rock_the_slackbot_send_webhook_message` action to send a simple message to your Slack account.
 
 **The function accepts the following parameters:**
 
@@ -56,8 +56,8 @@ You can use the following send_webhook_message() function to send a simple messa
 3. $channel - OPTIONAL - the channel you want to send message to. Prefix with # for a specific channel or @ for a specific user. Will use default channel if nothing is passed.
 
 ```
-// Use this function to send a simple message to Slack
-rock_the_slackbot()->send_webhook_message( '564d3c1cdf52d', 'this is a test', '#testchannel' );
+// Use this action to send a simple message to Slack
+do_action( 'rock_the_slackbot_send_webhook_message', '564d3c1cdf52d', 'this is a test', '#testchannel' );
 ```
 
 ## Filters
