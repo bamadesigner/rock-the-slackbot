@@ -135,6 +135,11 @@ class Rock_The_Slackbot_Outgoing_Webhooks {
 			$channels = explode( ',', str_replace( ' ', '', $channels ) );
 		}
 
+		// If channel is empty, add a blank one so it sends to the default channel
+		if ( empty( $channels ) ) {
+			$channels[] = '';
+		}
+
 		// Will hold any errors
 		$slack_errors = new WP_Error();
 
