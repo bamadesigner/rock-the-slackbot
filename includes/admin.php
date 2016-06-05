@@ -627,7 +627,14 @@ class Rock_The_Slackbot_Admin {
 					<td class="rts-label"><label for="rts-webhook-icon-url"><?php _e( 'Use Custom URL For Message Icon', 'rock-the-slackbot' ); ?></label></td>
 					<td class="rts-field">
 						<input id="rts-webhook-icon-url" class="rts-input rts-input-text" type="text" name="rock_the_slackbot_outgoing_webhooks[icon_url]" value="<?php echo esc_attr($webhook[ 'icon_url' ]); ?>"/>
-						<span class="rts-field-desc"><?php _e( 'You can use this setting to designate your own message icon from a URL. If this setting, and the emoji setting above, is left blank, a WordPress icon will be used.', 'rock-the-slackbot' ); ?></span>
+						<span class="rts-field-desc"><?php _e( 'You can use this setting to designate your own message icon from a URL. If this setting, and the emoji setting above, is left blank, a WordPress icon will be used. <strong>Keep in mind that Slack will not be able to access non-public URLs.</strong>', 'rock-the-slackbot' ); ?></span>
+					</td>
+				</tr>
+				<tr>
+					<td class="rts-label"><label for="rts-webhook-icon-url"><?php _e( 'The WordPress Icon', 'rock-the-slackbot' ); ?></label></td>
+					<td class="rts-field">
+						<img class="wordpress-icon-emoji" src="<?php echo trailingslashit( plugin_dir_url( dirname( __FILE__ ) ) ) . 'images/wordpress-icon-emoji.png'; ?>" />
+						<span class="rts-field-desc"><?php _e( "If the icon emoji and custom URL are left blank, this WordPress icon will be used for the Slack messages. However, the icon will not work if Slack cannot access your website. For instance, Slack cannot access the icon if you're testing the plugin on your local machine.", 'rock-the-slackbot' ); ?><br /><br /><?php _e( '<strong>To ensure this WordPress icon is always used</strong>, save this image to your computer and set it as the default message icon in your <a href="https://my.slack.com/apps/manage/custom-integrations" target="_blank">Slack incoming webhook integration</a>.', 'rock-the-slackbot' ); ?></span>
 					</td>
 				</tr>
 				<tr>
