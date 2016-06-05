@@ -63,8 +63,9 @@ Please use [the Issues section of this plugin's GitHub repo](https://github.com/
 == Changelog ==
 
 = 1.1.2 =
-* Fixed issue where channel had to be set for messages to send
-* Added translations for English (Australia), French (France), German, Portuguese (Brazil), and Spanish (Spain)
+* Fixed issue where channel had to be set for messages to send.
+* Added translations for English (Australia), French (France), German, Portuguese (Brazil), and Spanish (Spain).
+* Added messaging to clarify use of WordPress icon in Slack messages.
 
 = 1.1.1 =
 * Added process to test webhook URL on settings page.
