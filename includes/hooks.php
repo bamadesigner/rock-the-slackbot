@@ -1439,9 +1439,20 @@ class Rock_The_Slackbot_Hooks {
 		// Get post type info
 		$post_type_object = get_post_type_object( $post->post_type );
 
+		// Will hold the fields for the message
+		$fields = array();
+
+		// Add the content author
+		$fields[] = array(
+			'title' => __( 'Content Author', 'rock-the-slackbot' ),
+			'value' => get_the_author_meta( 'display_name', $post->post_author ),
+			'short' => true,
+		);
+
 		// Create general message for the notification
 		$general_message = '';
 
+		// Customize the message depending on the event
 		switch( $notification_event ) {
 
 			case 'post_draft':
@@ -1454,10 +1465,16 @@ class Rock_The_Slackbot_Hooks {
 
 			case 'post_future':
 
-				// Build schedule datetime string
-				$scheduled_datetime = date( 'l, M\. j, Y \a\t g:i a', strtotime( $post->post_date ) );
+				// Add the scheduled date as a field
+				$fields[] = array(
+					'title' => __( 'Scheduled Date', 'rock-the-slackbot' ),
+					'value' => date( 'l, M\. j, Y \a\t g:i a', strtotime( $post->post_date ) ),
+					'short' => true,
+				);
 
-				$general_message = sprintf( __( '%1$s scheduled the following content for %2$s on the %3$s website at <%4$s>.', 'rock-the-slackbot' ), $current_user->display_name, $scheduled_datetime, $site_name, $site_url );
+				// Build the message
+				$general_message = sprintf( __( '%1$s scheduled the following content on the %2$s website at <%3$s>.', 'rock-the-slackbot' ), $current_user->display_name, $site_name, $site_url );
+
 				break;
 
 			case 'post_published':
@@ -1480,18 +1497,11 @@ class Rock_The_Slackbot_Hooks {
 			'text' => $general_message,
 		);
 
-		// Start creating the fields
-		$fields = array(
-			array(
-				'title' => __( 'Content Author', 'rock-the-slackbot' ),
-				'value' => get_the_author_meta( 'display_name', $post->post_author ),
-				'short' => true,
-			),
-			array(
-				'title' => __( 'Edit the Content', 'rock-the-slackbot' ),
-				'value' => get_edit_post_link( $post->ID ),
-				'short' => true,
-			)
+		// Add the link to edit the content
+		$fields[] = array(
+			'title' => __( 'Edit the Content', 'rock-the-slackbot' ),
+			'value' => get_edit_post_link( $post->ID ),
+			'short' => true,
 		);
 
 		// Get this post's latest revision
