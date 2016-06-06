@@ -1359,7 +1359,17 @@ class Rock_The_Slackbot_Hooks {
 
 	/**
 	 * Sends a notification to Slack when a
-	 * post is published or unpublished.
+	 * post's status is changed.
+	 *
+	 * The statuses to handle:
+	 * publish
+	 * future
+	 * draft
+	 * pending
+	 * private
+	 * trash
+	 * auto-draft
+	 * inherit
 	 *
 	 * Fires when a post is transitioned from one status to another.
 	 *
@@ -1377,19 +1387,39 @@ class Rock_The_Slackbot_Hooks {
 			return false;
 		}
 
-		// Only run code if new status is "publish" - 'post_published'
-		// or when old status is "publish" - 'post_unpublished'
-		if ( ! ( 'publish' == $new_status || 'publish' == $old_status ) ) {
-			return false;
-		}
-
-		// Don't run if sent to trash. It's handled elsewhere.
-		if ( 'trash' == $new_status ) {
+		// Don't run for the following new statuses
+		// Trash is handled elsewhere
+		if ( in_array( $new_status, array( 'auto-draft', 'inherit', 'trash' ) ) ) {
 			return false;
 		}
 
 		// Which event are we processing?
-		$notification_event = ( 'publish' == $new_status ) ? 'post_published' : 'post_unpublished';
+		$notification_event = 'post_unpublished';
+		switch ( $new_status ) {
+
+			case 'draft':
+
+				// Don't run if set as draft from specific old statuses
+				if ( in_array( $old_status, array( 'draft', 'auto-draft', 'inherit' ) ) ) {
+					return false;
+				}
+
+				$notification_event = 'post_draft';
+				break;
+
+			case 'pending':
+				$notification_event = 'post_pending';
+				break;
+
+			case 'future':
+				$notification_event = 'post_future';
+				break;
+
+			case 'publish':
+				$notification_event = 'post_published';
+				break;
+
+		}
 
 		// Get the outgoing webhooks
 		$outgoing_webhooks = $this->get_outgoing_webhooks( $notification_event, array( 'post_type' => $post->post_type ) );
@@ -1410,10 +1440,39 @@ class Rock_The_Slackbot_Hooks {
 		$post_type_object = get_post_type_object( $post->post_type );
 
 		// Create general message for the notification
-		if ( 'pending' == $new_status ) {
-			$general_message = sprintf( __( '%1$s marked the following content for review on the %2$s website at <%3$s>.', 'rock-the-slackbot' ), $current_user->display_name, $site_name, $site_url );
-		} else {
-			$general_message = sprintf( __( '%1$s %2$s the following content on the %3$s website at <%4$s>.', 'rock-the-slackbot' ), $current_user->display_name, ( 'post_published' == $notification_event ? 'published' : 'unpublished' ), $site_name, $site_url );
+		$general_message = '';
+
+		switch( $notification_event ) {
+
+			case 'post_draft':
+				$general_message = sprintf( __( '%1$s drafted the following content on the %2$s website at <%3$s>.', 'rock-the-slackbot' ), $current_user->display_name, $site_name, $site_url );
+				break;
+
+			case 'post_pending':
+				$general_message = sprintf( __( '%1$s marked the following content for review on the %2$s website at <%3$s>.', 'rock-the-slackbot' ), $current_user->display_name, $site_name, $site_url );
+				break;
+
+			case 'post_future':
+
+				// Build schedule datetime string
+				$scheduled_datetime = date( 'l, M\. j, Y \a\t g:i a', strtotime( $post->post_date ) );
+
+				$general_message = sprintf( __( '%1$s scheduled the following content for %2$s on the %3$s website at <%4$s>.', 'rock-the-slackbot' ), $current_user->display_name, $scheduled_datetime, $site_name, $site_url );
+				break;
+
+			case 'post_published':
+				$general_message = sprintf( __( '%1$s published the following content on the %2$s website at <%3$s>.', 'rock-the-slackbot' ), $current_user->display_name, $site_name, $site_url );
+				break;
+
+			case 'post_unpublished':
+				$general_message = sprintf( __( '%1$s unpublished the following content on the %2$s website at <%3$s>.', 'rock-the-slackbot' ), $current_user->display_name, $site_name, $site_url );
+				break;
+
+		}
+
+		// Make sure we have a message
+		if ( empty( $general_message ) ) {
+			return false;
 		}
 
 		// Start creating the payload

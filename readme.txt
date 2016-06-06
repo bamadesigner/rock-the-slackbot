@@ -63,6 +63,7 @@ Please use [the Issues section of this plugin's GitHub repo](https://github.com/
 == Changelog ==
 
 = 1.1.2 =
+* Added notifications for 'When a post is drafted', 'When a post is pending review', and 'When a post is scheduled'
 * Fixed issue where channel had to be set for messages to send.
 * Added translations for English (Australia), French (France), German, Portuguese (Brazil), and Spanish (Spain).
 * Added messaging to clarify use of WordPress icon in Slack messages.
