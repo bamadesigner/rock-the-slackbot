@@ -1277,9 +1277,6 @@ class Rock_The_Slackbot_Hooks {
 		$site_url = get_bloginfo( 'url' );
 		$site_name = get_bloginfo( 'name' );
 
-		// Get this post's latest revision
-		$post_revisions = ( $actual_post_revisions = wp_get_post_revisions( $post_after->ID, array( 'posts_per_page' => 1 ) ) ) && ! empty( $actual_post_revisions ) && is_array( $actual_post_revisions ) ? array_shift( $actual_post_revisions ) : false;
-
 		// Get post type info
 		$post_type_object = get_post_type_object( $post_after->post_type );
 
@@ -1308,12 +1305,15 @@ class Rock_The_Slackbot_Hooks {
 			)
 		);
 
-		// If the post was updated, add the latest revision link
-		if ( isset( $post_revisions ) && isset( $post_revisions->ID ) ) {
+		// Get this post's latest revision
+		$post_revisions = ( $actual_post_revisions = wp_get_post_revisions( $post_after->ID, array( 'posts_per_page' => 1 ) ) ) && ! empty( $actual_post_revisions ) && is_array( $actual_post_revisions ) ? array_shift( $actual_post_revisions ) : false;
 
-			// Add "View Revision" URL
+		// If the post was updated, add the latest revision link
+		if ( ! empty( $post_revisions->ID ) ) {
+
+			// Add "View Latest Revision" URL
 			$fields[] = array(
-				'title' => __( 'View Revision', 'rock-the-slackbot' ),
+				'title' => __( 'View Latest Revision', 'rock-the-slackbot' ),
 				'value' => isset( $post_revisions ) && isset( $post_revisions->ID ) ? add_query_arg( 'revision', $post_revisions->ID, admin_url( 'revision.php' ) ) : null,
 				'short' => true,
 			);
@@ -1406,9 +1406,6 @@ class Rock_The_Slackbot_Hooks {
 		$site_url = get_bloginfo( 'url' );
 		$site_name = get_bloginfo( 'name' );
 
-		// Get this post's latest revision
-		$post_revisions = ( $actual_post_revisions = wp_get_post_revisions( $post->ID , array( 'posts_per_page' => 1 ) ) ) && ! empty( $actual_post_revisions ) && is_array( $actual_post_revisions ) ? array_shift( $actual_post_revisions ) : false;
-
 		// Get post type info
 		$post_type_object = get_post_type_object( $post->post_type );
 
@@ -1438,12 +1435,15 @@ class Rock_The_Slackbot_Hooks {
 			)
 		);
 
-		// If the post was updated, add the latest revision link
-		if ( isset( $post_revisions ) && isset( $post_revisions->ID ) ) {
+		// Get this post's latest revision
+		$post_revisions = ( $actual_post_revisions = wp_get_post_revisions( $post->ID, array( 'posts_per_page' => 1 ) ) ) && ! empty( $actual_post_revisions ) && is_array( $actual_post_revisions ) ? array_shift( $actual_post_revisions ) : false;
 
-			// Add "View Revision" URL
+		// If the post was updated, add the latest revision link
+		if ( ! empty( $post_revisions->ID ) ) {
+
+			// Add "View Latest Revision" URL
 			$fields[] = array(
-				'title' => __( 'View Revision', 'rock-the-slackbot' ),
+				'title' => __( 'View Latest Revision', 'rock-the-slackbot' ),
 				'value' => isset( $post_revisions ) && isset( $post_revisions->ID ) ? add_query_arg( 'revision', $post_revisions->ID, admin_url( 'revision.php' ) ) : null,
 				'short' => true,
 			);
