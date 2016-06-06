@@ -176,8 +176,20 @@ class Rock_The_Slackbot {
 						'label' => __( 'When a post is unpublished', 'rock-the-slackbot' ),
 						'default' => 1,
 					),
+					'post_draft' => array(
+						'label' => __( 'When a post is drafted', 'rock-the-slackbot' ),
+						'default' => 1,
+					),
+					'post_pending' => array(
+						'label' => __( 'When a post is pending review', 'rock-the-slackbot' ),
+						'default' => 1,
+					),
+					'post_future' => array(
+						'label' => __( 'When a post is scheduled', 'rock-the-slackbot' ),
+						'default' => 1,
+					),
 					'post_updated' => array(
-						'label' => __( 'When a post is updated', 'rock-the-slackbot' ),
+						'label' => __( "When a post's content is updated", 'rock-the-slackbot' ),
 						'default' => 1,
 					),
 					'post_deleted' => array(
