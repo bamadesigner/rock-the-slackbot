@@ -14,7 +14,7 @@ class Rock_The_Slackbot_Hooks {
 		// @TODO Setup notifications for:
 		//		When menu item is added
 		//      When an option is added or edited?
-		//      When a new comment is added or is awaiting moderation?
+		//      When a new comment is awaiting moderation
 		//		When certain folks log in?
 		//      When there are PHP errors
 		//		When plugins are activated
@@ -61,6 +61,9 @@ class Rock_The_Slackbot_Hooks {
 
 		// Fires after the user's role has changed
 		add_action( 'set_user_role', array( $this, 'user_role_notification' ), 100, 3 );
+
+		// Fires immediately after a comment is added
+		add_action( 'wp_insert_comment', array( $this, 'comment_inserted' ), 100, 2 );
 
 	}
 
@@ -2419,6 +2422,191 @@ class Rock_The_Slackbot_Hooks {
 			'user'				=> $changed_user_data,
 			'current_user_roles'=> $current_user_roles,
 			'old_user_roles'	=> $old_user_roles,
+		) );
+
+	}
+
+	/**
+	 * Fires immediately after a comment is inserted into the database.
+	 *
+	 * @since   1.1.2
+	 * @param   int - $comment_id - the comment ID
+	 * @param   WP_Comment - $comment - the comment object
+	 * @return	bool - returns false if nothing happened
+	 */
+	public function comment_inserted( $comment_id, $comment ) {
+
+		// Which event are we processing?
+		$notification_event = 'insert_comment';
+
+		// Get the outgoing webhooks
+		$outgoing_webhooks = $this->get_outgoing_webhooks( $notification_event );
+
+		// If we have no webhooks, then there's no point
+		if ( ! $outgoing_webhooks ) {
+			return false;
+		}
+
+		// Get site URL and name
+		$site_url = get_bloginfo( 'url' );
+		$site_name = get_bloginfo( 'name' );
+
+		// Get post comments link
+		$post_comments_link = get_comments_link( $comment->comment_post_ID );
+
+		// If logged in, get user data
+		$user_id = ! empty( $comment->user_id ) && $comment->user_id > 0 ? $comment->user_id : 0;
+		$user_data = $user_id > 0 ? get_userdata( $user_id ) : null;
+
+		// Get display name of comment author
+		$user_display_name = '';
+		
+		// If user is logged in, get their display name
+		if ( $user_data && ! empty( $user_data->display_name ) ) {
+			$user_display_name = $user_data->display_name;
+		}
+
+		// Otherwise, check the author in the comment object
+		else if ( ! empty( $comment->comment_author ) ) {
+			$user_display_name = $comment->comment_author;
+		}
+
+		// Create general message for the notification
+		$general_message = sprintf( __( '%1$s added the following comment to the %2$s website at <%3$s>.', 'rock-the-slackbot' ),
+			! empty( $user_display_name ) ? $user_display_name : 'Someone',
+			$site_name,
+			$site_url );
+
+		// Start creating the payload
+		$payload = array(
+			'text' => $general_message,
+		);
+
+		// Start creating the fields
+		$fields = array();
+
+		// If set, add comment type
+		if ( ! empty( $comment->comment_type ) ) {
+			$fields[] = array(
+				'title' => __( 'Comment Type', 'rock-the-slackbot' ),
+				'value' => ucwords( $comment->comment_type ),
+				'short' => true,
+			);
+		}
+
+		// If approved, view the comment
+		if ( 1 == $comment->comment_approved ) {
+			$fields[] = array(
+				'title' => __( 'View Comment', 'rock-the-slackbot' ),
+				'value' => get_permalink( $comment->comment_post_ID ) . "#comment-{$comment_id}",
+				'short' => true,
+			);
+		}
+
+		// Edit the comment
+		$fields[] = array(
+			'title' => __( 'Edit Comment', 'rock-the-slackbot' ),
+			'value' => add_query_arg( array(
+				'action'=> 'editcomment',
+				'c'     => $comment_id,
+			), admin_url( 'comment.php' ) ),
+			'short' => true,
+		);
+
+		// View comment's parent
+		if ( $comment->comment_parent > 0 ) {
+			$fields[] = array(
+				'title' => __( "View Comment's Parent", 'rock-the-slackbot' ),
+				'value' => get_permalink( $comment->comment_post_ID ) . "#comment-{$comment->comment_parent}",
+				'short' => true,
+			);
+		}
+
+		// If the comment is not approved...
+		if ( 1 != $comment->comment_approved ) {
+
+			// Build comment status
+			$comment_status = __( 'This comment has not been approved.', 'rock-the-slackbot' );
+
+			// Customize for marked as spam and trashed
+			if ( 'spam' == $comment->comment_approved ) {
+				$comment_status = __( 'This comment has been marked for spam.', 'rock-the-slackbot' );
+			} else if ( 'trash' == $comment->comment_approved ) {
+				$comment_status = __( 'This comment has been trashed.', 'rock-the-slackbot' );
+			}
+
+			// Let the user know it's not approved
+			$fields[] = array(
+				'title' => __( 'Comment Status', 'rock-the-slackbot' ),
+				'value' => $comment_status,
+				'short' => true,
+			);
+
+			// Approve the comment
+			// @TODO See if we can get this to work outside the admin one ady
+			// Right now check_admin_referer() is run so nope
+			/*$fields[] = array(
+				'title' => __( 'Approve Comment', 'rock-the-slackbot' ),
+				'value' => wp_nonce_url( add_query_arg( array(
+					'action'    => 'approvecomment',
+					'c'         => $comment_id,
+				), admin_url( 'comment.php' ) ), "approve-comment_{$comment_id}" ),
+				'short' => true,
+			);*/
+
+			// Mark the comment as spam
+			// @TODO See if we can get this to work outside the admin one ady
+			// Right now check_admin_referer() is run so nope
+			/*if ( 'spam' != $comment->comment_approved ) {
+				$fields[] = array(
+					'title' => __( 'Mark Comment As Spam', 'rock-the-slackbot' ),
+					'value' => wp_nonce_url( add_query_arg( array(
+						'action' => 'spamcomment',
+						'c'      => $comment_id,
+					), admin_url( 'comment.php' ) ), "delete-comment_{$comment_id}" ),
+					'short' => true,
+				);
+			}*/
+
+			// Trash the comment
+			// @TODO See if we can get this to work outside the admin one ady
+			// Right now check_admin_referer() is run so nope
+			/*if ( 'trash' != $comment->comment_approved ) {
+				$fields[] = array(
+					'title' => __( 'Trash Comment', 'rock-the-slackbot' ),
+					'value' => wp_nonce_url( add_query_arg( array(
+						'action' => 'trashcomment',
+						'c'      => $comment_id,
+					), admin_url( 'comment.php' ) ), "delete-comment_{$comment_id}" ),
+					'short' => true,
+				);
+			}*/
+
+		}
+		
+		// Build attachment
+		$attachment = array(
+			'fallback'      => $general_message,
+			'text'          => wp_trim_words( strip_tags( $comment->comment_content ), 30, '...' ),
+			'title'         => get_the_title( $comment->comment_post_ID ),
+			'title_link'    => $post_comments_link,
+			'fields'        => $fields,
+		);
+
+		// Add author information
+		$attachment = array_merge( $attachment, array(
+			'author_name'   => ! empty( $user_display_name ) ? $user_display_name : __( 'Commenter Name Not Included', 'rock-the-slackbot' ),
+			'author_link'   => ! empty( $user_data->ID ) ? get_author_posts_url( $user_data->ID ) : $comment->comment_author_url,
+			'author_icon'   => ! empty( $user_data->ID ) ? get_avatar_url( $user_data->ID, 32 ) : '',
+		) );
+
+		// Create attachment
+		$attachments = array( $attachment );
+
+		// Send each webhook
+		$this->send_outgoing_webhooks( $notification_event, $outgoing_webhooks, $payload, $attachments, array(
+			'comment_id'=> $comment_id,
+			'comment'   => $comment,
 		) );
 
 	}

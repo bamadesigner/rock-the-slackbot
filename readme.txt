@@ -30,6 +30,7 @@ Because it can help you manage your websites, and stay on top of changes, by sen
 * When a post is updated
 * When a post is deleted
 * When a post is trashed
+* When a comment is added
 * When a 404 error is thrown
 * When a menu item is deleted
 * When media is added
@@ -44,7 +45,7 @@ Because it can help you manage your websites, and stay on top of changes, by sen
 **I'm working to add the following events:**
 
 * When menu item is added
-* When a new comment is added or is awaiting moderation
+* When a new comment is awaiting moderation
 * When plugins or themes are uploaded
 * When plugins or themes are activated
 
@@ -63,7 +64,8 @@ Please use [the Issues section of this plugin's GitHub repo](https://github.com/
 == Changelog ==
 
 = 1.1.2 =
-* Added notifications for 'When a post is drafted', 'When a post is pending review', and 'When a post is scheduled'
+* Added notifications for 'When a post is drafted', 'When a post is pending review', and 'When a post is scheduled'.
+* Added notification for when a comment is added.
 * Fixed issue where channel had to be set for messages to send.
 * Added translations for English (Australia), French (France), German, Portuguese (Brazil), and Spanish (Spain).
 * Added messaging to clarify use of WordPress icon in Slack messages.

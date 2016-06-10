@@ -203,6 +203,14 @@ class Rock_The_Slackbot {
 					),
 				),
 			),
+			'comments' => array(
+				'label' => __( 'Comments', 'rock-the-slackbot' ),
+				'events' => array(
+					'insert_comment' => array(
+						'label' => __( 'When a comment is added', 'rock-the-slackbot' ),
+					),
+				),
+			),
 			'menus' => array(
 				'label' => __( 'Menus', 'rock-the-slackbot' ),
 				'events' => array(
