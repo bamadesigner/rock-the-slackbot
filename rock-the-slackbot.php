@@ -205,6 +205,26 @@ class Rock_The_Slackbot {
 					),
 				),
 			),
+			'comments' => array(
+				'label' => __( 'Comments', 'rock-the-slackbot' ),
+				'events' => array(
+					'insert_comment' => array(
+						'label' => __( 'When a comment is added', 'rock-the-slackbot' ),
+					),
+					'comment_unapproved' => array(
+						'label' => __( 'When a comment is unapproved', 'rock-the-slackbot' ),
+					),
+					'comment_approved' => array(
+						'label' => __( 'When a comment is approved', 'rock-the-slackbot' ),
+					),
+					'comment_spammed' => array(
+						'label' => __( 'When a comment is marked as spam', 'rock-the-slackbot' ),
+					),
+					'comment_trashed' => array(
+						'label' => __( 'When a comment is trashed', 'rock-the-slackbot' ),
+					),
+				),
+			),
 			'menus' => array(
 				'label' => __( 'Menus', 'rock-the-slackbot' ),
 				'events' => array(
