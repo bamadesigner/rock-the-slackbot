@@ -35,7 +35,6 @@ Because it can help you manage your websites, and stay on top of changes, by sen
 **I'm working to add the following events:**
 
 * When menu item is added
-* When a new comment is added or is awaiting moderation
 * When plugins or themes are uploaded
 * When plugins or themes are activated
 
