@@ -1491,13 +1491,6 @@ class Rock_The_Slackbot_Hooks {
 		// Will hold the fields for the message
 		$fields = array();
 
-		// Add the content author
-		$fields[] = array(
-			'title' => __( 'Content Author', 'rock-the-slackbot' ),
-			'value' => get_the_author_meta( 'display_name', $post->post_author ),
-			'short' => true,
-		);
-
 		// Create general message for the notification
 		$general_message = '';
 
@@ -1586,6 +1579,13 @@ class Rock_The_Slackbot_Hooks {
 		$fields[] = array(
 			'title' => __( 'Content Type', 'rock-the-slackbot' ),
 			'value' => $post_type_object && isset( $post_type_object->labels ) && isset( $post_type_object->labels->singular_name ) ? $post_type_object->labels->singular_name : $post->post_type,
+			'short' => true,
+		);
+
+		// Add the content author
+		$fields[] = array(
+			'title' => __( 'Content Author', 'rock-the-slackbot' ),
+			'value' => get_the_author_meta( 'display_name', $post->post_author ),
 			'short' => true,
 		);
 
