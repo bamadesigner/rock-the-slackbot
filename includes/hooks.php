@@ -278,7 +278,6 @@ class Rock_The_Slackbot_Hooks {
 
 		// Return errors, if any, otherwise true for no errors
 		return ! empty( $notification_errors ) ? $notification_errors : true;
-
 	}
 
 	/**

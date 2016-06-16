@@ -80,7 +80,7 @@ class Rock_The_Slackbot {
 		// Is this plugin network active?
 		$this->is_network_active = is_multisite() && ( $plugins = get_site_option( 'active_sitewide_plugins' ) ) && isset( $plugins[ ROCK_THE_SLACKBOT_PLUGIN_FILE ] );
 
-		// Load our textdomain
+		// Load our text domain
 		add_action( 'init', array( $this, 'textdomain' ) );
 
 		// Runs on install
@@ -343,7 +343,6 @@ class Rock_The_Slackbot {
 		}
 
 		return ! empty( $active_outgoing_webhooks ) ? $active_outgoing_webhooks : false;
-
 	}
 
 	/**
@@ -505,7 +504,6 @@ class Rock_The_Slackbot {
 		}
 
 		return false;
-
 	}
 
 	/**
@@ -559,7 +557,6 @@ class Rock_The_Slackbot {
 		}
 
 		return true;
-
 	}
 
 }
