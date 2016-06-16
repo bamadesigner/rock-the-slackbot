@@ -3,13 +3,37 @@
 class Rock_The_Slackbot_Hooks {
 
 	/**
+	 * Holds the class instance.
+	 *
+	 * @since   1.1.2
+	 * @access  private
+	 * @var     Rock_The_Slackbot
+	 */
+	private static $instance;
+
+	/**
+	 * Returns the instance of this class.
+	 *
+	 * @access  public
+	 * @since   1.1.2
+	 * @return  Rock_The_Slackbot
+	 */
+	public static function instance() {
+		if ( ! isset( self::$instance ) ) {
+			$className = __CLASS__;
+			self::$instance = new $className;
+		}
+		return self::$instance;
+	}
+
+	/**
 	 * This class sets up the notifications
 	 * for all of the various hooks.
 	 *
-	 * @access  public
+	 * @access  protected
 	 * @since   1.0.0
 	 */
-	public function __construct() {
+	protected function __construct() {
 
 		// @TODO Setup notifications for:
 		//		When menu item is added
@@ -70,6 +94,24 @@ class Rock_The_Slackbot_Hooks {
 		add_action( 'transition_comment_status', array( $this, 'transition_comment_status' ), 100, 3 );
 
 	}
+
+	/**
+	 * Method to keep our instance from being cloned.
+	 *
+	 * @since   1.1.2
+	 * @access  private
+	 * @return  void
+	 */
+	private function __clone() {}
+
+	/**
+	 * Method to keep our instance from being unserialized.
+	 *
+	 * @since   1.1.2
+	 * @access  private
+	 * @return  void
+	 */
+	private function __wakeup() {}
 
 	/**
 	 * Retrieves saved outgoing webhooks.
@@ -2845,4 +2887,5 @@ class Rock_The_Slackbot_Hooks {
 	}
 
 }
-new Rock_The_Slackbot_Hooks;
+// Let's get this show on the road
+Rock_The_Slackbot_Hooks::instance();

@@ -72,7 +72,7 @@ class Rock_The_Slackbot {
 	/**
 	 * Warming up the Slack mobile.
 	 *
-	 * @access  public
+	 * @access  protected
 	 * @since   1.0.0
 	 */
 	protected function __construct() {
