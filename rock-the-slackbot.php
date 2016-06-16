@@ -134,8 +134,6 @@ class Rock_The_Slackbot {
 	 * Internationalization FTW.
 	 * Load our textdomain.
 	 *
-	 * @TODO Add language files
-	 *
 	 * @access  public
 	 * @since   1.0.0
 	 */
