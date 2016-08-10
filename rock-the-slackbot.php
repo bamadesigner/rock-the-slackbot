@@ -18,6 +18,8 @@ if ( ! defined( 'WPINC' ) ) {
 	die;
 }
 
+// @TODO add setting to disable 404 notifications from search engines
+	// or to allow blacklist for notifications?
 // @TODO add some identifiable info to the "Exclude Post Types" life for when CPTs share the same label (from Matt)
 
 // If you define them, will they be used?
