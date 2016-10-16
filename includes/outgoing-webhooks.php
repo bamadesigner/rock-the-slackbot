@@ -165,8 +165,8 @@ class Rock_The_Slackbot_Outgoing_Webhooks {
 
 			}
 
-			// If there's an error from Slack...
-			if ( isset( $slack_response[ 'response' ] ) && isset( $slack_response[ 'response' ][ 'code' ] ) && '200' != $slack_response[ 'response' ][ 'code' ] ) {
+			// Else if there's an error from Slack...
+			else if ( isset( $slack_response[ 'response' ] ) && isset( $slack_response[ 'response' ][ 'code' ] ) && '200' != $slack_response[ 'response' ][ 'code' ] ) {
 
 				// Set an error
 				$slack_errors->add( 'slack_outgoing_webhook_error', __( 'The payload did not send to Slack.', 'rock-the-slackbot' ) );
