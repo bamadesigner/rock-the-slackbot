@@ -1382,7 +1382,8 @@ class Rock_The_Slackbot_Hooks {
 			'short' => true,
 		);
 
-		if ( apply_filters( 'rock_the_slackbot_post_content_diff', false ) ) {
+		// Get the difference in the post content.
+		if ( apply_filters( 'rock_the_slackbot_post_compare_content', true ) ) {
 			require_once plugin_dir_path( __FILE__ ) . 'diff.php';
 			$post_content = Rock_The_Slackbot_Diff::to_string( Rock_The_Slackbot_Diff::compare( $post_before->post_content, $post_after->post_content ) );
 		} else {
