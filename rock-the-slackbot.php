@@ -18,6 +18,10 @@ if ( ! defined( 'WPINC' ) ) {
 	die;
 }
 
+// @TODO add setting to disable 404 notifications from search engines
+	// or to allow blacklist for notifications?
+// @TODO add some identifiable info to the "Exclude Post Types" life for when CPTs share the same label (from Matt)
+
 // If you define them, will they be used?
 define( 'ROCK_THE_SLACKBOT_VERSION', '1.1.1' );
 define( 'ROCK_THE_SLACKBOT_PLUGIN_URL', 'https://wordpress.org/plugins/rock-the-slackbot/' );
@@ -70,7 +74,7 @@ class Rock_The_Slackbot {
 	/**
 	 * Warming up the Slack mobile.
 	 *
-	 * @access  public
+	 * @access  protected
 	 * @since   1.0.0
 	 */
 	protected function __construct() {
@@ -78,7 +82,7 @@ class Rock_The_Slackbot {
 		// Is this plugin network active?
 		$this->is_network_active = is_multisite() && ( $plugins = get_site_option( 'active_sitewide_plugins' ) ) && isset( $plugins[ ROCK_THE_SLACKBOT_PLUGIN_FILE ] );
 
-		// Load our textdomain
+		// Load our text domain
 		add_action( 'init', array( $this, 'textdomain' ) );
 
 		// Runs on install
@@ -131,8 +135,6 @@ class Rock_The_Slackbot {
 	/**
 	 * Internationalization FTW.
 	 * Load our textdomain.
-	 *
-	 * @TODO Add language files
 	 *
 	 * @access  public
 	 * @since   1.0.0
@@ -343,7 +345,6 @@ class Rock_The_Slackbot {
 		}
 
 		return ! empty( $active_outgoing_webhooks ) ? $active_outgoing_webhooks : false;
-
 	}
 
 	/**
@@ -505,7 +506,6 @@ class Rock_The_Slackbot {
 		}
 
 		return false;
-
 	}
 
 	/**
@@ -559,7 +559,6 @@ class Rock_The_Slackbot {
 		}
 
 		return true;
-
 	}
 
 }

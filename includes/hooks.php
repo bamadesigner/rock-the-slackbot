@@ -3,13 +3,37 @@
 class Rock_The_Slackbot_Hooks {
 
 	/**
+	 * Holds the class instance.
+	 *
+	 * @since   1.1.2
+	 * @access  private
+	 * @var     Rock_The_Slackbot
+	 */
+	private static $instance;
+
+	/**
+	 * Returns the instance of this class.
+	 *
+	 * @access  public
+	 * @since   1.1.2
+	 * @return  Rock_The_Slackbot
+	 */
+	public static function instance() {
+		if ( ! isset( self::$instance ) ) {
+			$className = __CLASS__;
+			self::$instance = new $className;
+		}
+		return self::$instance;
+	}
+
+	/**
 	 * This class sets up the notifications
 	 * for all of the various hooks.
 	 *
-	 * @access  public
+	 * @access  protected
 	 * @since   1.0.0
 	 */
-	public function __construct() {
+	protected function __construct() {
 
 		// @TODO Setup notifications for:
 		//		When menu item is added
@@ -70,6 +94,24 @@ class Rock_The_Slackbot_Hooks {
 		add_action( 'transition_comment_status', array( $this, 'transition_comment_status' ), 100, 3 );
 
 	}
+
+	/**
+	 * Method to keep our instance from being cloned.
+	 *
+	 * @since   1.1.2
+	 * @access  private
+	 * @return  void
+	 */
+	private function __clone() {}
+
+	/**
+	 * Method to keep our instance from being unserialized.
+	 *
+	 * @since   1.1.2
+	 * @access  private
+	 * @return  void
+	 */
+	private function __wakeup() {}
 
 	/**
 	 * Retrieves saved outgoing webhooks.
@@ -236,7 +278,6 @@ class Rock_The_Slackbot_Hooks {
 
 		// Return errors, if any, otherwise true for no errors
 		return ! empty( $notification_errors ) ? $notification_errors : true;
-
 	}
 
 	/**
@@ -1449,13 +1490,6 @@ class Rock_The_Slackbot_Hooks {
 		// Will hold the fields for the message
 		$fields = array();
 
-		// Add the content author
-		$fields[] = array(
-			'title' => __( 'Content Author', 'rock-the-slackbot' ),
-			'value' => get_the_author_meta( 'display_name', $post->post_author ),
-			'short' => true,
-		);
-
 		// Create general message for the notification
 		$general_message = '';
 
@@ -1544,6 +1578,13 @@ class Rock_The_Slackbot_Hooks {
 		$fields[] = array(
 			'title' => __( 'Content Type', 'rock-the-slackbot' ),
 			'value' => $post_type_object && isset( $post_type_object->labels ) && isset( $post_type_object->labels->singular_name ) ? $post_type_object->labels->singular_name : $post->post_type,
+			'short' => true,
+		);
+
+		// Add the content author
+		$fields[] = array(
+			'title' => __( 'Content Author', 'rock-the-slackbot' ),
+			'value' => get_the_author_meta( 'display_name', $post->post_author ),
 			'short' => true,
 		);
 
@@ -2845,4 +2886,17 @@ class Rock_The_Slackbot_Hooks {
 	}
 
 }
-new Rock_The_Slackbot_Hooks;
+
+/**
+ * Returns the instance of the Rock_The_Slackbot_Hooks class.
+ *
+ * @since	1.1.2
+ * @access	public
+ * @return	Rock_The_Slackbot_Hooks
+ */
+function rock_the_slackbot_hooks() {
+	return Rock_The_Slackbot_Hooks::instance();
+}
+
+// Let's get this show on the road
+rock_the_slackbot_hooks();

@@ -1088,7 +1088,6 @@ class Rock_The_Slackbot_Admin {
 
 		// Always save all of the webhooks
 		return $saved_outgoing_webhooks;
-
 	}
 
 	/**

@@ -182,7 +182,6 @@ class Rock_The_Slackbot_Outgoing_Webhooks {
 		}
 
 		return true;
-
 	}
 
 }
