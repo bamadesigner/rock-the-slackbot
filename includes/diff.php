@@ -93,19 +93,6 @@ class Rock_The_Slackbot_Diff {
 	}
 
 	/**
-	 * Returns the diff for two files.
-	 *
-	 * The parameters are:
-	 *      $file1             - the path to the first file.
-	 *      $file2             - the path to the second file.
-	 *      $compare_characters - true to compare characters, and false to
-	 *          compare lines; this optional parameter defaults to false.
-	 */
-	public static function compare_files( $file1, $file2, $compare_characters = false ) {
-		return self::compare( file_get_contents( $file1 ), file_get_contents( $file2 ), $compare_characters );
-	}
-
-	/**
 	 * Returns the table of longest common
 	 * subsequent lengths for the specified sequences.
 	 *
