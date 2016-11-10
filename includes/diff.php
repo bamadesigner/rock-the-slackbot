@@ -244,10 +244,9 @@ class Rock_The_Slackbot_Diff {
 		        case self::DELETED    : $element = 'del';  break;
 		        case self::INSERTED   : $element = 'ins';  break;
 		    }
-		    $html .=
-		      '<' . $element . '>'
-		      . htmlspecialchars( $line[0] )
-		      . '</' . $element . '>';
+
+		    // Add the HTML element.
+		    $html .= '<' . $element . '>' . htmlspecialchars( $line[0] ) . '</' . $element . '>';
 
 		    // Extend the HTML with the separator.
 		    $html .= $separator;
@@ -264,15 +263,13 @@ class Rock_The_Slackbot_Diff {
 	 *
 	 * The parameters are:
 	 *      $diff        - the diff array
-	 *      $indentation - indentation to add to every line of the generated HTML;
-	 *              this optional parameter defaults to ''
 	 *      $separator   - the separator between lines; this optional parameter
-	 *              defaults to '<br>'
+	 *              defaults to '<br />'
 	 */
-	public static function to_table( $diff, $indentation = '', $separator = '<br>' ) {
+	public static function to_table( $diff, $separator = '<br />' ) {
 
 		// Initialise the HTML.
-		$html = $indentation . "<table class=\"diff\">\n";
+		$html = '<table class="diff">';
 
 		// Loop over the lines in the diff.
 		$index = 0;
@@ -283,51 +280,42 @@ class Rock_The_Slackbot_Diff {
 
 			    // Display the content on the left and right.
 			    case self::UNMODIFIED:
-			    	$left_cell = self::get_cell_content( $diff, $indentation, $separator, $index, self::UNMODIFIED );
+			    	$left_cell = self::get_cell_content( $diff, $separator, $index, self::UNMODIFIED );
 			        $right_cell = $left_cell;
 			        break;
 
 			    // Display the deleted on the left and inserted content on the right.
 			    case self::DELETED:
-			        $left_cell = self::get_cell_content( $diff, $indentation, $separator, $index, self::DELETED );
-			        $right_cell = self::get_cell_content( $diff, $indentation, $separator, $index, self::INSERTED );
+			        $left_cell = self::get_cell_content( $diff, $separator, $index, self::DELETED );
+			        $right_cell = self::get_cell_content( $diff, $separator, $index, self::INSERTED );
 			        break;
 
 			    // Display the inserted content on the right.
 				case self::INSERTED:
 			        $left_cell = '';
-			        $right_cell = self::get_cell_content( $diff, $indentation, $separator, $index, self::INSERTED );
+			        $right_cell = self::get_cell_content( $diff, $separator, $index, self::INSERTED );
 			        break;
 
 		    }
 
 		    // Extend the HTML with the new row.
-		    $html .=
-			    $indentation
-			        . "<tr>\n"
-			        . $indentation
-			        . '    <td class="diff'
-			        . ( $left_cell == $right_cell
-			            ? 'Unmodified'
-			            : ( '' == $left_cell ? 'Blank' : 'Deleted' ) )
-			        . '">'
-			        . $left_cell
-			        . "</td>\n"
-			        . $indentation
-			        . '    <td class="diff'
-			        . ( $left_cell == $right_cell
-			            ? 'Unmodified'
-			            : ( '' == $right_cell ? 'Blank' : 'Inserted' ) )
-			        . '">'
-			        . $right_cell
-			        . "</td>\n"
-			        . $indentation
-			        . "</tr>\n";
+		    $html .= '<tr>'
+		        . '<td class="diff'
+					. ( $left_cell == $right_cell ? 'Unmodified' : ( '' == $left_cell ? 'Blank' : 'Deleted' ) )
+		        . '">'
+				. $left_cell
+			    . '</td>'
+				. '<td class="diff'
+		             . ( $left_cell == $right_cell ? 'Unmodified' : ( '' == $right_cell ? 'Blank' : 'Inserted' ) )
+		        . '">'
+		        . $right_cell
+			    . '</td>'
+		        . '</tr>';
 
 		}
 
 		// Return the HTML.
-		return $html . $indentation . "</table>\n";
+		return $html . "</table>\n";
 
 	}
 
@@ -337,23 +325,18 @@ class Rock_The_Slackbot_Diff {
 	 *
 	 * The parameters are:
 	 *      $diff        - the diff array
-	 *      $indentation - indentation to add to every line of the generated HTML
 	 *      $separator   - the separator between lines
 	 *      $index       - the current index, passes by reference
 	 *      $type        - the type of line
 	 */
-	private static function get_cell_content( $diff, $indentation, $separator, &$index, $type ) {
+	private static function get_cell_content( $diff, $separator, &$index, $type ) {
 
 		// Initialise the HTML.
 		$html = '';
 
 		// Loop over the matching lines, adding them to the HTML.
 		while ( $index < count( $diff ) && $diff[ $index ][1] == $type ) {
-			$html .=
-				'<span>'
-		        . htmlspecialchars( $diff[ $index ][0] )
-				. '</span>'
-		        . $separator;
+			$html .= '<span>' . htmlspecialchars( $diff[ $index ][0] ) . '</span>' . $separator;
 		    $index ++;
 		}
 
