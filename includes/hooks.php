@@ -1382,11 +1382,18 @@ class Rock_The_Slackbot_Hooks {
 			'short' => true,
 		);
 
+		if ( apply_filters( 'rock_the_slackbot_post_content_diff', false ) ) {
+			require_once plugin_dir_path( __FILE__ ) . 'diff.php';
+			$post_content = Rock_The_Slackbot_Diff::toString( Rock_The_Slackbot_Diff::compare( $post_before->post_content, $post_after->post_content ) );
+		} else {
+			$post_content = wp_trim_words( strip_tags( $post_after->post_content ), 30, '...' );
+		}
+
 		// Create attachment
 		$attachments = array(
 			array(
 				'fallback'      => $general_message,
-				'text'          => wp_trim_words( strip_tags( $post_after->post_content ), 30, '...' ),
+				'text'          => $post_content,
 				'title'         => get_the_title( $post_after->ID ),
 				'title_link'    => get_permalink( $post_after->ID ),
 				'author_name'   => $current_user->display_name,
