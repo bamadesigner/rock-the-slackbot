@@ -1384,7 +1384,7 @@ class Rock_The_Slackbot_Hooks {
 
 		if ( apply_filters( 'rock_the_slackbot_post_content_diff', false ) ) {
 			require_once plugin_dir_path( __FILE__ ) . 'diff.php';
-			$post_content = Rock_The_Slackbot_Diff::toString( Rock_The_Slackbot_Diff::compare( $post_before->post_content, $post_after->post_content ) );
+			$post_content = Rock_The_Slackbot_Diff::to_string( Rock_The_Slackbot_Diff::compare( $post_before->post_content, $post_after->post_content ) );
 		} else {
 			$post_content = wp_trim_words( strip_tags( $post_after->post_content ), 30, '...' );
 		}
