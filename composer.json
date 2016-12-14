@@ -1,0 +1,22 @@
+{
+    "name": "bamadesigner/rock-the-slackbot",
+    "description": "A WordPress plugin that helps you stay on top of changes by sending notifications straight to you and your team inside your Slack account.",
+    "type": "wordpress-plugin",
+    "license": "GPL2.0+",
+    "authors": [
+        {
+            "name": "Rachel Carden",
+            "email": "bamadesigner@gmail.com"
+        }
+    ],
+    "require-dev": {
+        "squizlabs/php_codesniffer": "*",
+        "wp-coding-standards/wpcs": "*"
+    },
+    "scripts": {
+        "post-install-cmd": [
+            "./vendor/bin/phpcs --config-set bin vendor/bin/phpcs",
+            "./vendor/bin/phpcs --config-set installed_paths ../../wp-coding-standards/wpcs"
+        ]
+    }
+}
