@@ -18,9 +18,17 @@ if ( ! defined( 'WPINC' ) ) {
 	die;
 }
 
-// @TODO add setting to disable 404 notifications from search engines
-	// or to allow blacklist for notifications?
-// @TODO add some identifiable info to the "Exclude Post Types" life for when CPTs share the same label (from Matt)
+/*
+ * @TODO:
+ *
+ * Add setting to disable 404 notifications from search engines
+ *      or to allow blacklist for notifications?
+ *
+ * Add some identifiable info to the "Exclude Post Types" life
+ *      for when CPTs share the same label (from Matt).
+ *
+ * Add setting and filter to disable error emails.
+ */
 
 // If you define them, will they be used?
 define( 'ROCK_THE_SLACKBOT_VERSION', '1.1.1' );
