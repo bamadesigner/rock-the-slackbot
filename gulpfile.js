@@ -1,27 +1,41 @@
 var gulp = require('gulp');
 var minify = require('gulp-minify');
 var phpcs = require('gulp-phpcs');
+var rename = require('gulp-rename');
 var sass = require('gulp-sass');
 var watch = require('gulp-watch');
 
 var to_watch = {
-	sass: ['css/admin-tools.scss'],
-	js: ['js/admin-tools.js'],
+	sass: ['assets/scss/admin-tools.scss'],
+	js: ['assets/js/admin-tools.js'],
 	php: ['**/*.php','!vendor/**','!node_modules/**']
 };
+
+var dest = {
+	sass: 'assets/css',
+	js: 'assets/js'
+}
 
 // Compile the SASS
 gulp.task('sass',function() {
 	gulp.src(to_watch.sass)
 		.pipe(sass({outputStyle:'compressed'}))
-		.pipe(gulp.dest('css'));
+		.pipe(rename({
+			suffix: '.min'
+		}))
+		.pipe(gulp.dest(dest.sass));
 });
 
 // Minify the JS
 gulp.task('js',function() {
-  gulp.src(to_watch.js)
-	  .pipe(minify())
-	  .pipe(gulp.dest('js'))
+	gulp.src(to_watch.js)
+		.pipe(minify({
+			mangle: false,
+			ext:{
+				min:'.min.js'
+			}
+		}))
+		.pipe(gulp.dest(dest.js))
 });
 
 // Compile our assets

@@ -1,1 +1,3 @@
 /vendor/
+assets/js/*.min.js
+assets/css

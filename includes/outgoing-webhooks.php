@@ -81,7 +81,7 @@ class Rock_The_Slackbot_Outgoing_Webhooks {
 			'username'      => get_bloginfo( 'name' ),
 			'text'          => __( 'This is a WordPress to Slack message.', 'rock-the-slackbot' ),
 			'icon_emoji'	=> null,
-			'icon_url'		=> trailingslashit( plugin_dir_url( dirname( __FILE__ ) ) ) . 'images/wordpress-icon-emoji.png',
+			'icon_url'		=> trailingslashit( plugin_dir_url( dirname( __FILE__ ) ) ) . 'assets/images/wordpress-icon-emoji.png',
 			'attachments'   => array(),
 		);
 
