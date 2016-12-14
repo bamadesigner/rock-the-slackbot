@@ -1385,7 +1385,17 @@ class Rock_The_Slackbot_Hooks {
 		// Get the difference in the post content.
 		if ( apply_filters( 'rock_the_slackbot_post_compare_content', true ) ) {
 			require_once plugin_dir_path( __FILE__ ) . 'diff.php';
-			$post_content = Rock_The_Slackbot_Diff::to_string( Rock_The_Slackbot_Diff::compare( $post_before->post_content, $post_after->post_content ) );
+			$post_content = Rock_The_Slackbot_Diff::compare( $post_before->post_content, $post_after->post_content );
+
+			// @TODO remove after testing
+			echo "diff:<pre>";
+			print_r($post_content);
+			echo "</pre>";
+
+			echo "<pre>";
+			print_r( Rock_The_Slackbot_Diff::to_string( $post_content ) );
+			echo "</pre>";
+
 		} else {
 			$post_content = wp_trim_words( strip_tags( $post_after->post_content ), 30, '...' );
 		}

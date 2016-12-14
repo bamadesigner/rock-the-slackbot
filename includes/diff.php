@@ -31,8 +31,8 @@ class Rock_The_Slackbot_Diff {
 	 * and DIFF::INSERTED (the line or character is only in the second string).
 	 *
 	 * The parameters are:
-	 *      $string1           - the first string
-	 *      $string2           - the second string
+	 *      $string1            - the first string
+	 *      $string2            - the second string
 	 *      $compare_characters - true to compare characters, and false
 	 *          to compare lines; this optional parameter defaults to false
 	 */
@@ -76,11 +76,11 @@ class Rock_The_Slackbot_Diff {
 		// Generate the full diff.
 		$diff = array();
 		for ( $index = 0; $index < $start; $index ++ ) {
-	        $diff[] = array( $sequence1[ $index ], self::UNMODIFIED );
+			$diff[] = array( $sequence1[ $index ], self::UNMODIFIED );
 		}
 
 		while ( count( $partial_diff ) > 0 ) {
-	        $diff[] = array_pop( $partial_diff );
+			$diff[] = array_pop( $partial_diff );
 		}
 
 		for ( $index = $end1 + 1; $index < ( $compare_characters ? strlen( $sequence1 ) : count( $sequence1 ) ); $index ++ ) {
@@ -116,16 +116,16 @@ class Rock_The_Slackbot_Diff {
 		for ( $index1 = 1; $index1 <= $length1; $index1 ++ ) {
 
 			// Create the new row.
-		    $table[ $index1 ] = array( 0 );
+			$table[ $index1 ] = array( 0 );
 
-		    // Loop over the columns.
-		    for ( $index2 = 1; $index2 <= $length2; $index2 ++ ) {
+			// Loop over the columns.
+			for ( $index2 = 1; $index2 <= $length2; $index2 ++ ) {
 
-			    // Store the longest common subsequence length.
-			    if ( $sequence1[ $index1 + $start - 1 ] == $sequence2[ $index2 + $start - 1 ] ) {
-				    $table[ $index1 ][ $index2 ] = $table[ $index1 - 1 ][ $index2 - 1 ] + 1;
+				// Store the longest common subsequence length.
+				if ( $sequence1[ $index1 + $start - 1 ] == $sequence2[ $index2 + $start - 1 ] ) {
+					$table[ $index1 ][ $index2 ] = $table[ $index1 - 1 ][ $index2 - 1 ] + 1;
 				} else {
-				    $table[ $index1 ][ $index2 ] = max( $table[ $index1 - 1 ][ $index2 ], $table[ $index1 ][ $index2 - 1 ] );
+					$table[ $index1 ][ $index2 ] = max( $table[ $index1 - 1 ][ $index2 ], $table[ $index1 ][ $index2 - 1 ] );
 				}
 			}
 		}
@@ -136,13 +136,13 @@ class Rock_The_Slackbot_Diff {
 	}
 
 	/**
-	 * Returns the partial diff for the specificed sequences, in reverse order.
+	 * Returns the partial diff for the specified sequences, in reverse order.
 	 *
 	 * The parameters are:
-	 *      $table     - the table returned by the compute_table function
-	 *      $sequence1 - the first sequence
-	 *      $sequence2 - the second sequence
-	 *      $start     - the starting index
+	 *      $table      - the table returned by the compute_table function
+	 *      $sequence1  - the first sequence
+	 *      $sequence2  - the second sequence
+	 *      $start      - the starting index
 	 */
 	private static function generate_partial_diff( $table, $sequence1, $sequence2, $start ) {
 
@@ -162,21 +162,21 @@ class Rock_The_Slackbot_Diff {
 				// Update the diff and the indices.
 				$diff[] = array( $sequence1[ $index1 + $start - 1 ], self::UNMODIFIED );
 				$index1 --;
-		        $index2 --;
+				$index2 --;
 
-		    } elseif ( $index2 > 0 && $table[ $index1 ][ $index2 ] == $table[ $index1 ][ $index2 - 1 ] ) {
+			} elseif ( $index2 > 0 && $table[ $index1 ][ $index2 ] == $table[ $index1 ][ $index2 - 1 ] ) {
 
 				// Update the diff and the indices.
 				$diff[] = array( $sequence2[ $index2 + $start - 1 ], self::INSERTED );
-		        $index2 --;
+				$index2 --;
 
-		    } else {
+			} else {
 
 				// Update the diff and the indices.
-		        $diff[] = array( $sequence1[ $index1 + $start - 1 ], self::DELETED );
-		        $index1 --;
+				$diff[] = array( $sequence1[ $index1 + $start - 1 ], self::DELETED );
+				$index1 --;
 
-		    }
+			}
 		}
 
 		// Return the diff.
@@ -190,8 +190,8 @@ class Rock_The_Slackbot_Diff {
 	 * by '- ', and insertions are prefixed by '+ '.
 	 *
 	 * The parameters are:
-	 *      $diff      - the diff array
-	 *      $separator - the separator between lines;
+	 *      $diff       - the diff array
+	 *      $separator  - the separator between lines;
 	 *          this optional parameter defaults to "\n"
 	 */
 	public static function to_string( $diff, $separator = "\n" ) {
@@ -205,12 +205,12 @@ class Rock_The_Slackbot_Diff {
 			// Extend the string with the line.
 			switch ( $line[1] ) {
 				case self::UNMODIFIED : $string .= '  ' . $line[0];break;
-		        case self::DELETED    : $string .= '- ' . $line[0];break;
-		        case self::INSERTED   : $string .= '+ ' . $line[0];break;
-		    }
+				case self::DELETED    : $string .= '- ' . $line[0];break;
+				case self::INSERTED   : $string .= '+ ' . $line[0];break;
+			}
 
-		    // Extend the string with the separator.
-		    $string .= $separator;
+			// Extend the string with the separator.
+			$string .= $separator;
 
 		}
 
@@ -239,17 +239,17 @@ class Rock_The_Slackbot_Diff {
 		foreach ( $diff as $line ) {
 
 			// Extend the HTML with the line.
-		    switch ( $line[1] ) {
-			    case self::UNMODIFIED : $element = 'span'; break;
-		        case self::DELETED    : $element = 'del';  break;
-		        case self::INSERTED   : $element = 'ins';  break;
-		    }
+			switch ( $line[1] ) {
+				case self::UNMODIFIED : $element = 'span'; break;
+				case self::DELETED    : $element = 'del';  break;
+				case self::INSERTED   : $element = 'ins';  break;
+			}
 
-		    // Add the HTML element.
-		    $html .= '<' . $element . '>' . htmlspecialchars( $line[0] ) . '</' . $element . '>';
+			// Add the HTML element.
+			$html .= '<' . $element . '>' . htmlspecialchars( $line[0] ) . '</' . $element . '>';
 
-		    // Extend the HTML with the separator.
-		    $html .= $separator;
+			// Extend the HTML with the separator.
+			$html .= $separator;
 
 		}
 
@@ -275,42 +275,38 @@ class Rock_The_Slackbot_Diff {
 		$index = 0;
 		while ( $index < count( $diff ) ) {
 
-		    // Determine the line type.
-		    switch ( $diff[ $index ][1] ) {
+			// Determine the line type.
+			switch ( $diff[ $index ][1] ) {
 
-			    // Display the content on the left and right.
-			    case self::UNMODIFIED:
-			    	$left_cell = self::get_cell_content( $diff, $separator, $index, self::UNMODIFIED );
-			        $right_cell = $left_cell;
-			        break;
+				// Display the content on the left and right.
+				case self::UNMODIFIED:
+					$left_cell = self::get_cell_content( $diff, $separator, $index, self::UNMODIFIED );
+					$right_cell = $left_cell;
+					break;
 
-			    // Display the deleted on the left and inserted content on the right.
-			    case self::DELETED:
-			        $left_cell = self::get_cell_content( $diff, $separator, $index, self::DELETED );
-			        $right_cell = self::get_cell_content( $diff, $separator, $index, self::INSERTED );
-			        break;
+				// Display the deleted on the left and inserted content on the right.
+				case self::DELETED:
+					$left_cell = self::get_cell_content( $diff, $separator, $index, self::DELETED );
+					$right_cell = self::get_cell_content( $diff, $separator, $index, self::INSERTED );
+					break;
 
-			    // Display the inserted content on the right.
+				// Display the inserted content on the right.
 				case self::INSERTED:
-			        $left_cell = '';
-			        $right_cell = self::get_cell_content( $diff, $separator, $index, self::INSERTED );
-			        break;
+					$left_cell = '';
+					$right_cell = self::get_cell_content( $diff, $separator, $index, self::INSERTED );
+					break;
 
-		    }
+			}
 
-		    // Extend the HTML with the new row.
-		    $html .= '<tr>'
-		        . '<td class="diff'
-					. ( $left_cell == $right_cell ? 'Unmodified' : ( '' == $left_cell ? 'Blank' : 'Deleted' ) )
-		        . '">'
-				. $left_cell
-			    . '</td>'
-				. '<td class="diff'
-		             . ( $left_cell == $right_cell ? 'Unmodified' : ( '' == $right_cell ? 'Blank' : 'Inserted' ) )
-		        . '">'
-		        . $right_cell
-			    . '</td>'
-		        . '</tr>';
+			// Define the class for the cells
+			$left_cell_class = ( $left_cell == $right_cell ? 'Unmodified' : ( '' == $left_cell ? 'Blank' : 'Deleted' ) );
+			$right_cell_class = ( $left_cell == $right_cell ? 'Unmodified' : ( '' == $right_cell ? 'Blank' : 'Inserted' ) );
+
+			// Extend the HTML with the new row.
+			$html .= '<tr>
+				<td class="diff' . $left_cell_class . '">' . $left_cell . '</td>
+				<td class="diff' . $right_cell_class . '">' . $right_cell . '</td>
+			</tr>';
 
 		}
 
@@ -337,7 +333,7 @@ class Rock_The_Slackbot_Diff {
 		// Loop over the matching lines, adding them to the HTML.
 		while ( $index < count( $diff ) && $diff[ $index ][1] == $type ) {
 			$html .= '<span>' . htmlspecialchars( $diff[ $index ][0] ) . '</span>' . $separator;
-		    $index ++;
+			$index ++;
 		}
 
 		// Return the HTML.
