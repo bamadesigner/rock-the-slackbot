@@ -154,12 +154,8 @@ $slack-gold: #e8a723;
 
 }
 
-#rock-slackbot-about-mb {
-
-    p {
-        line-height: 19px;
-    }
-
+#rock-slackbot-about-mb p {
+	line-height: 22px;
 }
 
 #rock-slackbot-promote-mb {
@@ -598,6 +594,7 @@ table {
                     border-radius: 0;
                     font-weight: bold;
                     padding: 0;
+                    margin: 0;
                 }
 
                 &.rts-cancel {

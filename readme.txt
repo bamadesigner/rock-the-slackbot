@@ -284,7 +284,7 @@ You can use a filter to change the Slack notification to go to a different Slack
 function filter_rock_the_slackbot_notification( $notification, $notification_event, $event_args ) {
 
    // Only run filter for specific events
-   switch( $notification_event ) {
+   switch ( $notification_event ) {
 
        // This way you can set which events you want to use
        case 'post_published':
