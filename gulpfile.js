@@ -3,7 +3,9 @@ var minify = require('gulp-minify');
 var phpcs = require('gulp-phpcs');
 var rename = require('gulp-rename');
 var sass = require('gulp-sass');
+var sort = require('gulp-sort');
 var watch = require('gulp-watch');
+var wp_pot = require('gulp-wp-pot');
 
 var to_watch = {
 	sass: ['assets/scss/admin-tools.scss'],
@@ -56,6 +58,22 @@ gulp.task('watch',function() {
     gulp.watch(to_watch.sass,['sass']);
 	gulp.watch(to_watch.js,['js']);
 	gulp.watch(to_watch.php,['php']);
+});
+
+// Create the .pot translation file
+gulp.task('translate', function() {
+	gulp.src('**/*.php')
+		.pipe(sort())
+        .pipe(wp_pot({
+        	domain: 'rock-the-slackbot',
+            destFile:'rock-the-slackbot.pot',
+            package: 'Rock_The_Slackbot',
+            bugReport: 'https://github.com/bamadesigner/rock-the-slackbot/issues',
+            lastTranslator: 'Rachel Carden <bamadesigner@gmail.com>',
+            team: 'Rachel Carden <bamadesigner@gmail.com>',
+            headers: false
+        }))
+        .pipe(gulp.dest('languages'));
 });
 
 // Our default tasks
