@@ -30,7 +30,6 @@ $slack-gold: #e8a723;
     .slack-message {
         margin: 0;
     }
-
 }
 
 #rock-slackbot-network-message {
@@ -49,22 +48,16 @@ $slack-gold: #e8a723;
         .dashicons {
             margin: 0 3px 0 0;
         }
-
     }
-
 }
 
 .rock-slackbot-outgoing-webhooks-message {
     padding: 15px 12px;
 }
 
-.rts-dashicons {
-
-    .dashicons {
-        line-height: 0.9;
-        margin: 0 2px 0 0;
-    }
-
+.rts-dashicons .dashicons {
+	line-height: 0.9;
+    margin: 0 2px 0 0;
 }
 
 .rts-icons-link {
@@ -73,7 +66,6 @@ $slack-gold: #e8a723;
     .rts-link-text {
         text-decoration: underline;
     }
-
 }
 
 .wp-core-ui {
@@ -109,7 +101,6 @@ $slack-gold: #e8a723;
             &:hover {
                 background: #13806c;
             }
-
         }
 
         &.rts-button-gold {
@@ -119,7 +110,6 @@ $slack-gold: #e8a723;
             &:hover {
                 background: #de9b12;
             }
-
         }
 
         &.rts-button-red {
@@ -128,20 +118,17 @@ $slack-gold: #e8a723;
             &:hover {
                 background: #b9070f;
             }
-
         }
 
         &:hover {
             background: #2daac1;
             color: #fff;
         }
-
     }
 
     .rts-side-button {
         width: 100%;
     }
-
 }
 
 #rts-add-button-wrapper {
@@ -151,7 +138,6 @@ $slack-gold: #e8a723;
         width: 100%;
         margin: 0;
     }
-
 }
 
 #rock-slackbot-about-mb p {
@@ -180,7 +166,6 @@ $slack-gold: #e8a723;
         margin: 0 4px 2px 0;
         vertical-align: middle;
     }
-
 }
 
 // Inside area of meta boxes
@@ -191,7 +176,6 @@ $slack-gold: #e8a723;
         margin: 0;
         padding: 0;
     }
-
 }
 
 #rock-slackbot-no-webhooks {
@@ -224,9 +208,7 @@ $slack-gold: #e8a723;
             background: $slack-blue;
             color: #fff;
         }
-
     }
-
 }
 
 #rock-slackbot-no-webhook-edit {
@@ -258,9 +240,7 @@ $slack-gold: #e8a723;
             display: inline-block;
             margin: 0 8px;
         }
-
     }
-
 }
 
 // Edit form
@@ -291,7 +271,6 @@ table {
             -webkit-box-sizing: border-box;
             box-sizing: border-box;
         }
-
     }
 
     // Manage webhooks table
@@ -313,7 +292,6 @@ table {
                 font-size: 1.1em;
                 line-height: 1.4em;
             }
-
         }
 
         .index {
@@ -341,13 +319,11 @@ table {
             &.active {
                 background: #3eb890;
             }
-
         }
 
         tr:nth-child(even) > td {
             background: #eaf7fa;
         }
-
     }
 
     // Add/edit webhook table
@@ -371,7 +347,6 @@ table {
                     font-weight: normal;
                     margin: 2px 0 0 0;
                 }
-                
             }
 
             &.rts-field {
@@ -413,7 +388,6 @@ table {
                     .rts-field-required-message {
                         display: block;
                     }
-
                 }
 
                 // When the field is invalid...
@@ -423,7 +397,6 @@ table {
                     .rts-field-invalid-message {
                         display: block;
                     }
-
                 }
 
                 .rts-network-post-types {
@@ -434,9 +407,7 @@ table {
                     input {
                         margin: 5px 0 0 0;
                     }
-
                 }
-
             }
 
             .wordpress-icon-emoji {
@@ -476,7 +447,6 @@ table {
                     &:hover {
                         background: #23282d;
                     }
-
                 }
 
                 &.show-button {
@@ -488,9 +458,7 @@ table {
                     .rts-input-button {
                         display: block;
                     }
-
                 }
-
             }
 
             .rts-field-desc {
@@ -502,15 +470,17 @@ table {
 
             .rts-choice {
                 display: block;
-                float: left;
-                width: 50%;
                 margin: 0 0 4px 0;
 
                 & + .rts-field-desc {
                     padding-top: 5px;
                 }
-
             }
+
+	        .rts-choices .rts-choice {
+		        float: left;
+			    width: 50%;
+	        }
 
             .rts-event-section {
                 vertical-align: middle;
@@ -529,7 +499,6 @@ table {
                     label {
                         display: block;
                     }
-
                 }
 
                 table.rts-event-choice-details {
@@ -538,7 +507,6 @@ table {
                     td {
                         vertical-align: middle;
                     }
-
                 }
 
                 &.rts-choice-is-active {
@@ -546,11 +514,8 @@ table {
                     table.rts-event-choice-details {
                         display: table;
                     }
-
                 }
-
             }
-
         }
 
         tr#edit-rts-notification-events {
@@ -573,11 +538,8 @@ table {
                     .show-if-all-selected {
                         display: block;
                     }
-
                 }
-
             }
-
         }
 
         tr.buttons {
@@ -603,7 +565,6 @@ table {
                     .button {
                         font-size: 12px;
                     }
-
                 }
 
                 &.rts-submit {
@@ -615,15 +576,10 @@ table {
                         padding-right: 0;
                         font-size: 14px;
                     }
-
                 }
-
             }
-
         }
-
     }
-
 }
 
 #rts-popup-test-webhook-url {
@@ -663,7 +619,6 @@ table {
                 span {
                     display: none;
                 }
-
             }
 
             &.button-primary {
@@ -678,15 +633,11 @@ table {
                 &:hover {
                     background-color: darken($slack-green, 6%);
                 }
-
             }
 
             &:first-child {
                 margin-left: 0;
             }
-
         }
-
     }
-
 }

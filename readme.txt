@@ -66,6 +66,10 @@ Please use [the Issues section of this plugin's GitHub repo](https://github.com/
 
 == Changelog ==
 
+= 1.2.0 =
+* Added "When Slack Notifications Fail" setting so users can control whether or not emails are sent when Slack notifications fail.
+* Added 'rock_the_slackbot_error_email' filter which allows you to customize the error "didn't send to Slack" email.
+
 = 1.1.2 =
 * Added notifications for 'When a post is drafted', 'When a post is pending review', and 'When a post is scheduled'.
 * Added notifications for when a comment is added, approved, unapproved, marked as spam, and trashed.
@@ -94,6 +98,10 @@ Please use [the Issues section of this plugin's GitHub repo](https://github.com/
 Plugin launch
 
 == Upgrade Notice ==
+
+= 1.2.0 =
+* Added "When Slack Notifications Fail" setting so users can control whether or not emails are sent when Slack notifications fail.
+* Added 'rock_the_slackbot_error_email' filter which allows you to customize the error "didn't send to Slack" email.
 
 = 1.1.1 =
 * Added process to test webhook URL on settings page.

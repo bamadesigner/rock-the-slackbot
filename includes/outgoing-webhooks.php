@@ -73,7 +73,7 @@ class Rock_The_Slackbot_Outgoing_Webhooks {
 	 * @param   array - $payload - the payload information.
 	 * @return  boolean - whether or not it was sent without error
 	 */
-	function send_payload( $webhook_url, $payload = array() ) {
+	public function send_payload( $webhook_url, $payload = array() ) {
 
 		// Set defaults.
 		$payload_defaults = array(

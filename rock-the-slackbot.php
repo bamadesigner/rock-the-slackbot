@@ -567,6 +567,88 @@ class Rock_The_Slackbot {
 		return true;
 	}
 
+	/**
+	 * Send the "error" email when sending a payload fails.
+	 *
+	 * @since   1.2.0
+	 * @param   string - the email address.
+	 * @param   array - the email arguments.
+	 */
+	public function send_error_email( $email, $args = array() ) {
+
+		// Define the defaults.
+		$defaults = array(
+			'webhook_url'   => '',
+			'payload'       => '',
+		);
+
+		// Merge incoming arguments.
+		$args = wp_parse_args( $args, $defaults );
+
+		// Build email message.
+		$message = __( 'There was an error when trying to post to Slack from WordPress.', 'rock-the-slackbot' );
+
+		// Add payload URL.
+		if ( ! empty( $args['webhook_url'] ) ) {
+			$message .= "\n\n<br /><br /><strong>" . __( 'Payload URL', 'rock-the-slackbot' ) . ':</strong> ' . $args['webhook_url'];
+		}
+
+		// Add payload channel.
+		if ( ! empty( $args['payload']['channel'] ) ) {
+			$message .= "\n<br /><strong>" . __( 'Channel', 'rock-the-slackbot' ) . ':</strong> ' . $args['payload']['channel'];
+		}
+
+		// Fix any links in the general text message.
+		if ( ! empty( $args['payload']['text'] ) ) {
+
+			// Replace Slack links.
+			$args['payload']['text'] = rock_the_slackbot()->unformat_slack_links( $args['payload']['text'] );
+
+			// Add general message.
+			$message .= "\n\n<br /><br /><strong>" . __( 'Message', 'rock-the-slackbot' ) . ':</strong> ' . $args['payload']['text'];
+
+		}
+
+		// Add attachment info.
+		if ( ! empty( $args['payload']['attachments'] ) ) {
+
+			$message .= "\n\n<br /><br /><strong>" . __( 'Attachments', 'rock-the-slackbot' ) . ':</strong>';
+			foreach ( $args['payload']['attachments'] as $attachment ) {
+				$message .= "\n<br />";
+
+				// Add fields.
+				if ( ! empty( $attachment['fields'] ) ) {
+					foreach ( $attachment['fields'] as $field ) {
+						$message .= "\n\t<br />&nbsp;&nbsp;&nbsp;&nbsp;<strong>" . $field['title'] . ':</strong> ' . $field['value'];
+					}
+				}
+			}
+		}
+
+		// Filter the email pieces.
+		$email_pieces = apply_filters( 'rock_the_slackbot_error_email', array(
+			'to'        => $email,
+			'subject'   => __( 'WordPress to Slack error', 'rock-the-slackbot' ),
+			'message'   => $message,
+		), $args );
+
+		// Make sure we still have email pieces.
+		if ( ! empty( $email_pieces['to'] ) && ! empty( $email_pieces['subject'] ) ) {
+
+			// Set email to be HTML.
+			add_filter( 'wp_mail_content_type', 'rock_the_slackbot_set_html_content_type' );
+
+			// Send email notification to the admin.
+			$send_email = wp_mail( $email_pieces['to'], $email_pieces['subject'], isset( $email_pieces['message'] ) ? $email_pieces['message'] : '' );
+
+			// Reset content-type to avoid conflicts.
+			remove_filter( 'wp_mail_content_type',  'rock_the_slackbot_set_html_content_type' );
+
+		}
+
+		return $send_email;
+	}
+
 }
 
 /**

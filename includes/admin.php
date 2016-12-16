@@ -559,7 +559,7 @@ class Rock_The_Slackbot_Admin {
 
 					?>
 					<tr>
-						<td class="rts-label">WebHook ID</td>
+						<td class="rts-label"><?php _e( 'WebHook ID', 'rock-the-slackbot' ); ?></td>
 						<td class="rts-field lighter"><?php echo $webhook['ID']; ?><span class="rts-field-desc"><?php _e( 'This information is for administrative purposes.', 'rock-the-slackbot' ); ?></span></td>
 					</tr>
 					<tr>
@@ -696,16 +696,24 @@ class Rock_The_Slackbot_Admin {
 				<tr>
 					<td class="rts-label"><?php _e( 'Exclude Post Types From Notifications', 'rock-the-slackbot' ); ?></td>
 					<td class="rts-field">
-						<?php
+						<span class="rts-choices">
+							<?php
 
-						$pt_index = 0;
-						foreach ( $sorted_post_types as $pt_name => $pt_label ) :
-							$pt_field_id = "rts-webhook-post-type-{$pt_index}";
-							?><span class="rts-choice"><input id="<?php echo $pt_field_id; ?>" class="rts-input rts-input-checkbox" type="checkbox" name="rock_the_slackbot_outgoing_webhooks[exclude_post_types][]" value="<?php echo $pt_name; ?>"<?php checked( ! empty( $webhook['exclude_post_types'] ) && in_array( $pt_name, $webhook['exclude_post_types'] ) ); ?> /> <label for="<?php echo $pt_field_id; ?>"> <?php echo $pt_label; ?></label></span><?php
-							$pt_index++;
-						endforeach;
+							$pt_index = 0;
+							foreach ( $sorted_post_types as $pt_name => $pt_label ) :
 
-						?>
+								$pt_field_id = "rts-webhook-post-type-{$pt_index}";
+
+								?>
+								<span class="rts-choice"><input id="<?php echo $pt_field_id; ?>" class="rts-input rts-input-checkbox" type="checkbox" name="rock_the_slackbot_outgoing_webhooks[exclude_post_types][]" value="<?php echo $pt_name; ?>"<?php checked( ! empty( $webhook['exclude_post_types'] ) && in_array( $pt_name, $webhook['exclude_post_types'] ) ); ?> /> <label for="<?php echo $pt_field_id; ?>"> <?php echo $pt_label; ?></label></span>
+								<?php
+
+								$pt_index++;
+
+							endforeach;
+
+							?>
+						</span>
 						<span class="rts-field-desc"><?php _e( 'By default, all post types will be included when sending notifications for content related events. Use this setting to exclude certain post types from your notifications.', 'rock-the-slackbot' ); ?></span>
 						<?php
 
@@ -726,6 +734,28 @@ class Rock_The_Slackbot_Admin {
 						endif;
 
 						?>
+					</td>
+				</tr>
+				<?php
+
+				/*
+				 * Figure out Slack error settings to use.
+				 *
+				 * If "send_error_email" not set, then define true as default.
+				 *
+				 * If no email is defined, use admin email as default.
+				 */
+				$send_error_email = isset( $webhook['send_error_email'] ) && $webhook['send_error_email'] > 0;
+				$send_error_email_address = ! empty( $webhook['send_error_email_address'] ) ? $webhook['send_error_email_address'] : get_bloginfo( 'admin_email' );
+
+				?>
+				<tr>
+					<td class="rts-label"><?php _e( 'When Slack Notifications Fail', 'rock-the-slackbot' ); ?></td>
+					<td class="rts-field">
+						<span class="rts-choice" style="margin-top:6px;"><input id="rts-send-error-email" class="rts-input rts-input-checkbox" type="checkbox" name="rock_the_slackbot_outgoing_webhooks[send_error_email]" value="1"<?php checked( $send_error_email ); ?> /> <label for="rts-send-error-email"><?php _e( 'Send an email when a Slack notification fails', 'rock-the-slackbot' ); ?></label></span>
+						<label for="rts-send-error-email" style="display:block;margin:15px 0 5px 0;"><strong><?php _e( 'Send To Which Email Address(es)?', 'rock-the-slackbot' ); ?></strong></label>
+						<input id="rts-send-error-email-address" class="rts-input rts-input-text" type="text" name="rock_the_slackbot_outgoing_webhooks[send_error_email_address]" value="<?php echo esc_attr( $send_error_email_address ); ?>"/>
+						<span class="rts-field-desc"><?php printf( __( 'When enabled, will send an email message when a %s notification fails. Send to multiple email addresses by separating the addresses with commas.', 'rock-the-slackbot' ), 'Slack' ); ?></span>
 					</td>
 				</tr>
 				<tr id="edit-rts-notification-events">
