@@ -61,7 +61,7 @@ class Rock_The_Slackbot_Admin {
 	 * @access  private
 	 * @var     string|false
 	 */
-	private $edit_webhook;
+	private $edit_webhook = false;
 
 	/**
 	 * Will be true if add page
@@ -71,7 +71,7 @@ class Rock_The_Slackbot_Admin {
 	 * @access  private
 	 * @var     boolean
 	 */
-	private $add_webhook;
+	private $add_webhook = false;
 
 	/**
 	 * Takes care of admin shenanigans.
@@ -259,21 +259,27 @@ class Rock_The_Slackbot_Admin {
 	 * @since   1.0.0
 	 */
 	public function add_settings_meta_boxes() {
+		global $hook_suffix;
 
-		// About this Plugin.
-		add_meta_box( 'rock-slackbot-about-mb', __( 'About this Plugin', 'rock-the-slackbot' ), array( $this, 'print_settings_meta_boxes' ), $this->tools_page_id, 'side', 'core', 'about-plugin' );
-
-		// Spread the Love.
-		add_meta_box( 'rock-slackbot-promote-mb', __( 'Spread the Love', 'rock-the-slackbot' ), array( $this, 'print_settings_meta_boxes' ), $this->tools_page_id, 'side', 'core', 'promote' );
+		// Only need to worry about it on our admin pages.
+		if ( ! in_array( $hook_suffix, array( $this->network_settings_page_id, $this->tools_page_id ) ) ) {
+			return;
+		}
 
 		// If we're viewing an add or edit outgoing webhook page.
 		if ( $this->edit_webhook || $this->add_webhook ) {
 
-			// Add/Edit Outgoing WebHook.
+			// Add/Edit Outgoing webhook.
 			$meta_box_title = $this->edit_webhook ? __( 'Edit Outgoing WebHook', 'rock-the-slackbot' ) : __( 'Add Outgoing WebHook', 'rock-the-slackbot' );
 			add_meta_box( 'rock-slackbot-edit-outgoing-webhook-mb', $meta_box_title, array( $this, 'print_settings_meta_boxes' ), $this->tools_page_id, 'normal', 'core', 'edit-outgoing-webhook' );
 
 		} else {
+
+			// About this Plugin.
+			add_meta_box( 'rock-slackbot-about-mb', __( 'About this Plugin', 'rock-the-slackbot' ), array( $this, 'print_settings_meta_boxes' ), $this->tools_page_id, 'side', 'core', 'about-plugin' );
+
+			// Spread the Love.
+			add_meta_box( 'rock-slackbot-promote-mb', __( 'Spread the Love', 'rock-the-slackbot' ), array( $this, 'print_settings_meta_boxes' ), $this->tools_page_id, 'side', 'core', 'promote' );
 
 			// Outgoing WebHooks.
 			add_meta_box( 'rock-slackbot-outgoing-webhooks-mb', __( 'Slack Notifications', 'rock-the-slackbot' ), array( $this, 'print_settings_meta_boxes' ), $this->tools_page_id, 'normal', 'core', 'outgoing-webhooks' );
@@ -341,16 +347,16 @@ class Rock_The_Slackbot_Admin {
 		$outgoing_webhooks = $this->get_outgoing_webhooks_setting( $this->is_network_admin );
 
 		// If we have webhooks, print an explanatory messages.
-		if ( ! empty( $outgoing_webhooks ) ) {
+		if ( ! empty( $outgoing_webhooks ) ) :
 
 			?>
 			<div class="rock-slackbot-outgoing-webhooks-message"><?php printf( __( '%1$sSlack uses incoming webhooks%2$s as a simple way to pull in messages from external sources. Use the settings below to create outgoing webhooks which will send notifications following numerous WordPress events straight to a channel or direct message in your Slack account.', 'rock-the-slackbot' ), '<a href="https://api.slack.com/incoming-webhooks" target="_blank">', '</a>' ); ?></div>
 			<?php
 
-		}
+		endif;
 
 		// Print network message(s).
-		if ( $this->is_network_admin ) {
+		if ( $this->is_network_admin ) :
 
 			?>
 			<div id="rock-slackbot-network-message">
@@ -358,12 +364,12 @@ class Rock_The_Slackbot_Admin {
 			</div>
 			<?php
 
-		} elseif ( function_exists( 'is_plugin_active_for_network' )
-			&& is_plugin_active_for_network( ROCK_THE_SLACKBOT_PLUGIN_FILE ) ) {
+		elseif ( function_exists( 'is_plugin_active_for_network' )
+			&& is_plugin_active_for_network( ROCK_THE_SLACKBOT_PLUGIN_FILE ) ) :
 
 			// Get network setting.
 			$network_setting = $this->get_outgoing_webhooks_setting( true );
-			if ( ! empty( $network_setting ) ) {
+			if ( ! empty( $network_setting ) ) :
 
 				?>
 				<div id="rock-slackbot-network-message">
@@ -372,19 +378,19 @@ class Rock_The_Slackbot_Admin {
 
 						_e( 'This plugin is activated network-wide and has notifications that are setup for, and running on, this site.', 'rock-the-slackbot' );
 
-						if ( current_user_can( 'manage_network' ) ) {
+						if ( current_user_can( 'manage_network' ) ) :
 							?> <a href="<?php echo add_query_arg( array( 'page' => 'rock-the-slackbot' ), network_admin_url( 'settings.php' ) ); ?>"><?php _e( 'Manage network settings', 'rock-the-slackbot' ); ?></a><?php
-						}
+						endif;
 
 					?></p>
 				</div>
 				<?php
 
-			}
-		}
+			endif;
+		endif;
 
 		// If we have hooks, print the table.
-		if ( ! $outgoing_webhooks ) {
+		if ( ! $outgoing_webhooks ) :
 
 			?>
 			<div id="rock-slackbot-no-webhooks">
@@ -392,7 +398,7 @@ class Rock_The_Slackbot_Admin {
 			</div>
 			<?php
 
-		} else {
+		else :
 
 			?>
 			<table class="rock-slackbot rock-slackbot-outgoing-webhooks" cellpadding="0" cellspacing="0" border="0">
@@ -411,18 +417,18 @@ class Rock_The_Slackbot_Admin {
 
 					// Print a row for each hook.
 					$hook_index = 1;
-					foreach ( $outgoing_webhooks as $hook ) {
+					foreach ( $outgoing_webhooks as $hook ) :
 
 						// What's the status?
 						$hook_status = isset( $hook['deactivate'] ) && $hook['deactivate'] > 0 ? 'inactive' : 'active';
 
 						// Figure out how many events are active.
 						$active_events_count = 0;
-						foreach ( $hook['events'] as $event ) {
-							if ( isset( $event['active'] ) && 1 == $event['active'] ) {
+						foreach ( $hook['events'] as $event ) :
+							if ( isset( $event['active'] ) && 1 == $event['active'] ) :
 								$active_events_count++;
-							}
-						}
+							endif;
+						endforeach;
 
 						?>
 						<tr class="view">
@@ -435,11 +441,11 @@ class Rock_The_Slackbot_Admin {
 							<td class="channel">
 								<?php
 
-								if ( ! empty( $hook['channel'] ) ) {
+								if ( ! empty( $hook['channel'] ) ) :
 									echo $hook['channel'];
-								} else {
+								else :
 									?><em><?php _e( 'Uses default channel', 'rock-the-slackbot' ); ?></em><?php
-								}
+								endif;
 
 								?>
 							</td>
@@ -449,7 +455,7 @@ class Rock_The_Slackbot_Admin {
 
 						$hook_index++;
 
-					}
+					endforeach;
 
 					?>
 				</tbody>
@@ -459,7 +465,7 @@ class Rock_The_Slackbot_Admin {
 			</div>
 			<?php
 
-		}
+		endif;
 	}
 
 	/**
@@ -475,7 +481,10 @@ class Rock_The_Slackbot_Admin {
 
 		// If we're adding and we have a value stored in transient from error processing.
 		if ( $this->add_webhook ) {
+
+			// Get the stored transient value.
 			$webhook_transient = rock_the_slackbot()->is_network_active ? get_site_transient( 'rock_the_slackbot_add_outgoing_webhook' ) : get_transient( 'rock_the_slackbot_add_outgoing_webhook' );
+
 			if ( false !== $webhook_transient ) {
 				$webhook = $webhook_transient;
 			}
@@ -506,9 +515,9 @@ class Rock_The_Slackbot_Admin {
 
 			// Sort alphabetically.
 			$sorted_post_types = array();
-			foreach ( $post_types as $pt_name => $pt ) {
+			foreach ( $post_types as $pt_name => $pt ) :
 				$sorted_post_types[ $pt_name ] = $pt->label;
-			}
+			endforeach;
 			asort( $sorted_post_types );
 
 			// Get webhook events.
@@ -855,6 +864,9 @@ class Rock_The_Slackbot_Admin {
 		// Should we include the form?
 		$print_form = $this->edit_webhook || $this->add_webhook;
 
+		// Do we want the side column?
+		$inc_side_column = ! $this->edit_webhook && ! $this->add_webhook;
+
 		?>
 		<div class="wrap">
 			<h1><?php echo esc_html( get_admin_page_title() ); ?></h1>
@@ -863,7 +875,7 @@ class Rock_The_Slackbot_Admin {
 			settings_errors();
 
 			// Show deleted webhook message or error deleting webhook message.
-			if ( isset( $_REQUEST['webhook_deleted'] ) && 1 == $_REQUEST['webhook_deleted'] ) {
+			if ( isset( $_REQUEST['webhook_deleted'] ) && 1 == $_REQUEST['webhook_deleted'] ) :
 
 				?>
 				<div id="setting-error-settings_updated" class="updated settings-error notice is-dismissible below-h2">
@@ -872,7 +884,7 @@ class Rock_The_Slackbot_Admin {
 				</div>
 				<?php
 
-			} elseif ( isset( $_REQUEST['error_deleting_webhook'] ) && 1 == $_REQUEST['error_deleting_webhook'] ) {
+			elseif ( isset( $_REQUEST['error_deleting_webhook'] ) && 1 == $_REQUEST['error_deleting_webhook'] ) :
 
 				?>
 				<div id="setting-error-settings_error" class="error settings-error notice is-dismissible below-h2">
@@ -881,7 +893,7 @@ class Rock_The_Slackbot_Admin {
 				</div>
 				<?php
 
-			}
+			endif;
 
 			?>
 			<div id="rock-slackbot-intro-message">
@@ -905,31 +917,41 @@ class Rock_The_Slackbot_Admin {
 
 			?>
 			<div id="poststuff">
-				<div id="post-body" class="metabox-holder columns-2">
-					<div id="postbox-container-1" class="postbox-container">
-						<div id="side-sortables" class="meta-box-sortables">
-							<?php
+				<div id="post-body" class="metabox-holder<?php echo $inc_side_column ? ' columns-2' : ''; ?>">
+					<?php
 
-							// If we're viewing an edit or add page, add a link to the main page.
-							if ( $this->edit_webhook || $this->add_webhook ) {
+					if ( $inc_side_column ) :
 
-								?>
-								<a id="rock-slackbot-back-button" class="button button-primary rts-dashicons rts-button rts-side-button" href="<?php echo $this->settings_page; ?>"><span class="dashicons dashicons-arrow-left-alt"></span> <?php _e( 'Back to Main Settings', 'rock-the-slackbot' ); ?></a>
-								<button type="submit" form="rock-slackbot-edit-outgoing-webhook-form" name="rock_slackbot_save_outgoing_webhook" class="button button-primary rts-dashicons rts-button rts-side-button rts-button-green" value="<?php _e( 'Save Webhook', 'rock-the-slackbot' ); ?>"><span class="dashicons dashicons-edit"></span> <?php _e( 'Save Webhook', 'rock-the-slackbot' ); ?></button>
+						?>
+						<div id="postbox-container-1" class="postbox-container">
+							<div id="side-sortables" class="meta-box-sortables">
 								<?php
 
-							}
+								// If we're viewing an edit or add page, add a link to the main page.
+								if ( $this->edit_webhook || $this->add_webhook ) :
 
-							do_meta_boxes( $this->tools_page_id, 'side', array() );
+									?>
+									<a id="rock-slackbot-back-button" class="button button-primary rts-dashicons rts-button rts-side-button" href="<?php echo $this->settings_page; ?>"><span class="dashicons dashicons-arrow-left-alt"></span> <?php _e( 'Back to Main Settings', 'rock-the-slackbot' ); ?></a>
+									<button type="submit" form="rock-slackbot-edit-outgoing-webhook-form" name="rock_slackbot_save_outgoing_webhook" class="button button-primary rts-dashicons rts-button rts-side-button rts-button-green" value="<?php _e( 'Save Webhook', 'rock-the-slackbot' ); ?>"><span class="dashicons dashicons-edit"></span> <?php _e( 'Save Webhook', 'rock-the-slackbot' ); ?></button>
+									<?php
 
-							// If we're viewing an edit page, add a delete button.
-							if ( $this->edit_webhook ) {
-								?><a id="rock-slackbot-delete-button" class="button button-primary rts-dashicons rts-button rts-side-button rts-button-red" href="<?php echo wp_nonce_url( add_query_arg( 'delete', $this->edit_webhook, $this->settings_page ), 'rts_delete_outgoing_webhook' ); ?>"><span class="dashicons dashicons-trash"></span> <?php _e( 'Delete This Webhook', 'rock-the-slackbot' ); ?></a><?php
-							}
+								endif;
 
-							?>
+								do_meta_boxes( $this->tools_page_id, 'side', array() );
+
+								// If we're viewing an edit page, add a delete button.
+								if ( $this->edit_webhook ) :
+									?><a id="rock-slackbot-delete-button" class="button button-primary rts-dashicons rts-button rts-side-button rts-button-red" href="<?php echo wp_nonce_url( add_query_arg( 'delete', $this->edit_webhook, $this->settings_page ), 'rts_delete_outgoing_webhook' ); ?>"><span class="dashicons dashicons-trash"></span> <?php _e( 'Delete This Webhook', 'rock-the-slackbot' ); ?></a><?php
+								endif;
+
+								?>
+							</div>
 						</div>
-					</div>
+						<?php
+
+					endif;
+
+					?>
 					<div id="postbox-container-2" class="postbox-container">
 						<div id="normal-sortables" class="meta-box-sortables">
 							<?php do_meta_boxes( $this->tools_page_id, 'normal', array() ); ?>

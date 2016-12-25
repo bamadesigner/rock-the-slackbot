@@ -27,8 +27,6 @@ if ( ! defined( 'WPINC' ) ) {
  *
  * Add some identifiable info to the "Exclude Post Types" life
  *      for when CPTs share the same label (from Matt).
- *
- * Add setting and filter to disable error emails.
  */
 
 // If you define them, will they be used?
@@ -570,6 +568,7 @@ class Rock_The_Slackbot {
 	/**
 	 * Send the "error" email when sending a payload fails.
 	 *
+	 * @access  public
 	 * @since   1.2.0
 	 * @param   string - the email address.
 	 * @param   array - the email arguments.
