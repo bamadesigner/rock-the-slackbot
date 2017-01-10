@@ -138,7 +138,7 @@ class Rock_The_Slackbot_Outgoing_Webhooks {
 		$payload = apply_filters( 'rock_the_slackbot_outgoing_webhook_payload', $payload, $webhook_url );
 
 		// If returned false or empty, don't send the payload.
-		if ( false === $payload || empty( $payload ) ) {
+		if ( empty( $payload ) ) {
 			return false;
 		}
 

@@ -229,7 +229,7 @@ class Rock_The_Slackbot_Hooks {
 			$notification_pieces = apply_filters( 'rock_the_slackbot_notification', $notification_pieces, $notification_event, $event_args );
 
 			// If returned false or empty, don't send the notification.
-			if ( false === $notification_pieces || empty( $notification_pieces ) ) {
+			if ( empty( $notification_pieces ) ) {
 				return false;
 			}
 
