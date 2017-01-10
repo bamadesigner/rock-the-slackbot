@@ -7,7 +7,7 @@ var sort = require('gulp-sort');
 var watch = require('gulp-watch');
 var wp_pot = require('gulp-wp-pot');
 
-var to_watch = {
+var src = {
 	sass: ['assets/scss/admin-tools.scss'],
 	js: ['assets/js/admin-tools.js'],
 	php: ['**/*.php','!vendor/**','!node_modules/**']
@@ -20,7 +20,7 @@ var dest = {
 
 // Compile the SASS
 gulp.task('sass',function() {
-	gulp.src(to_watch.sass)
+	gulp.src(src.sass)
 		.pipe(sass({outputStyle:'compressed'}))
 		.pipe(rename({
 			suffix: '.min'
@@ -30,7 +30,7 @@ gulp.task('sass',function() {
 
 // Minify the JS
 gulp.task('js',function() {
-	gulp.src(to_watch.js)
+	gulp.src(src.js)
 		.pipe(minify({
 			mangle: false,
 			ext:{
@@ -45,7 +45,7 @@ gulp.task('compile',['sass','js']);
 
 // Check our PHP
 gulp.task('php',function() {
-	gulp.src(to_watch.php)
+	gulp.src(src.php)
 		.pipe(phpcs({
 			bin: 'vendor/bin/phpcs',
 			standard: 'WordPress-Core'
@@ -55,14 +55,14 @@ gulp.task('php',function() {
 
 // Watch the files
 gulp.task('watch',function() {
-    gulp.watch(to_watch.sass,['sass']);
-	gulp.watch(to_watch.js,['js']);
-	gulp.watch(to_watch.php,['php']);
+    gulp.watch(src.sass,['sass']);
+	gulp.watch(src.js,['js']);
+	gulp.watch(src.php,['php']);
 });
 
 // Create the .pot translation file
 gulp.task('translate', function() {
-	gulp.src('**/*.php')
+	gulp.src(src.php)
 		.pipe(sort())
         .pipe(wp_pot({
         	domain: 'rock-the-slackbot',
@@ -73,7 +73,7 @@ gulp.task('translate', function() {
             team: 'Rachel Carden <bamadesigner@gmail.com>',
             headers: false
         }))
-        .pipe(gulp.dest('languages'));
+        .pipe(gulp.dest('languages/rock-the-slackbot.pot'));
 });
 
 // Our default tasks

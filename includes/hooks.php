@@ -322,7 +322,8 @@ class Rock_The_Slackbot_Hooks {
 		$core_update_version = ! empty( $update_wordpress->version ) ? $update_wordpress->version : false;
 
 		// Create general message for the notification.
-		$general_message = sprintf( __( 'A WordPress core update is available on the %1$s website at <%2$s>.', 'rock-the-slackbot' ),
+		$general_message = sprintf( __( 'A %1$s core update is available on the %2$s website at <%3$s>.', 'rock-the-slackbot' ),
+			'WordPress',
 			$site_name,
 			$site_url
 		);
@@ -355,7 +356,7 @@ class Rock_The_Slackbot_Hooks {
 			array(
 				'fallback'      => $general_message,
 				'text'          => null,
-				'title'         => 'Update WordPress Core',
+				'title'         => sprintf( __( 'Update %s Core', 'rock-the-slackbot' ), 'WordPress' ),
 				'title_link'    => $core_update_url,
 				'author_name'   => $current_user->display_name,
 				'author_link'   => get_author_posts_url( $current_user->ID ),
@@ -424,8 +425,8 @@ class Rock_The_Slackbot_Hooks {
 
 		// Create general message for the notification.
 		$general_message = sprintf(
-			__( 'The following WordPress %1$s an update available on the %2$s website at <%3$s>.', 'rock-the-slackbot' ),
-			( 1 == $update_count ? 'plugin has' : 'plugins have' ),
+			_n( 'The following %1$s plugin has an update available on the %2$s website at <%3$s>.', 'The following %1$s plugins have an update available on the %2$s website at <%3$s>.', $update_count, 'rock-the-slackbot' ),
+			'WordPress',
 			$site_name,
 			$site_url
 		);
@@ -573,8 +574,9 @@ class Rock_The_Slackbot_Hooks {
 		$site_name = get_bloginfo( 'name' );
 
 		// Create general message for the notification.
-		$general_message = sprintf( __( 'The following WordPress %1$s an update available on the %2$s website at <%3$s>.', 'rock-the-slackbot' ),
-			( 1 == $update_count ? 'theme has' : 'themes have' ),
+		$general_message = sprintf(
+			_n( 'The following %1$s theme has an update available on the %2$s website at <%3$s>.', 'The following %1$s themes have an update available on the %2$s website at <%3$s>.', $update_count, 'rock-the-slackbot' ),
+			'WordPress',
 			$site_name,
 			$site_url
 		);
@@ -2048,7 +2050,7 @@ class Rock_The_Slackbot_Hooks {
 
 			// Store for fields.
 			$fields[] = array(
-				'title' => __( 'WordPress Query', 'rock-the-slackbot' ),
+				'title' => sprintf( __( '%s Query', 'rock-the-slackbot' ), 'WordPress' ),
 				'value' => $wp_query_string,
 				'short' => false,
 			);
@@ -2066,7 +2068,7 @@ class Rock_The_Slackbot_Hooks {
 
 			// Store for fields.
 			$fields[] = array(
-				'title' => __( 'MySQL Request', 'rock-the-slackbot' ),
+				'title' => sprintf( __( '%s Request', 'rock-the-slackbot' ), 'MySQL' ),
 				'value' => $mysql_request,
 				'short' => false,
 			);

@@ -79,7 +79,7 @@ class Rock_The_Slackbot_Outgoing_Webhooks {
 		$payload_defaults = array(
 			'channel'       => null,
 			'username'      => get_bloginfo( 'name' ),
-			'text'          => __( 'This is a WordPress to Slack message.', 'rock-the-slackbot' ),
+			'text'          => sprintf( __( 'This is a %1$s to %2$s message.', 'rock-the-slackbot' ), 'WordPress', 'Slack' ),
 			'icon_emoji'	=> null,
 			'icon_url'		=> trailingslashit( plugin_dir_url( dirname( __FILE__ ) ) ) . 'assets/images/wordpress-icon-emoji.png',
 			'attachments'   => array(),
@@ -183,7 +183,7 @@ class Rock_The_Slackbot_Outgoing_Webhooks {
 				&& '200' != $slack_response['response']['code'] ) {
 
 				// Set an error.
-				$slack_errors->add( 'slack_outgoing_webhook_error', __( 'The payload did not send to Slack.', 'rock-the-slackbot' ) );
+				$slack_errors->add( 'slack_outgoing_webhook_error', sprintf( __( 'The payload did not send to %s.', 'rock-the-slackbot' ), 'Slack' ) );
 
 			}
 		}

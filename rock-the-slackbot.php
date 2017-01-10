@@ -280,24 +280,24 @@ class Rock_The_Slackbot {
 				'label' => __( 'Updates', 'rock-the-slackbot' ),
 				'events' => array(
 					'core_update_available' => array(
-						'label' => __( 'When a WordPress core update is available', 'rock-the-slackbot' ),
-						'default' => 1,
+						'label'     => sprintf( __( 'When a %s core update is available', 'rock-the-slackbot' ), 'WordPress' ),
+						'default'   => 1,
 					),
 					'core_updated' => array(
-						'label' => __( 'When WordPress core is updated', 'rock-the-slackbot' ),
-						'default' => 1,
+						'label'     => sprintf( __( 'When %s core is updated', 'rock-the-slackbot' ), 'WordPress' ),
+						'default'   => 1,
 					),
 					'plugin_update_available' => array(
-						'label' => __( 'When a plugin update is available', 'rock-the-slackbot' ),
+						'label'     => __( 'When a plugin update is available', 'rock-the-slackbot' ),
 					),
 					'plugin_updated' => array(
-						'label' => __( 'When a plugin is updated', 'rock-the-slackbot' ),
+						'label'     => __( 'When a plugin is updated', 'rock-the-slackbot' ),
 					),
 					'theme_update_available' => array(
-						'label' => __( 'When a theme update is available', 'rock-the-slackbot' ),
+						'label'     => __( 'When a theme update is available', 'rock-the-slackbot' ),
 					),
 					'theme_updated' => array(
-						'label' => __( 'When a theme is updated', 'rock-the-slackbot' ),
+						'label'     => __( 'When a theme is updated', 'rock-the-slackbot' ),
 					),
 				),
 			),
@@ -586,7 +586,7 @@ class Rock_The_Slackbot {
 		$args = wp_parse_args( $args, $defaults );
 
 		// Build email message.
-		$message = __( 'There was an error when trying to post to Slack from WordPress.', 'rock-the-slackbot' );
+		$message = sprintf( __( 'There was an error when trying to post to %1$s from %2$s.', 'rock-the-slackbot' ), 'Slack', 'WordPress' );
 
 		// Add payload URL.
 		if ( ! empty( $args['webhook_url'] ) ) {
@@ -628,7 +628,7 @@ class Rock_The_Slackbot {
 		// Filter the email pieces.
 		$email_pieces = apply_filters( 'rock_the_slackbot_error_email', array(
 			'to'        => $email,
-			'subject'   => __( 'WordPress to Slack error', 'rock-the-slackbot' ),
+			'subject'   => sprintf( __( '%1$s to %2$s error', 'rock-the-slackbot' ), 'WordPress', 'Slack' ),
 			'message'   => $message,
 		), $args );
 
