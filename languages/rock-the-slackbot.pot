@@ -11,371 +11,371 @@ msgstr ""
 "Language-Team: Rachel Carden <bamadesigner@gmail.com>\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: includes/admin.php:168
+#: includes/admin.php:171
 msgid "Manage"
 msgstr ""
 
-#: includes/admin.php:187, includes/admin.php:187, includes/admin.php:201, includes/admin.php:202, includes/admin.php:301
+#: includes/admin.php:191, includes/admin.php:191, includes/admin.php:205, includes/admin.php:206, includes/admin.php:308
 msgid "Rock The %s"
 msgstr ""
 
-#: includes/admin.php:235
+#: includes/admin.php:242
 msgid "Are you sure you want to delete this webhook?"
 msgstr ""
 
-#: includes/admin.php:237
+#: includes/admin.php:244
 msgid "We tried to send a message to %s and it failed."
 msgstr ""
 
-#: includes/admin.php:238
+#: includes/admin.php:245
 msgid "Success! We rocked the %s and your webhook passed the test."
 msgstr ""
 
-#: includes/admin.php:239
+#: includes/admin.php:246
 msgid "Hmm. That's weird. There wasn't an error but the test message did not send. Please try again."
 msgstr ""
 
-#: includes/admin.php:241, includes/admin.php:965
+#: includes/admin.php:248, includes/admin.php:972
 msgid "Send a test message"
 msgstr ""
 
-#: includes/admin.php:242
+#: includes/admin.php:249
 msgid "Send another test message"
 msgstr ""
 
-#: includes/admin.php:243
+#: includes/admin.php:250
 msgid "Close"
 msgstr ""
 
-#: includes/admin.php:244, includes/admin.php:834, includes/admin.php:964
+#: includes/admin.php:251, includes/admin.php:841, includes/admin.php:971
 msgid "Cancel"
 msgstr ""
 
-#: includes/admin.php:264
+#: includes/admin.php:271
 msgid "About this Plugin"
 msgstr ""
 
-#: includes/admin.php:267
+#: includes/admin.php:274
 msgid "Spread the Love"
 msgstr ""
 
-#: includes/admin.php:273
+#: includes/admin.php:280
 msgid "Edit Outgoing WebHook"
 msgstr ""
 
-#: includes/admin.php:273
+#: includes/admin.php:280
 msgid "Add Outgoing WebHook"
 msgstr ""
 
-#: includes/admin.php:279
+#: includes/admin.php:286
 msgid "%s Notifications"
 msgstr ""
 
-#: includes/admin.php:302
+#: includes/admin.php:309
 msgid "Version"
 msgstr ""
 
-#: includes/admin.php:302
+#: includes/admin.php:309
 msgid "Author"
 msgstr ""
 
-#: includes/admin.php:311, includes/admin.php:311
+#: includes/admin.php:318, includes/admin.php:318
 msgid "Give the plugin a good rating"
 msgstr ""
 
-#: includes/admin.php:312, includes/admin.php:312
+#: includes/admin.php:319, includes/admin.php:319
 msgid "Follow %1$s on %2$s"
 msgstr ""
 
-#: includes/admin.php:313
+#: includes/admin.php:320
 msgid "Donate a few bucks to the plugin"
 msgstr ""
 
-#: includes/admin.php:313
+#: includes/admin.php:320
 msgid "Donate"
 msgstr ""
 
-#: includes/admin.php:313
+#: includes/admin.php:320
 msgid "Buy me a coffee"
 msgstr ""
 
-#: includes/admin.php:347
+#: includes/admin.php:354
 msgid "%1$s%2$s uses incoming webhooks%3$s as a simple way to pull in messages from external sources. Use the settings below to create outgoing webhooks which will send notifications following numerous %4$s events straight to a channel or direct message in your %5$s account."
 msgstr ""
 
-#: includes/admin.php:357
+#: includes/admin.php:364
 msgid "All notifications created in the network admin will be setup for every site on your network."
 msgstr ""
 
-#: includes/admin.php:373
+#: includes/admin.php:380
 msgid "This plugin is activated network-wide and has notifications that are setup for, and running on, this site."
 msgstr ""
 
-#: includes/admin.php:376
+#: includes/admin.php:383
 msgid "Manage network settings"
 msgstr ""
 
-#: includes/admin.php:391
+#: includes/admin.php:398
 msgid "Let's get this party started"
 msgstr ""
 
-#: includes/admin.php:403, includes/admin.php:606
+#: includes/admin.php:410, includes/admin.php:613
 msgid "Name of Webhook"
 msgstr ""
 
-#: includes/admin.php:404
+#: includes/admin.php:411
 msgid "%s Account"
 msgstr ""
 
-#: includes/admin.php:405
+#: includes/admin.php:412
 msgid "%s Channel"
 msgstr ""
 
-#: includes/admin.php:406
+#: includes/admin.php:413
 msgid "Events"
 msgstr ""
 
-#: includes/admin.php:431
+#: includes/admin.php:438
 msgid "This outgoing webhook is %s"
 msgstr ""
 
-#: includes/admin.php:441
+#: includes/admin.php:448
 msgid "Uses default channel"
 msgstr ""
 
-#: includes/admin.php:458, includes/admin.php:492
+#: includes/admin.php:465, includes/admin.php:499
 msgid "Add A Webhook"
 msgstr ""
 
-#: includes/admin.php:489
+#: includes/admin.php:496
 msgid "Uh-oh. Someone doesn't like this URL. Here are some other ways to rock the %s"
 msgstr ""
 
-#: includes/admin.php:491, includes/admin.php:917
+#: includes/admin.php:498, includes/admin.php:924
 msgid "Back to Main Settings"
 msgstr ""
 
-#: includes/admin.php:534
+#: includes/admin.php:541
 msgid "%1$s%2$s uses incoming webhooks%3$s as a simple way to pull in messages from external sources. Use the settings below to customize an outgoing webhook which will send notifications following selected %4$s events straight to the provided channel(s) or direct message(s) in your %5$s account."
 msgstr ""
 
-#: includes/admin.php:562
+#: includes/admin.php:569
 msgid "WebHook ID"
 msgstr ""
 
-#: includes/admin.php:563
+#: includes/admin.php:570
 msgid "This information is for administrative purposes."
 msgstr ""
 
-#: includes/admin.php:566
+#: includes/admin.php:573
 msgid "Date Created"
 msgstr ""
 
-#: includes/admin.php:576
+#: includes/admin.php:583
 msgid "Date Last Modified"
 msgstr ""
 
-#: includes/admin.php:602
+#: includes/admin.php:609
 msgid "This field is required."
 msgstr ""
 
-#: includes/admin.php:616
+#: includes/admin.php:623
 msgid "This information is for administrative purposes, to help you label the different webhooks."
 msgstr ""
 
-#: includes/admin.php:620
+#: includes/admin.php:627
 msgid "Name of %s Account"
 msgstr ""
 
-#: includes/admin.php:623
+#: includes/admin.php:630
 msgid "This information is for administrative purposes, to help you see where your messages are going."
 msgstr ""
 
-#: includes/admin.php:627
+#: includes/admin.php:634
 msgid "Webhook URL"
 msgstr ""
 
-#: includes/admin.php:656
+#: includes/admin.php:663
 msgid "This field must be a valid %s URL."
 msgstr ""
 
-#: includes/admin.php:658
+#: includes/admin.php:665
 msgid "You must first %1$sset up an incoming webhook integration in your %2$s account%3$s. Once you select a channel (which you can override below), click the button to add the integration, copy the provided webhook URL, and paste the URL in the box above."
 msgstr ""
 
-#: includes/admin.php:662
+#: includes/admin.php:669
 msgid "Send To %s Channel(s) or Direct Message(s)"
 msgstr ""
 
-#: includes/admin.php:665
+#: includes/admin.php:672
 msgid "Incoming webhooks have a default channel but you can use this setting as an override. Use a \"%1$s\" before the name to specify a channel and a \"%2$s\" to specify a direct message. For example, type \"%3$s\" for your %4$s channel about %5$s or type \"%6$s\" to send your notifications to me as a direct message, at least you could if I was a member of your %7$s account."
 msgstr ""
 
-#: includes/admin.php:665, includes/admin.php:803
+#: includes/admin.php:672, includes/admin.php:810
 msgid "Send to multiple channels or messages by separating the names with commas."
 msgstr ""
 
-#: includes/admin.php:669
+#: includes/admin.php:676
 msgid "Post Message As Which %s Username"
 msgstr ""
 
-#: includes/admin.php:672
+#: includes/admin.php:679
 msgid "Incoming webhooks have a default username but you can use this setting as an override."
 msgstr ""
 
-#: includes/admin.php:676
+#: includes/admin.php:683
 msgid "Icon Emoji For Message"
 msgstr ""
 
-#: includes/admin.php:679
+#: includes/admin.php:686
 msgid "You can use this setting to designate a specific emoji for your message icon, e.g. \"%1$s\" or \"%2$s\". If this setting, and the custom URL setting below, is left blank, a %3$s icon will be used."
 msgstr ""
 
-#: includes/admin.php:683
+#: includes/admin.php:690
 msgid "Use Custom URL For Message Icon"
 msgstr ""
 
-#: includes/admin.php:686
+#: includes/admin.php:693
 msgid "You can use this setting to designate your own message icon from a URL. If this setting, and the emoji setting above, is left blank, a %s icon will be used."
 msgstr ""
 
-#: includes/admin.php:686
+#: includes/admin.php:693
 msgid "Keep in mind that %s will not be able to access non-public URLs."
 msgstr ""
 
-#: includes/admin.php:690
+#: includes/admin.php:697
 msgid "The %s Icon"
 msgstr ""
 
-#: includes/admin.php:693
+#: includes/admin.php:700
 msgid "If the icon emoji and custom URL are left blank, this %1$s icon will be used for the %2$s messages. However, the icon will not work if %3$s cannot access your website. For instance, %4$s cannot access the icon if you're testing the plugin on your local machine."
 msgstr ""
 
-#: includes/admin.php:693
+#: includes/admin.php:700
 msgid "%1$sTo ensure this %2$s icon is always used%3$s, save this image to your computer and set it as the default message icon in your %4$s%5$s incoming webhook integration%6$s."
 msgstr ""
 
-#: includes/admin.php:697
+#: includes/admin.php:704
 msgid "Exclude Post Types From Notifications"
 msgstr ""
 
-#: includes/admin.php:717
+#: includes/admin.php:724
 msgid "By default, all post types will be included when sending notifications for content related events. Use this setting to exclude certain post types from your notifications."
 msgstr ""
 
-#: includes/admin.php:728
+#: includes/admin.php:735
 msgid "Network Post Types"
 msgstr ""
 
-#: includes/admin.php:730
+#: includes/admin.php:737
 msgid "Include only post type slugs, separated by commas."
 msgstr ""
 
-#: includes/admin.php:730
+#: includes/admin.php:737
 msgid "There is no straight forward way for the network admin to retrieve all post types that exist on your network. The network admin can only retrieve what's registered on your main site which are included as checkboxes above. Please use the text field above to designate the slugs of post types you would like to exclude on a network level."
 msgstr ""
 
-#: includes/admin.php:753
+#: includes/admin.php:760
 msgid "When %s Notifications Fail"
 msgstr ""
 
-#: includes/admin.php:755
+#: includes/admin.php:762
 msgid "Send an email when a %s notification fails"
 msgstr ""
 
-#: includes/admin.php:756
+#: includes/admin.php:763
 msgid "Send To Which Email Address(es)?"
 msgstr ""
 
-#: includes/admin.php:758
+#: includes/admin.php:765
 msgid "When enabled, will send an email message when a %s notification fails. Send to multiple email addresses by separating the addresses with commas."
 msgstr ""
 
-#: includes/admin.php:762
+#: includes/admin.php:769
 msgid "Notification Events"
 msgstr ""
 
-#: includes/admin.php:763
+#: includes/admin.php:770
 msgid "When would you like to receive notifications?"
 msgstr ""
 
-#: includes/admin.php:765
+#: includes/admin.php:772
 msgid "Select all events"
 msgstr ""
 
-#: includes/admin.php:766
+#: includes/admin.php:773
 msgid "Deselect all events"
 msgstr ""
 
-#: includes/admin.php:800
+#: includes/admin.php:807
 msgid "%s Channel(s) or Direct Message(s)"
 msgstr ""
 
-#: includes/admin.php:802
+#: includes/admin.php:809
 msgid "This allows you to set a %1$s channel or direct message for this specific event. Leave blank to use the default channel. Use a %2$s or %3$s before the name to specify a channel or direct message, respectively."
 msgstr ""
 
-#: includes/admin.php:803
+#: includes/admin.php:810
 msgid "Leave blank to use the default channel."
 msgstr ""
 
-#: includes/admin.php:826
+#: includes/admin.php:833
 msgid "Deactivate"
 msgstr ""
 
-#: includes/admin.php:828
+#: includes/admin.php:835
 msgid "Deactivate this webhook"
 msgstr ""
 
-#: includes/admin.php:829
+#: includes/admin.php:836
 msgid "For when you need to disable this webhook without deleting your settings."
 msgstr ""
 
-#: includes/admin.php:837, includes/admin.php:837, includes/admin.php:918, includes/admin.php:918
+#: includes/admin.php:844, includes/admin.php:844, includes/admin.php:925, includes/admin.php:925
 msgid "Save Webhook"
 msgstr ""
 
-#: includes/admin.php:870
+#: includes/admin.php:877
 msgid "Your webhook was deleted."
 msgstr ""
 
-#: includes/admin.php:871, includes/admin.php:880
+#: includes/admin.php:878, includes/admin.php:887
 msgid "Dismiss this notice."
 msgstr ""
 
-#: includes/admin.php:879
+#: includes/admin.php:886
 msgid "There was an error deleting your webhook."
 msgstr ""
 
-#: includes/admin.php:889
+#: includes/admin.php:896
 msgid " Rock The %1$s helps you manage your websites, and stay on top of changes, by sending notifications (following numerous %2$s events) straight to you and your team inside your %3$s account. %4$s is a team collaboration tool that offers chat rooms organized by topic, as well as private groups and direct messaging. A %5$s account is required to use this plugin and is free to use for as long as you want and with an unlimited number of people. %6$sVisit the %7$s website%8$s to learn more and sign up."
 msgstr ""
 
-#: includes/admin.php:927
+#: includes/admin.php:934
 msgid "Delete This Webhook"
 msgstr ""
 
-#: includes/admin.php:962
+#: includes/admin.php:969
 msgid "In order to test your webhook URL, and make sure your webhook is functioning correctly, a test message must be sent to your %s account."
 msgstr ""
 
-#: includes/admin.php:1114
+#: includes/admin.php:1121
 msgid "Settings saved."
 msgstr ""
 
-#: includes/admin.php:1236
+#: includes/admin.php:1243
 msgid "You must provide a name for your outgoing webhook."
 msgstr ""
 
-#: includes/admin.php:1251
+#: includes/admin.php:1258
 msgid "You must provide a webhook URL for your outgoing webhook."
 msgstr ""
 
-#: includes/admin.php:1354
+#: includes/admin.php:1361
 msgid "Oops. Looks like something went wrong."
 msgstr ""
 
-#: includes/admin.php:1534
+#: includes/admin.php:1541
 msgid "This is a Rock The %1$s test message from the %2$s website at <%3$s>."
 msgstr ""
 
@@ -615,162 +615,162 @@ msgstr ""
 msgid "The payload did not send to %s."
 msgstr ""
 
-#: rock-the-slackbot.php:186
+#: rock-the-slackbot.php:253
 msgid "Content"
 msgstr ""
 
-#: rock-the-slackbot.php:189
+#: rock-the-slackbot.php:256
 msgid "When a post is published"
 msgstr ""
 
-#: rock-the-slackbot.php:193
+#: rock-the-slackbot.php:260
 msgid "When a post is unpublished"
 msgstr ""
 
-#: rock-the-slackbot.php:197
+#: rock-the-slackbot.php:264
 msgid "When a post is drafted"
 msgstr ""
 
-#: rock-the-slackbot.php:201
+#: rock-the-slackbot.php:268
 msgid "When a post is pending review"
 msgstr ""
 
-#: rock-the-slackbot.php:205
+#: rock-the-slackbot.php:272
 msgid "When a post is scheduled"
 msgstr ""
 
-#: rock-the-slackbot.php:209
+#: rock-the-slackbot.php:276
 msgid "When a post's content is updated"
 msgstr ""
 
-#: rock-the-slackbot.php:213
+#: rock-the-slackbot.php:280
 msgid "When a post is deleted"
 msgstr ""
 
-#: rock-the-slackbot.php:216
+#: rock-the-slackbot.php:283
 msgid "When a post is trashed"
 msgstr ""
 
-#: rock-the-slackbot.php:219
+#: rock-the-slackbot.php:286
 msgid "When a 404 error is thrown"
 msgstr ""
 
-#: rock-the-slackbot.php:224
+#: rock-the-slackbot.php:291
 msgid "Comments"
 msgstr ""
 
-#: rock-the-slackbot.php:227
+#: rock-the-slackbot.php:294
 msgid "When a comment is added"
 msgstr ""
 
-#: rock-the-slackbot.php:230
+#: rock-the-slackbot.php:297
 msgid "When a comment is unapproved"
 msgstr ""
 
-#: rock-the-slackbot.php:233
+#: rock-the-slackbot.php:300
 msgid "When a comment is approved"
 msgstr ""
 
-#: rock-the-slackbot.php:236
+#: rock-the-slackbot.php:303
 msgid "When a comment is marked as spam"
 msgstr ""
 
-#: rock-the-slackbot.php:239
+#: rock-the-slackbot.php:306
 msgid "When a comment is trashed"
 msgstr ""
 
-#: rock-the-slackbot.php:244
+#: rock-the-slackbot.php:311
 msgid "Menus"
 msgstr ""
 
-#: rock-the-slackbot.php:247
+#: rock-the-slackbot.php:314
 msgid "When a menu item is deleted"
 msgstr ""
 
-#: rock-the-slackbot.php:252
+#: rock-the-slackbot.php:319
 msgid "Media"
 msgstr ""
 
-#: rock-the-slackbot.php:255
+#: rock-the-slackbot.php:322
 msgid "When media is added"
 msgstr ""
 
-#: rock-the-slackbot.php:258
+#: rock-the-slackbot.php:325
 msgid "When media is edited"
 msgstr ""
 
-#: rock-the-slackbot.php:261
+#: rock-the-slackbot.php:328
 msgid "When media is deleted"
 msgstr ""
 
-#: rock-the-slackbot.php:266
+#: rock-the-slackbot.php:333
 msgid "Users"
 msgstr ""
 
-#: rock-the-slackbot.php:269
+#: rock-the-slackbot.php:336
 msgid "When a user is added"
 msgstr ""
 
-#: rock-the-slackbot.php:272
+#: rock-the-slackbot.php:339
 msgid "When a user is deleted"
 msgstr ""
 
-#: rock-the-slackbot.php:275
+#: rock-the-slackbot.php:342
 msgid "When a user's role has changed"
 msgstr ""
 
-#: rock-the-slackbot.php:280
+#: rock-the-slackbot.php:347
 msgid "Updates"
 msgstr ""
 
-#: rock-the-slackbot.php:283
+#: rock-the-slackbot.php:350
 msgid "When a %s core update is available"
 msgstr ""
 
-#: rock-the-slackbot.php:287
+#: rock-the-slackbot.php:354
 msgid "When %s core is updated"
 msgstr ""
 
-#: rock-the-slackbot.php:291
+#: rock-the-slackbot.php:358
 msgid "When a plugin update is available"
 msgstr ""
 
-#: rock-the-slackbot.php:294
+#: rock-the-slackbot.php:361
 msgid "When a plugin is updated"
 msgstr ""
 
-#: rock-the-slackbot.php:297
+#: rock-the-slackbot.php:364
 msgid "When a theme update is available"
 msgstr ""
 
-#: rock-the-slackbot.php:300
+#: rock-the-slackbot.php:367
 msgid "When a theme is updated"
 msgstr ""
 
-#: rock-the-slackbot.php:551
+#: rock-the-slackbot.php:618
 msgid "The webhook ID passed is not valid."
 msgstr ""
 
-#: rock-the-slackbot.php:589
+#: rock-the-slackbot.php:656
 msgid "There was an error when trying to post to %1$s from %2$s."
 msgstr ""
 
-#: rock-the-slackbot.php:593
+#: rock-the-slackbot.php:660
 msgid "Payload URL"
 msgstr ""
 
-#: rock-the-slackbot.php:598
+#: rock-the-slackbot.php:665
 msgid "Channel"
 msgstr ""
 
-#: rock-the-slackbot.php:608
+#: rock-the-slackbot.php:675
 msgid "Message"
 msgstr ""
 
-#: rock-the-slackbot.php:615
+#: rock-the-slackbot.php:682
 msgid "Attachments"
 msgstr ""
 
-#: rock-the-slackbot.php:631
+#: rock-the-slackbot.php:698
 msgid "%1$s to %2$s error"
 msgstr ""
