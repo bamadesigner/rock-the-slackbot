@@ -3,7 +3,7 @@ Contributors: bamadesigner
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=ZCAN2UX7QHZPL&lc=US&item_name=Rachel%20Carden%20%28Rock%20The%20Slackbot%29&currency_code=USD&bn=PP%2dDonationsBF%3abtn_donate_SM%2egif%3aNonHosted
 Tags: slack, slackbot, chat, collaboration, notification, team
 Requires at least: 3.0
-Tested up to: 4.4.2
+Tested up to: 4.7
 Stable tag: 1.1.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -66,12 +66,10 @@ Please use [the Issues section of this plugin's GitHub repo](https://github.com/
 
 == Changelog ==
 
-= 1.2.0 =
+= 1.1.2 =
+* You can now cancel sending the notification by returning false to "rock_the_slackbot_notification" or "rock_the_slackbot_outgoing_webhook_payload" filter.
 * Added "When Slack Notifications Fail" setting so users can control whether or not emails are sent when Slack notifications fail.
 * Added 'rock_the_slackbot_error_email' filter which allows you to customize the error "didn't send to Slack" email.
-* You can now cancel sending the notification by returning false to "rock_the_slackbot_notification" or "rock_the_slackbot_outgoing_webhook_payload" filter.
-
-= 1.1.2 =
 * Added notifications for 'When a post is drafted', 'When a post is pending review', and 'When a post is scheduled'.
 * Added notifications for when a comment is added, approved, unapproved, marked as spam, and trashed.
 * Fixed issue where channel had to be set for messages to send.
@@ -100,9 +98,15 @@ Plugin launch
 
 == Upgrade Notice ==
 
-= 1.2.0 =
+= 1.1.2 =
+* You can now cancel sending the notification by returning false to "rock_the_slackbot_notification" or "rock_the_slackbot_outgoing_webhook_payload" filter.
 * Added "When Slack Notifications Fail" setting so users can control whether or not emails are sent when Slack notifications fail.
 * Added 'rock_the_slackbot_error_email' filter which allows you to customize the error "didn't send to Slack" email.
+* Added notifications for 'When a post is drafted', 'When a post is pending review', and 'When a post is scheduled'.
+* Added notifications for when a comment is added, approved, unapproved, marked as spam, and trashed.
+* Fixed issue where channel had to be set for messages to send.
+* Added translations for English (Australia), French (France), German, Portuguese (Brazil), and Spanish (Spain).
+* Added messaging to clarify use of WordPress icon in Slack messages.
 
 = 1.1.1 =
 * Added process to test webhook URL on settings page.

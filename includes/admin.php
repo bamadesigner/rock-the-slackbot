@@ -108,9 +108,12 @@ class Rock_The_Slackbot_Admin {
 		// See if we're adding an outgoing webhook.
 		$this->add_webhook = ! $this->edit_webhook && ! empty( $_GET['add'] ) && 1 == $_GET['add'] ? true : false;
 
+		// Get the plugin file.
+		$plugin_file = rock_the_slackbot()->get_plugin_file();
+
 		// Add plugin action links.
-		add_filter( 'network_admin_plugin_action_links_' . ROCK_THE_SLACKBOT_PLUGIN_FILE, array( $this, 'add_plugin_action_links' ), 10, 4 );
-		add_filter( 'plugin_action_links_' . ROCK_THE_SLACKBOT_PLUGIN_FILE, array( $this, 'add_plugin_action_links' ), 10, 4 );
+		add_filter( 'network_admin_plugin_action_links_' . $plugin_file, array( $this, 'add_plugin_action_links' ), 10, 4 );
+		add_filter( 'plugin_action_links_' . $plugin_file, array( $this, 'add_plugin_action_links' ), 10, 4 );
 
 		// Add multisite settings page.
 		add_action( 'network_admin_menu', array( $this, 'add_network_settings_page' ) );
@@ -179,7 +182,8 @@ class Rock_The_Slackbot_Admin {
 	public function add_network_settings_page() {
 
 		// Make sure plugin is network activated.
-		if ( ! ( function_exists( 'is_plugin_active_for_network' ) && is_plugin_active_for_network( ROCK_THE_SLACKBOT_PLUGIN_FILE ) ) ) {
+		if ( ! ( function_exists( 'is_plugin_active_for_network' )
+			&& is_plugin_active_for_network( rock_the_slackbot()->get_plugin_file() ) ) ) {
 			return false;
 		}
 
@@ -221,14 +225,17 @@ class Rock_The_Slackbot_Admin {
 			return;
 		}
 
+		// Get the plugin version.
+		$plugin_ver = rock_the_slackbot()->get_version();
+
 		// Enqueue our main styles.
-		wp_enqueue_style( 'rock-the-slackbot-admin-tools', trailingslashit( plugin_dir_url( dirname( __FILE__ ) ) . 'assets/css' ) . 'admin-tools.min.css', array(), ROCK_THE_SLACKBOT_VERSION );
+		wp_enqueue_style( 'rock-the-slackbot-admin-tools', trailingslashit( plugin_dir_url( dirname( __FILE__ ) ) . 'assets/css' ) . 'admin-tools.min.css', array(), $plugin_ver );
 
 		// We only need the script on the add and edit page.
 		if ( $this->add_webhook || $this->edit_webhook ) {
 
 			wp_enqueue_style( 'rts-jquery-ui', '//code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css' );
-			wp_enqueue_script( 'rock-the-slackbot-admin-tools', trailingslashit( plugin_dir_url( dirname( __FILE__ ) ) . 'assets/js' ) . 'admin-tools.min.js', array( 'jquery', 'jquery-ui-tooltip' ), ROCK_THE_SLACKBOT_VERSION, true );
+			wp_enqueue_script( 'rock-the-slackbot-admin-tools', trailingslashit( plugin_dir_url( dirname( __FILE__ ) ) . 'assets/js' ) . 'admin-tools.min.js', array( 'jquery', 'jquery-ui-tooltip' ), $plugin_ver, true );
 
 			// Need to send some data to our script.
 			wp_localize_script( 'rock-the-slackbot-admin-tools', 'rock_the_slackbot', array(
@@ -298,8 +305,8 @@ class Rock_The_Slackbot_Admin {
 			case 'about-plugin':
 
 				?>
-				<p><strong><a href="<?php echo ROCK_THE_SLACKBOT_PLUGIN_URL; ?>" target="_blank"><?php printf( __( 'Rock The %s', 'rock-the-slackbot' ), 'Slackbot' ); ?></a></strong><br />
-				<strong><?php _e( 'Version', 'rock-the-slackbot' ); ?>:</strong> <?php echo ROCK_THE_SLACKBOT_VERSION; ?><br /><strong><?php _e( 'Author', 'rock-the-slackbot' ); ?>:</strong> <a href="https://bamadesigner.com/" target="_blank">Rachel Carden</a></p>
+				<p><strong><a href="<?php echo rock_the_slackbot()->get_plugin_url(); ?>" target="_blank"><?php printf( __( 'Rock The %s', 'rock-the-slackbot' ), 'Slackbot' ); ?></a></strong><br />
+				<strong><?php _e( 'Version', 'rock-the-slackbot' ); ?>:</strong> <?php echo rock_the_slackbot()->get_version(); ?><br /><strong><?php _e( 'Author', 'rock-the-slackbot' ); ?>:</strong> <a href="https://bamadesigner.com/" target="_blank">Rachel Carden</a></p>
 				<?php
 
 				break;
@@ -308,7 +315,7 @@ class Rock_The_Slackbot_Admin {
 			case 'promote':
 
 				?>
-				<p class="star"><a href="<?php echo ROCK_THE_SLACKBOT_PLUGIN_URL; ?>" title="<?php esc_attr_e( 'Give the plugin a good rating', 'rock-the-slackbot' ); ?>" target="_blank"><span class="dashicons dashicons-star-filled"></span> <span class="promote-text"><?php _e( 'Give the plugin a good rating', 'rock-the-slackbot' ); ?></span></a></p>
+				<p class="star"><a href="<?php echo rock_the_slackbot()->get_plugin_url(); ?>" title="<?php esc_attr_e( 'Give the plugin a good rating', 'rock-the-slackbot' ); ?>" target="_blank"><span class="dashicons dashicons-star-filled"></span> <span class="promote-text"><?php _e( 'Give the plugin a good rating', 'rock-the-slackbot' ); ?></span></a></p>
 				<p class="twitter"><a href="https://twitter.com/bamadesigner" title="<?php printf( __( 'Follow %1$s on %2$s', 'rock-the-slackbot' ), '@bamadesigner', 'Twitter' ); ?>" target="_blank"><span class="dashicons dashicons-twitter"></span> <span class="promote-text"><?php printf( __( 'Follow %1$s on %2$s', 'rock-the-slackbot' ), '@bamadesigner', 'Twitter' ); ?></span></a></p>
 				<p class="donate"><a href="https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=ZCAN2UX7QHZPL&lc=US&item_name=Rachel%20Carden%20%28Rock%20The%20Slackbot%29&currency_code=USD&bn=PP%2dDonationsBF%3abtn_donate_SM%2egif%3aNonHosted" title="<?php esc_attr_e( 'Donate a few bucks to the plugin', 'rock-the-slackbot' ); ?>" target="_blank"><img src="https://www.paypalobjects.com/en_US/i/btn/btn_donate_SM.gif" alt="<?php esc_attr_e( 'Donate', 'rock-the-slackbot' ); ?>" /> <span class="promote-text"><?php _e( 'Buy me a coffee', 'rock-the-slackbot' ); ?></span></a></p>
 				<?php
@@ -359,7 +366,7 @@ class Rock_The_Slackbot_Admin {
 			<?php
 
 		} elseif ( function_exists( 'is_plugin_active_for_network' )
-			&& is_plugin_active_for_network( ROCK_THE_SLACKBOT_PLUGIN_FILE ) ) {
+			&& is_plugin_active_for_network( rock_the_slackbot()->get_plugin_file() ) ) {
 
 			// Get network setting.
 			$network_setting = $this->get_outgoing_webhooks_setting( true );

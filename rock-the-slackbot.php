@@ -3,7 +3,7 @@
  * Plugin Name:     Rock The Slackbot
  * Plugin URI:      https://wordpress.org/plugins/rock-the-slackbot/
  * Description:     Helps you stay on top of changes by sending notifications straight to you and your team inside your Slack account.
- * Version:         1.2.0
+ * Version:         1.1.2
  * Author:          Rachel Carden
  * Author URI:      https://bamadesigner.com
  * License:         GPL-2.0+
@@ -27,14 +27,7 @@ if ( ! defined( 'WPINC' ) ) {
  *
  * Add some identifiable info to the "Exclude Post Types" life
  *      for when CPTs share the same label (from Matt).
- *
- * Add setting and filter to disable error emails.
  */
-
-// If you define them, will they be used?
-define( 'ROCK_THE_SLACKBOT_VERSION', '1.2.0' );
-define( 'ROCK_THE_SLACKBOT_PLUGIN_URL', 'https://wordpress.org/plugins/rock-the-slackbot/' );
-define( 'ROCK_THE_SLACKBOT_PLUGIN_FILE', 'rock-the-slackbot/rock-the-slackbot.php' );
 
 // Load the files.
 require_once plugin_dir_path( __FILE__ ) . 'includes/hooks.php';
@@ -56,18 +49,46 @@ class Rock_The_Slackbot {
 	/**
 	 * Whether or not this plugin is network active.
 	 *
-	 * @since	1.1.0
-	 * @access	public
-	 * @var		boolean
+	 * @since   1.1.0
+	 * @access  public
+	 * @var     boolean
 	 */
 	public $is_network_active;
 
 	/**
+	 * Holds the plugin version number.
+	 *
+	 * @since   1.1.2
+	 * @access  private
+	 * @var     string
+	 */
+	private $version = '1.1.2';
+
+	/**
+	 * Holds the plugin's URL.
+	 *
+	 * @since   1.1.2
+	 * @access  private
+	 * @var     string
+	 */
+	private $plugin_url = 'https://wordpress.org/plugins/rock-the-slackbot/';
+
+	/**
+	 * Holds the plugin's
+	 * relative file path.
+	 *
+	 * @since   1.1.2
+	 * @access  private
+	 * @var     string
+	 */
+	private $plugin_file = 'rock-the-slackbot/rock-the-slackbot.php';
+
+	/**
 	 * Holds the class instance.
 	 *
-	 * @since	1.0.0
-	 * @access	private
-	 * @var		Rock_The_Slackbot
+	 * @since   1.0.0
+	 * @access  private
+	 * @var     Rock_The_Slackbot
 	 */
 	private static $instance;
 
@@ -76,7 +97,7 @@ class Rock_The_Slackbot {
 	 *
 	 * @access  public
 	 * @since   1.0.0
-	 * @return	Rock_The_Slackbot
+	 * @return  Rock_The_Slackbot
 	 */
 	public static function instance() {
 		if ( ! isset( self::$instance ) ) {
@@ -95,7 +116,19 @@ class Rock_The_Slackbot {
 	protected function __construct() {
 
 		// Is this plugin network active?
-		$this->is_network_active = is_multisite() && ( $plugins = get_site_option( 'active_sitewide_plugins' ) ) && isset( $plugins[ ROCK_THE_SLACKBOT_PLUGIN_FILE ] );
+		$this->is_network_active = false;
+		if ( is_multisite() ) {
+
+			// Get the list of network active plugins.
+			$plugins = get_site_option( 'active_sitewide_plugins' );
+			if ( ! empty( $plugins ) ) {
+
+				// Marks true if our plugin is network active.
+				$plugin_file = $this->get_plugin_file();
+				$this->is_network_active = $plugin_file && ! empty( $plugins[ $plugin_file ] );
+
+			}
+		}
 
 		// Load our text domain.
 		add_action( 'init', array( $this, 'textdomain' ) );
@@ -156,6 +189,40 @@ class Rock_The_Slackbot {
 	 */
 	public function textdomain() {
 		load_plugin_textdomain( 'rock-the-slackbot', false, dirname( plugin_basename( __FILE__ ) ) . '/languages' );
+	}
+
+	/**
+	 * Returns the plugin version.
+	 *
+	 * @access  public
+	 * @since   1.1.2
+	 * @return  string
+	 */
+	public function get_version() {
+		return $this->version;
+	}
+
+	/**
+	 * Returns the plugin's URL.
+	 *
+	 * @access  public
+	 * @since   1.1.2
+	 * @return  string
+	 */
+	public function get_plugin_url() {
+		return $this->plugin_url;
+	}
+
+	/**
+	 * Returns the plugin's
+	 * relative file path.
+	 *
+	 * @access  public
+	 * @since   1.1.2
+	 * @return  string
+	 */
+	public function get_plugin_file() {
+		return $this->plugin_file;
 	}
 
 	/**
@@ -570,7 +637,7 @@ class Rock_The_Slackbot {
 	/**
 	 * Send the "error" email when sending a payload fails.
 	 *
-	 * @since   1.2.0
+	 * @since   1.1.2
 	 * @param   string - the email address.
 	 * @param   array - the email arguments.
 	 */
