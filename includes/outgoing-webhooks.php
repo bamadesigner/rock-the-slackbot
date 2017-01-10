@@ -137,6 +137,11 @@ class Rock_The_Slackbot_Outgoing_Webhooks {
 		// Allows you to filter the payload.
 		$payload = (array) apply_filters( 'rock_the_slackbot_outgoing_webhook_payload', $payload, $webhook_url );
 
+		// If returned false, don't send the payload.
+		if ( false === $payload ) {
+			return false;
+		}
+
 		// See if we have multiple channels.
 		$channels = ! empty( $payload['channel'] ) ? $payload['channel'] : array();
 

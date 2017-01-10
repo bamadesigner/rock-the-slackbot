@@ -197,7 +197,7 @@ class Rock_The_Slackbot_Hooks {
 	 * @param   array - $payload - payload info for notification.
 	 * @param   array - $attachments - attachments info for notification.
 	 * @param   array - $event_args - event specific information to send to the filters.
-	 * @return  true|array - true if all notifications were sent, array of error(s) otherwise
+	 * @return  bool|array - true if all notifications were sent, array if error(s), false otherwise
 	 */
 	private function send_outgoing_webhooks( $notification_event, $outgoing_webhooks, $payload = array(), $attachments = array(), $event_args = array() ) {
 
@@ -227,6 +227,11 @@ class Rock_The_Slackbot_Hooks {
 
 			// General filter.
 			$notification_pieces = (array) apply_filters( 'rock_the_slackbot_notification', $notification_pieces, $notification_event, $event_args );
+
+			// If returned false, don't send the payload.
+			if ( false === $notification_pieces ) {
+				return false;
+			}
 
 			// Assign the notification pieces to variables.
 			$notification_webhook_url = ! empty( $notification_pieces['webhook_url'] ) ? $notification_pieces['webhook_url'] : '';

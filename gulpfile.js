@@ -77,4 +77,4 @@ gulp.task('translate', function() {
 });
 
 // Our default tasks
-gulp.task('default',['compile','php']);
+gulp.task('default',['compile','php','translate']);
