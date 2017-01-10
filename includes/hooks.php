@@ -220,16 +220,16 @@ class Rock_The_Slackbot_Hooks {
 			$notification_pieces = compact( array( 'webhook_url', 'payload' ) );
 
 			// Filter by event.
-			$notification_pieces = (array) apply_filters( "rock_the_slackbot_notification_{$notification_event}", $notification_pieces, $notification_event, $event_args );
+			$notification_pieces = apply_filters( "rock_the_slackbot_notification_{$notification_event}", $notification_pieces, $notification_event, $event_args );
 
 			// Filter by hook ID.
-			$notification_pieces = (array) apply_filters( 'rock_the_slackbot_notification_' . $hook['ID'], $notification_pieces, $notification_event, $event_args );
+			$notification_pieces = apply_filters( 'rock_the_slackbot_notification_' . $hook['ID'], $notification_pieces, $notification_event, $event_args );
 
 			// General filter.
-			$notification_pieces = (array) apply_filters( 'rock_the_slackbot_notification', $notification_pieces, $notification_event, $event_args );
+			$notification_pieces = apply_filters( 'rock_the_slackbot_notification', $notification_pieces, $notification_event, $event_args );
 
-			// If returned false, don't send the payload.
-			if ( false === $notification_pieces ) {
+			// If returned false or empty, don't send the notification.
+			if ( false === $notification_pieces || empty( $notification_pieces ) ) {
 				return false;
 			}
 
