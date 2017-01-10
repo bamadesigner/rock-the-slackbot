@@ -762,7 +762,7 @@ class Rock_The_Slackbot_Admin {
 						<span class="rts-choice" style="margin-top:6px;"><input id="rts-send-error-email" class="rts-input rts-input-checkbox" type="checkbox" name="rock_the_slackbot_outgoing_webhooks[send_error_email]" value="1"<?php checked( $send_error_email ); ?> /> <label for="rts-send-error-email"><?php printf( __( 'Send an email when a %s notification fails', 'rock-the-slackbot' ), 'Slack' ); ?></label></span>
 						<label for="rts-send-error-email" style="display:block;margin:15px 0 5px 0;"><strong><?php _e( 'Send To Which Email Address(es)?', 'rock-the-slackbot' ); ?></strong></label>
 						<input id="rts-send-error-email-address" class="rts-input rts-input-text" type="text" name="rock_the_slackbot_outgoing_webhooks[send_error_email_address]" value="<?php echo esc_attr( $send_error_email_address ); ?>"/>
-						<span class="rts-field-desc"><?php printf( __( 'When enabled, will send an email message when a %s notification fails. Send to multiple email addresses by separating the addresses with commas.', 'rock-the-slackbot' ), 'Slack' ); ?></span>
+						<span class="rts-field-desc"><?php printf( __( 'When enabled, will send an email message when a %s notification fails. Send to multiple email addresses by separating the addresses with commas. Sends to the website administrator by default.', 'rock-the-slackbot' ), 'Slack' ); ?></span>
 					</td>
 				</tr>
 				<tr id="edit-rts-notification-events">

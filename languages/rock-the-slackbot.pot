@@ -288,7 +288,7 @@ msgid "Send To Which Email Address(es)?"
 msgstr ""
 
 #: includes/admin.php:765
-msgid "When enabled, will send an email message when a %s notification fails. Send to multiple email addresses by separating the addresses with commas."
+msgid "When enabled, will send an email message when a %s notification fails. Send to multiple email addresses by separating the addresses with commas. Sends to the website administrator by default."
 msgstr ""
 
 #: includes/admin.php:769
