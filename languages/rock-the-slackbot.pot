@@ -6,10 +6,170 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Report-Msgid-Bugs-To: https://github.com/bamadesigner/rock-the-slackbot/issues\n"
-"Last-Translator: Rachel Carden <bamadesigner@gmail.com>\n"
 "Language-Team: Rachel Carden <bamadesigner@gmail.com>\n"
+"Last-Translator: Rachel Carden <bamadesigner@gmail.com>\n"
+"Report-Msgid-Bugs-To: https://github.com/bamadesigner/rock-the-slackbot/issues\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: rock-the-slackbot.php:253
+msgid "Content"
+msgstr ""
+
+#: rock-the-slackbot.php:256
+msgid "When a post is published"
+msgstr ""
+
+#: rock-the-slackbot.php:260
+msgid "When a post is unpublished"
+msgstr ""
+
+#: rock-the-slackbot.php:264
+msgid "When a post is drafted"
+msgstr ""
+
+#: rock-the-slackbot.php:268
+msgid "When a post is pending review"
+msgstr ""
+
+#: rock-the-slackbot.php:272
+msgid "When a post is scheduled"
+msgstr ""
+
+#: rock-the-slackbot.php:276
+msgid "When a post's content is updated"
+msgstr ""
+
+#: rock-the-slackbot.php:280
+msgid "When a post is deleted"
+msgstr ""
+
+#: rock-the-slackbot.php:283
+msgid "When a post is trashed"
+msgstr ""
+
+#: rock-the-slackbot.php:286
+msgid "When a 404 error is thrown"
+msgstr ""
+
+#: rock-the-slackbot.php:291
+msgid "Comments"
+msgstr ""
+
+#: rock-the-slackbot.php:294
+msgid "When a comment is added"
+msgstr ""
+
+#: rock-the-slackbot.php:297
+msgid "When a comment is unapproved"
+msgstr ""
+
+#: rock-the-slackbot.php:300
+msgid "When a comment is approved"
+msgstr ""
+
+#: rock-the-slackbot.php:303
+msgid "When a comment is marked as spam"
+msgstr ""
+
+#: rock-the-slackbot.php:306
+msgid "When a comment is trashed"
+msgstr ""
+
+#: rock-the-slackbot.php:311
+msgid "Menus"
+msgstr ""
+
+#: rock-the-slackbot.php:314
+msgid "When a menu item is deleted"
+msgstr ""
+
+#: rock-the-slackbot.php:319
+msgid "Media"
+msgstr ""
+
+#: rock-the-slackbot.php:322
+msgid "When media is added"
+msgstr ""
+
+#: rock-the-slackbot.php:325
+msgid "When media is edited"
+msgstr ""
+
+#: rock-the-slackbot.php:328
+msgid "When media is deleted"
+msgstr ""
+
+#: rock-the-slackbot.php:333
+msgid "Users"
+msgstr ""
+
+#: rock-the-slackbot.php:336
+msgid "When a user is added"
+msgstr ""
+
+#: rock-the-slackbot.php:339
+msgid "When a user is deleted"
+msgstr ""
+
+#: rock-the-slackbot.php:342
+msgid "When a user's role has changed"
+msgstr ""
+
+#: rock-the-slackbot.php:347
+msgid "Updates"
+msgstr ""
+
+#: rock-the-slackbot.php:350
+msgid "When a %s core update is available"
+msgstr ""
+
+#: rock-the-slackbot.php:354
+msgid "When %s core is updated"
+msgstr ""
+
+#: rock-the-slackbot.php:358
+msgid "When a plugin update is available"
+msgstr ""
+
+#: rock-the-slackbot.php:361
+msgid "When a plugin is updated"
+msgstr ""
+
+#: rock-the-slackbot.php:364
+msgid "When a theme update is available"
+msgstr ""
+
+#: rock-the-slackbot.php:367
+msgid "When a theme is updated"
+msgstr ""
+
+#: rock-the-slackbot.php:618
+msgid "The webhook ID passed is not valid."
+msgstr ""
+
+#: rock-the-slackbot.php:656
+msgid "There was an error when trying to post to %1$s from %2$s."
+msgstr ""
+
+#: rock-the-slackbot.php:660
+msgid "Payload URL"
+msgstr ""
+
+#: rock-the-slackbot.php:665
+msgid "Channel"
+msgstr ""
+
+#: rock-the-slackbot.php:675
+msgid "Message"
+msgstr ""
+
+#: rock-the-slackbot.php:682
+msgid "Attachments"
+msgstr ""
+
+#: rock-the-slackbot.php:698
+msgid "%1$s to %2$s error"
+msgstr ""
 
 #: includes/admin.php:171
 msgid "Manage"
@@ -613,164 +773,4 @@ msgstr ""
 
 #: includes/outgoing-webhooks.php:186
 msgid "The payload did not send to %s."
-msgstr ""
-
-#: rock-the-slackbot.php:253
-msgid "Content"
-msgstr ""
-
-#: rock-the-slackbot.php:256
-msgid "When a post is published"
-msgstr ""
-
-#: rock-the-slackbot.php:260
-msgid "When a post is unpublished"
-msgstr ""
-
-#: rock-the-slackbot.php:264
-msgid "When a post is drafted"
-msgstr ""
-
-#: rock-the-slackbot.php:268
-msgid "When a post is pending review"
-msgstr ""
-
-#: rock-the-slackbot.php:272
-msgid "When a post is scheduled"
-msgstr ""
-
-#: rock-the-slackbot.php:276
-msgid "When a post's content is updated"
-msgstr ""
-
-#: rock-the-slackbot.php:280
-msgid "When a post is deleted"
-msgstr ""
-
-#: rock-the-slackbot.php:283
-msgid "When a post is trashed"
-msgstr ""
-
-#: rock-the-slackbot.php:286
-msgid "When a 404 error is thrown"
-msgstr ""
-
-#: rock-the-slackbot.php:291
-msgid "Comments"
-msgstr ""
-
-#: rock-the-slackbot.php:294
-msgid "When a comment is added"
-msgstr ""
-
-#: rock-the-slackbot.php:297
-msgid "When a comment is unapproved"
-msgstr ""
-
-#: rock-the-slackbot.php:300
-msgid "When a comment is approved"
-msgstr ""
-
-#: rock-the-slackbot.php:303
-msgid "When a comment is marked as spam"
-msgstr ""
-
-#: rock-the-slackbot.php:306
-msgid "When a comment is trashed"
-msgstr ""
-
-#: rock-the-slackbot.php:311
-msgid "Menus"
-msgstr ""
-
-#: rock-the-slackbot.php:314
-msgid "When a menu item is deleted"
-msgstr ""
-
-#: rock-the-slackbot.php:319
-msgid "Media"
-msgstr ""
-
-#: rock-the-slackbot.php:322
-msgid "When media is added"
-msgstr ""
-
-#: rock-the-slackbot.php:325
-msgid "When media is edited"
-msgstr ""
-
-#: rock-the-slackbot.php:328
-msgid "When media is deleted"
-msgstr ""
-
-#: rock-the-slackbot.php:333
-msgid "Users"
-msgstr ""
-
-#: rock-the-slackbot.php:336
-msgid "When a user is added"
-msgstr ""
-
-#: rock-the-slackbot.php:339
-msgid "When a user is deleted"
-msgstr ""
-
-#: rock-the-slackbot.php:342
-msgid "When a user's role has changed"
-msgstr ""
-
-#: rock-the-slackbot.php:347
-msgid "Updates"
-msgstr ""
-
-#: rock-the-slackbot.php:350
-msgid "When a %s core update is available"
-msgstr ""
-
-#: rock-the-slackbot.php:354
-msgid "When %s core is updated"
-msgstr ""
-
-#: rock-the-slackbot.php:358
-msgid "When a plugin update is available"
-msgstr ""
-
-#: rock-the-slackbot.php:361
-msgid "When a plugin is updated"
-msgstr ""
-
-#: rock-the-slackbot.php:364
-msgid "When a theme update is available"
-msgstr ""
-
-#: rock-the-slackbot.php:367
-msgid "When a theme is updated"
-msgstr ""
-
-#: rock-the-slackbot.php:618
-msgid "The webhook ID passed is not valid."
-msgstr ""
-
-#: rock-the-slackbot.php:656
-msgid "There was an error when trying to post to %1$s from %2$s."
-msgstr ""
-
-#: rock-the-slackbot.php:660
-msgid "Payload URL"
-msgstr ""
-
-#: rock-the-slackbot.php:665
-msgid "Channel"
-msgstr ""
-
-#: rock-the-slackbot.php:675
-msgid "Message"
-msgstr ""
-
-#: rock-the-slackbot.php:682
-msgid "Attachments"
-msgstr ""
-
-#: rock-the-slackbot.php:698
-msgid "%1$s to %2$s error"
 msgstr ""
