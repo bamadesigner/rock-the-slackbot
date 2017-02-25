@@ -1930,7 +1930,7 @@ class Rock_The_Slackbot_Hooks {
 			return false;
 		}
 
-		$current_url  = ( ( isset( $_SERVER['HTTPS'] ) && $_SERVER['HTTPS'] == 'on' ) ? 'https://' : 'http://' ) . $_SERVER['SERVER_NAME'] . $_SERVER['REQUEST_URI'];
+		$current_url  = ( ( isset( $_SERVER['HTTPS'] ) && 'on' == $_SERVER['HTTPS'] ) ? 'https://' : 'http://' ) . $_SERVER['SERVER_NAME'] . $_SERVER['REQUEST_URI'];
 
 		// See if it has already been sent.
 		$sent_notification = wp_cache_get( 'sent_404_notification', 'rock_the_slackbot' );
