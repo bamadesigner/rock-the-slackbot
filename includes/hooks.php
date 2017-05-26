@@ -1443,6 +1443,9 @@ class Rock_The_Slackbot_Hooks {
 
 			case 'pending':
 				$notification_event = 'post_pending';
+				if ($old_status == 'publish') {
+                    			$notification_event = 'post_unpublished';
+                		}
 				break;
 
 			case 'future':
